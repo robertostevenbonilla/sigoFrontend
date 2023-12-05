@@ -1,23 +1,618 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  Routes,
+  Route,
+  Link,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+import { styled, useTheme } from '@mui/material/styles';
+import { Modal, Button } from "react-bootstrap";
+import logo from "./assets/logo-goya.png";
+import "./App.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min";
+
+import Login from "./components/login.component";
+import AddPersona from "./components/persona/add-persona.component";
+import Persona from "./components/persona/persona.component";
+import PersonaList from "./components/persona/persona-list.component";
+import AddUsuario from "./components/usuario/add-usuario.component";
+import ChangePassword from "./components/change-password.component";
+import { UserAuth } from "./actions/auth";
+import { setMessage, setOpenModal } from "./reducers/message";
+import { Loading } from "./components/Loading";
+import UsuarioList from "./components/usuario/usuario-list.component";
+import Usuario from "./components/usuario/usuario.component";
+import {
+  AppBar,
+  Box,
+  Divider,
+  IconButton,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Toolbar,
+  createTheme,
+} from "@mui/material";
+import EmpresaList from "./components/empresa/empresa-list.component";
+import Empresa from "./components/empresa/empresa.component";
+import AddEmpresa from "./components/empresa/add-empresa.component";
+import CiudadList from "./components/ciudad/ciudad-list.component";
+import Ciudad from "./components/ciudad/ciudad.component";
+import AddCiudad from "./components/ciudad/add-ciudad.component";
+import FaseList from "./components/fase/fase-list.component";
+import Fase from "./components/fase/fase.component";
+import AddFase from "./components/fase/add-fase.component";
+import ServicioList from "./components/servicio/servicio-list.component";
+import Servicio from "./components/servicio/servicio.component";
+import AddServicio from "./components/servicio/add-servicio.component";
+import OrdenList from "./components/orden/orden-list.component";
+import Orden from "./components/orden/orden.component";
+import AddOrden from "./components/orden/add-orden.component";
+import {
+  AccountCircle,
+  Approval,
+  AssignmentInd,
+  Business,
+  ChevronLeft,
+  ChevronRight,
+  DisplaySettings,
+  HolidayVillage,
+  ListAlt,
+  Menu,
+} from "@mui/icons-material";
+import MuiDrawer from '@mui/material/Drawer';
+
+const drawerWidth = 240;
+
+const openedMixin = (theme) => ({
+  width: drawerWidth,
+  transition: theme.transitions.create('width', {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.enteringScreen,
+  }),
+  overflowX: 'hidden',
+});
+
+const closedMixin = (theme) => ({
+  transition: theme.transitions.create('width', {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  overflowX: 'hidden',
+  width: `calc(${theme.spacing(7)} + 1px)`,
+  [theme.breakpoints.up('sm')]: {
+    width: `calc(${theme.spacing(8)} + 1px)`,
+  },
+});
+
+const iconTheme = createTheme({
+  status: {
+    danger: "#e53e3e",
+  },
+  palette: {
+    primary: {
+      main: "#00609C",
+      darker: "#053e85",
+    },
+    neutral: {
+      main: "#00CD68",
+      contrastText: "#fff",
+    },
+  },
+});
+
+const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
+  ({ theme, open }) => ({
+    width: drawerWidth,
+    flexShrink: 0,
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box',
+    ...(open && {
+      ...openedMixin(theme),
+      '& .MuiDrawer-paper': openedMixin(theme),
+    }),
+    ...(!open && {
+      ...closedMixin(theme),
+      '& .MuiDrawer-paper': closedMixin(theme),
+    }),
+  }),
+);
+
+const DrawerHeader = styled("div")(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  padding: theme.spacing(0, 1),
+  // necessary for content to be below app bar
+  ...theme.mixins.toolbar,
+}));
 
 function App() {
+  const { logout } = UserAuth();
+  let navigate = useNavigate();
+  const theme = useTheme();
+  const [showModeratorBoard, setShowModeratorBoard] = useState(false);
+  const [showAdminBoard, setShowAdminBoard] = useState(false);
+  const [open, setOpen] = useState(true);
+
+  const { auth: currentUser } = useSelector((state) => state.auth);
+  const { message: currentMessage } = useSelector((state) => state.message);
+  const { isModalOpen: isModalOpen } = useSelector((state) => state.message);
+  const { closeModal: closeModal } = useSelector((state) => state.message);
+  const { isLoading } = useSelector((state) => state.ui);
+  const dispatch = useDispatch();
+
+  let location = useLocation();
+
+  const [showModal, setShow] = useState(false);
+
+  const handleClose = () => {
+    console.log("close modal");
+    dispatch(setOpenModal(false));
+    setShow(false);
+  };
+
+  const logOut = useCallback(() => {
+    dispatch(logout(null));
+  }, [dispatch]);
+
+  const handleDrawerOpen = () => {
+    setOpen(true);
+  };
+
+  const handleDrawerClose = () => {
+    console.log(open);
+    setOpen(false);
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
+      {isLoading && <Loading />}
+      <AppBar position="fixed" open={open} sx={{ background: "white" }}>
+        <Toolbar>
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            onClick={handleDrawerOpen}
+            edge="start"
+            sx={{
+              marginRight: 5,
+              ...(open && { display: "none" }),
+            }}
+          >
+            <Menu />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+      <Drawer className="navSide" variant="permanent" open={open}>
+        <DrawerHeader>
+          <Link to={"/persona"} className="nav-link">
+            <img
+              src={logo}
+              alt="Goya Express Delivery"
+              loading="lazy"
+              width={150}
+              style={{
+                opacity: open ? 1 : 0,
+                filter: "drop-shadow(0.5px 0 0 white) drop-shadow(0 0.5px 0 white) drop-shadow(-0.5px 0 0 white) drop-shadow(0 -0.5px 0 white)",
+              }}
+            />
+          </Link>
+          <IconButton onClick={(open ? handleDrawerClose : handleDrawerOpen)} sx={{ color: "white" }}>
+            {(open ? <ChevronLeft /> : <ChevronRight />)}
+          </IconButton>
+        </DrawerHeader>
+        <Divider />
+        {(currentUser.isLoggedIn && currentUser.auth?.reset_password == 0 ) && (
+        <List>
+          <ListItem
+            key={"persona"}
+            onClick={() => {
+              navigate("/persona");
+            }}
+            disablePadding
+            sx={{ display: "block" }}
+          >
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? "initial" : "center",
+                px: 2.5,
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : "auto",
+                  justifyContent: "center",
+                  color: "white",
+                  paddingRight: "10px",
+                  width: 35,
+                }}
+              >
+                <AccountCircle />
+              </ListItemIcon>
+              <ListItemText
+                primary="Personas"
+                sx={{ opacity: open ? 1 : 0 }}
+              />
+            </ListItemButton>
+          </ListItem>
+          <ListItem
+            key={"usuario"}
+            onClick={() => {
+              navigate("/usuario");
+            }}
+            disablePadding
+            sx={{ display: "block" }}
+          >
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? "initial" : "center",
+                px: 2.5,
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : "auto",
+                  justifyContent: "center",
+                  color: "white",
+                  paddingRight: "10px",
+                  width: 35,
+                }}
+              >
+                <AssignmentInd />
+              </ListItemIcon>
+              <ListItemText
+                primary="Usuarios"
+                sx={{ opacity: open ? 1 : 0 }}
+              />
+            </ListItemButton>
+          </ListItem>
+          <ListItem
+            key={"empresa"}
+            onClick={() => {
+              navigate("/empresa");
+            }}
+            disablePadding
+            sx={{ display: "block" }}
+          >
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? "initial" : "center",
+                px: 2.5,
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : "auto",
+                  justifyContent: "center",
+                  paddingRight: "10px",
+                  width: 35,
+                }}
+              >
+                <Business />
+              </ListItemIcon>
+              <ListItemText
+                primary="Empresas"
+                sx={{
+                  opacity: open ? 1 : 0,
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+          <ListItem
+            key={"ciudad"}
+            onClick={() => {
+              navigate("/ciudad");
+            }}
+            disablePadding
+            sx={{ display: "block" }}
+          >
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? "initial" : "center",
+                px: 2.5,
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : "auto",
+                  justifyContent: "center",
+                  paddingRight: "10px",
+                  width: 35,
+                }}
+              >
+                <HolidayVillage />
+              </ListItemIcon>
+              <ListItemText
+                primary="Ciudades"
+                sx={{
+                  opacity: open ? 1 : 0,
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+          <ListItem
+            key={"estado"}
+            onClick={() => {
+              navigate("/estado");
+            }}
+            disablePadding
+            sx={{ display: "block" }}
+          >
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? "initial" : "center",
+                px: 2.5,
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : "auto",
+                  justifyContent: "center",
+                  paddingRight: "10px",
+                  width: 35,
+                }}
+              >
+                <Approval />
+              </ListItemIcon>
+              <ListItemText
+                primary="Estados"
+                sx={{
+                  opacity: open ? 1 : 0,
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+          <ListItem
+            key={"servicio"}
+            onClick={() => {
+              navigate("/servicio");
+            }}
+            disablePadding
+            sx={{ display: "block" }}
+          >
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? "initial" : "center",
+                px: 2.5,
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : "auto",
+                  justifyContent: "center",
+                  paddingRight: "10px",
+                  width: 35,
+                }}
+              >
+                <DisplaySettings />
+              </ListItemIcon>
+              <ListItemText
+                primary="Servicios"
+                sx={{
+                  opacity: open ? 1 : 0,
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+          <ListItem
+            key={"orden"}
+            onClick={() => {
+              navigate("/orden");
+            }}
+            disablePadding
+            sx={{ display: "block" }}
+          >
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? "initial" : "center",
+                px: 2.5,
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : "auto",
+                  justifyContent: "center",
+                  paddingRight: "10px",
+                  width: 35,
+                }}
+              >
+                <ListAlt />
+              </ListItemIcon>
+              <ListItemText
+                primary="Ordenes"
+                sx={{
+                  opacity: open ? 1 : 0,
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        </List>
+        )}
+      </Drawer>
+      {/* <nav className="navbar navbar-expand navbar-dark bg-dark">
+        {console.log(currentMessage, "isModalClose:" + isModalOpen)}
+        <a href="/persona" className="navbar-brand">
+          Sigo
         </a>
-      </header>
+
+        {currentUser.isLoggedIn && currentUser.auth?.reset_password == 0 ? (
+          <>
+            <div className="navbar-nav mr-auto">
+              <li className="nav-item">
+                <Link to={"/persona"} className="nav-link">
+                  Personas
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to={"/persona/add"} className="nav-link">
+                  Agregar Persona
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to={"/usuario"} className="nav-link">
+                  Usuarios
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to={"/usuario/add"} className="nav-link">
+                  Agregar Usuario
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to={"/empresa"} className="nav-link">
+                  Empresas
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to={"/empresa/add"} className="nav-link">
+                  Agregar Empresa
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to={"/ciudad"} className="nav-link">
+                  Ciudades
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to={"/ciudad/add"} className="nav-link">
+                  Agregar Ciudad
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to={"/estado"} className="nav-link">
+                  Fases
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to={"/estado/add"} className="nav-link">
+                  Agregar Fase
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to={"/servicio"} className="nav-link">
+                  Servicios
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to={"/servicio/add"} className="nav-link">
+                  Agregar Servicio
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to={"/orden"} className="nav-link">
+                  Ordenes
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link to={"/orden/add"} className="nav-link">
+                  Agregar Ordenes
+                </Link>
+              </li>
+              <li className="nav-item" style={{ color: "#ffffff8c" }}>
+                <a className="nav-link">{`${currentUser?.auth?.persona?.nombres} ${currentUser?.auth?.persona?.apellidos}`}</a>
+              </li>
+              <li className="nav-item">
+                <a href="/usuario" className="nav-link">
+                  LogOut
+                </a>
+              </li>
+            </div>
+          </>
+        ) : (
+          <div className="navbar-nav ml-auto">
+            <li className="nav-item">
+              <Link to={"/login"} className="nav-link">
+                Login
+              </Link>
+            </li>
+          </div>
+        )}
+      </nav> */}
+
+      <Modal
+        show={isModalOpen}
+        onHide={handleClose}
+        aria-labelledby="contained-modal-title-vcenter"
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>{currentMessage.title}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{currentMessage.msg}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Cerrar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <div className="mt-2" style={{
+        marginLeft: (open ? drawerWidth : 65),
+        marginTop: "0px !important",
+        background: "#efefef",
+        minHeight: "100vh",
+      }}>
+        <DrawerHeader />
+        <Box
+          className="main-box"
+          component="main"
+          sx={{
+            flexGrow: 1,
+            p: 3,
+            width: { sm: `calc(100% )` },
+            /* height: "calc(100vh - 100px)", */
+            overflowY: "auto",
+            marginTop: "20px",
+          }}
+        >
+          <Routes>
+            <Route path="/" element={<PersonaList />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/changepassword" element={<ChangePassword />} />
+            <Route path="/persona" element={<PersonaList />} />
+            <Route path="/persona/add" element={<AddPersona />} />
+            <Route path="/persona/:id" element={<Persona />} />
+            <Route path="/usuario" element={<UsuarioList />} />
+            <Route path="/usuario/add" element={<AddUsuario />} />
+            <Route path="/usuario/:id" element={<Usuario />} />
+            <Route path="/empresa" element={<EmpresaList />} />
+            <Route path="/empresa/add" element={<AddEmpresa />} />
+            <Route path="/empresa/:id" element={<Empresa />} />
+            <Route path="/ciudad" element={<CiudadList />} />
+            <Route path="/ciudad/add" element={<AddCiudad />} />
+            <Route path="/ciudad/:id" element={<Ciudad />} />
+            <Route path="/estado" element={<FaseList />} />
+            <Route path="/estado/add" element={<AddFase />} />
+            <Route path="/estado/:id" element={<Fase />} />
+            <Route path="/servicio" element={<ServicioList />} />
+            <Route path="/servicio/add" element={<AddServicio />} />
+            <Route path="/servicio/:id" element={<Servicio />} />
+            <Route path="/orden" element={<OrdenList />} />
+            <Route path="/orden/add" element={<AddOrden />} />
+            <Route path="/orden/:id" element={<Orden />} />
+          </Routes>
+        </Box>
+      </div>
     </div>
   );
 }

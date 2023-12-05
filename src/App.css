@@ -24,6 +24,21 @@
   color: white;
 }
 
+.navSide div {
+  background-color: #3364FF;
+  color: white;
+}
+
+.navSide button:hover {
+  background-color: #00000033;
+}
+
+.navSide li div:hover div {
+  -webkit-text-decoration: none;
+  text-decoration: none;
+  background-color: rgb(0 0 0 / 0%);
+}
+
 .App-link {
   color: #61dafb;
 }
