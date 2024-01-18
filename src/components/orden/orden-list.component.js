@@ -11,9 +11,11 @@ import EnhancedTable from "../table/table";
 import { usePersonasTable } from "../../hooks/usePersonaTable";
 import {
   AccountBox,
+  Check,
   FilterAltOutlined,
   ListAlt,
   Person,
+  PictureAsPdf,
   Room,
   ScheduleSend,
   Today,
@@ -30,13 +32,17 @@ import {
 import { loadingTable } from "../../reducers/ui";
 import { SearchInput } from "../form/AutoCompleteInput";
 import { ordenFilterForm } from "../../helpers/forms";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+
+var doc = new jsPDF();
 
 const columnsOrden = [
-  {
+  /* {
     field: "id",
     headerName: "Id",
     flex: 1,
-  },
+  }, */
   {
     field: "guia",
     headerName: "Guia",
@@ -48,13 +54,13 @@ const columnsOrden = [
     renderFunction: (row) => {
       return (
         <List dense={true}>
-          <ListItem style={{ padding: "3px 6px" }}>
+          <ListItem style={{ padding: "3px 0px" }}>
             <ListItemIcon style={{ minWidth: 30 }}>
               <AccountBox />
             </ListItemIcon>
             <ListItemText primary={row.origen} />
           </ListItem>
-          <ListItem style={{ padding: "3px 6px" }}>
+          <ListItem style={{ padding: "3px 0px" }}>
             <ListItemIcon style={{ minWidth: 30 }}>
               <Room />
             </ListItemIcon>
@@ -71,13 +77,13 @@ const columnsOrden = [
     renderFunction: (row) => {
       return (
         <List dense={true}>
-          <ListItem style={{ padding: "3px 6px" }}>
+          <ListItem style={{ padding: "3px 0px" }}>
             <ListItemIcon style={{ minWidth: 30 }}>
               <AccountBox />
             </ListItemIcon>
             <ListItemText primary={row.destino} />
           </ListItem>
-          <ListItem style={{ padding: "3px 6px" }}>
+          <ListItem style={{ padding: "3px 0px" }}>
             <ListItemIcon style={{ minWidth: 30 }}>
               <Room />
             </ListItemIcon>
@@ -94,8 +100,8 @@ const columnsOrden = [
     type: "render",
     renderFunction: (row) => {
       return (
-        <List style={{ padding: "3px 6px" }} dense={true}>
-          <ListItem style={{ padding: "3px 6px" }}>
+        <List style={{ padding: "3px 0px" }} dense={true}>
+          <ListItem style={{ padding: "3px 0px" }}>
             <ListItemIcon style={{ minWidth: 30 }}>
               <Today />
             </ListItemIcon>
@@ -104,7 +110,7 @@ const columnsOrden = [
               primary={row.fechaRecepcion}
             />
           </ListItem>
-          <ListItem style={{ padding: "3px 6px" }}>
+          <ListItem style={{ padding: "3px 0px" }}>
             <ListItemIcon style={{ minWidth: 30 }}>
               <ScheduleSend />
             </ListItemIcon>
@@ -169,18 +175,6 @@ const columnsOrden = [
     flex: 1,
   }, */
   {
-    field: "costo",
-    headerName: "Costo",
-    type: "price",
-    style: { textAlign: "right" },
-  },
-  {
-    field: "precio",
-    headerName: "Precio",
-    type: "price",
-    style: { textAlign: "right" },
-  },
-  {
     field: "empresa",
     headerName: "Empresa",
     type: "render",
@@ -203,6 +197,20 @@ const columnsOrden = [
     renderFunction: (row) => {
       return row.fase?.nombre;
     },
+  },
+  {
+    field: "costo",
+    headerName: "Costo",
+    type: "price",
+    numeric: true,
+    style: { textAlign: "right" },
+  },
+  {
+    field: "precio",
+    headerName: "Precio",
+    type: "price",
+    numeric: true,
+    style: { textAlign: "right" },
   },
   /* {
     field: "ciudadOrigen",
@@ -237,8 +245,10 @@ const OrdenList = (props) => {
   const [empresaSelect, setEmpresaSelect] = useState([]);
   const [servicioSelect, setServicioSelect] = useState([]);
   const [faseSelect, setFaseSelect] = useState([]);
+  const [printPdf, setPrintPdf] = useState(false);
 
   const [filtersLoaded, setFiltersLoaded] = useState(false);
+  const [selected, setSelected] = useState([]);
 
   const loadSelects = () => {
     CiudadDataService.getSelect()
@@ -293,6 +303,10 @@ const OrdenList = (props) => {
     }
   };
 
+  const handleSelected = (items) => {
+    setSelected(items)
+  }
+
   const handleInputChange = async (event) => {
     const { id, value } = event.target;
     console.log(form, event.target, id, value);
@@ -313,6 +327,106 @@ const OrdenList = (props) => {
       });
   };
 
+  const downloadPdf = () => {
+    doc = new jsPDF();
+
+    setPrintPdf(true);
+    setTimeout(() => {
+      doc.setFont("helvetica");
+      doc.setFontSize(9);
+      autoTable(doc, {
+        html: "#reportTable",
+        margin: { top: 28 },
+        styles: { fontSize: 8 },
+        didDrawPage: header,
+      });
+      doc.save(`Reporte.pdf`);
+    }, 0);
+  };
+
+  var header = function (data) {
+    doc.setFontSize(5);
+    doc.addImage(
+      "/assets/logo-goya.png",
+      "JPEG",
+      data.settings.margin.left,
+      10,
+      38,
+      10
+    );
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text(
+      "Reporte de " + ("PRUEBA").toLowerCase(),
+      doc.internal.pageSize.width - 15,
+      10,
+      {
+        align: "right",
+      }
+    );
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.text(
+      "2023-12-01" + " a " + "2023-12-12",
+      doc.internal.pageSize.width - 15,
+      15,
+      {
+        align: "right",
+      }
+    );
+    doc.setFontSize(8);
+    doc.text(
+      "Red Efectiva SA de CV",
+      55,
+      11,
+      {
+        align: "left",
+      }
+    );
+    doc.text(
+      "Blvd. Antonio L. Rdz. 3058 Suite 201-A",
+      55,
+      14,
+      {
+        align: "left",
+      }
+    );
+    doc.text(
+      "Colonia Santa Maria",
+      55,
+      17,
+      {
+        align: "left",
+      }
+    );
+    doc.text(
+      "Monterrey, N.L. C.P. 64650",
+      55,
+      20,
+      {
+        align: "left",
+      }
+    );
+
+    //FOOTER
+    const pageCount = doc.internal.getNumberOfPages();
+
+    for (var i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFont("helvetica");
+      doc.setFontSize(8);
+      doc.text(
+        "Página " + String(i) + " de " + String(pageCount),
+        doc.internal.pageSize.width - 10,
+        290,
+        {
+          align: "right",
+        }
+      );
+    }
+  };
+
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
       <Card
@@ -330,9 +444,7 @@ const OrdenList = (props) => {
             pages: ordenes.pages,
             total: ordenes.total,
           }}
-          sx
           noDataMessage={"Por el momento no existen registros."}
-          /* loading={isLoadingTable} */
           view={true}
           onViewFunction={(id, row) => {
             navigate(`/orden/${id}`);
@@ -350,6 +462,9 @@ const OrdenList = (props) => {
           loading={isLoadingTable}
           getFilters={getFilters}
           orderASC="asc"
+          showCheckboxes={true}
+          selected={selected}
+          setSelected={handleSelected}
           add={true}
           onAddFunction={() => {
             navigate("/orden/add");
@@ -462,6 +577,18 @@ const OrdenList = (props) => {
               </Grid>
             </Grid>
           )}
+          selectedItemsButtons={
+            <Button
+              variant="contained"
+              startIcon={<PictureAsPdf />}
+              onClick={() => {
+                console.log("handleSelect ");
+                downloadPdf();
+             }}
+            >
+              Generar
+            </Button>
+          }
         />
       </Card>
     </div>

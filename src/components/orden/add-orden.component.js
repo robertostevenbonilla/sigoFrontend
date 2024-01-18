@@ -23,7 +23,11 @@ const AddOrden = () => {
   const { id } = useParams();
   let navigate = useNavigate();
   const dispatch = useDispatch();
-  const [form, setForm] = useState(ordenForm);
+  const [form, setForm] = useState({
+    ...ordenForm,
+    fechaRecepcion: moment(),
+    fechaEntrega: moment(),
+  });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [ciudadSelect, setCiudadSelect] = useState([]);
@@ -213,6 +217,7 @@ const AddOrden = () => {
                       moment(e["$d"]).format("YYYY-MM-DD")
                     )
                   }
+                  disablePast={true}
                 />
               </LocalizationProvider>
             </Grid>
@@ -238,96 +243,135 @@ const AddOrden = () => {
                       moment(e["$d"]).format("YYYY-MM-DD")
                     )
                   }
+                  disablePast={true}
                 />
               </LocalizationProvider>
             </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="origen"
-                name="origen"
-                label="Origen"
-                value={form.origen}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-              />
+            <Grid container className="subGrid">
+              <h2 className="card__title">Origen</h2>
+              <Grid item className="sGitem">
+                <TextField
+                  id="origen"
+                  name="origen"
+                  label="Origen"
+                  value={form.origen}
+                  onChange={handleInputChange}
+                  variant="outlined"
+                  fullWidth
+                />
+              </Grid>
+              <Grid item className="sGitem">
+                <TextField
+                  id="direccionOrigen"
+                  name="direccionOrigen"
+                  label="Dirección Remitente"
+                  value={form.direccionOrigen}
+                  onChange={handleInputChange}
+                  variant="outlined"
+                  fullWidth
+                />
+              </Grid>
+              <Grid item className="sGitem">
+                <TextField
+                  id="remitente"
+                  name="remitente"
+                  label="Remitente"
+                  value={form.remitente}
+                  onChange={handleInputChange}
+                  variant="outlined"
+                  fullWidth
+                />
+              </Grid>
+              <Grid item className="sGitem">
+                <TextField
+                  id="telefonoRemitente"
+                  name="telefonoRemitente"
+                  label="Telefono Remitente"
+                  value={form.telefonoRemitente}
+                  onChange={handleInputChange}
+                  variant="outlined"
+                  fullWidth
+                />
+              </Grid>
+              <Grid item className="sGitem">
+                <SearchInput
+                  options={[
+                    { id: -1, nombre: "Seleccione una ciudad" },
+                    ...ciudadSelect,
+                  ]}
+                  value={form.ciudadOrigenId}
+                  placeholder={"Seleccione una ciudad"}
+                  id={"ciudadOrigenId"}
+                  name={"ciudadOrigenId"}
+                  label={"Ciudad Origen"}
+                  getOptionLabel={"nombre"}
+                  getIndexLabel={"id"}
+                  onChange={handleInputChange}
+                />
+              </Grid>
             </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="destino"
-                name="destino"
-                label="Destino"
-                value={form.destino}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="direccionOrigen"
-                name="direccionOrigen"
-                label="Dirección Remitente"
-                value={form.direccionOrigen}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="direccionDestino"
-                name="direccionDestino"
-                label="Dirección Destinario"
-                value={form.direccionDestino}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="remitente"
-                name="remitente"
-                label="Remitente"
-                value={form.remitente}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="destinatario"
-                name="destinatario"
-                label="Destinatario"
-                value={form.destinatario}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="telefonoRemitente"
-                name="telefonoRemitente"
-                label="Telefono Remitente"
-                value={form.telefonoRemitente}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="telefonoDestinatario"
-                name="telefonoDestinatario"
-                label="Telefono Destinatario"
-                value={form.telefonoDestinatario}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-              />
+            <Grid container className="subGrid">
+              <h2 className="card__title">Destino</h2>
+              <Grid item className="sGitem">
+                <TextField
+                  id="destino"
+                  name="destino"
+                  label="Destino"
+                  value={form.destino}
+                  onChange={handleInputChange}
+                  variant="outlined"
+                  fullWidth
+                />
+              </Grid>
+              <Grid item className="sGitem">
+                <TextField
+                  id="direccionDestino"
+                  name="direccionDestino"
+                  label="Dirección Destinario"
+                  value={form.direccionDestino}
+                  onChange={handleInputChange}
+                  variant="outlined"
+                  fullWidth
+                />
+              </Grid>
+              <Grid item className="sGitem">
+                <TextField
+                  id="destinatario"
+                  name="destinatario"
+                  label="Destinatario"
+                  value={form.destinatario}
+                  onChange={handleInputChange}
+                  variant="outlined"
+                  fullWidth
+                />
+              </Grid>
+              <Grid item className="sGitem">
+                <TextField
+                  id="telefonoDestinatario"
+                  name="telefonoDestinatario"
+                  label="Telefono Destinatario"
+                  value={form.telefonoDestinatario}
+                  onChange={handleInputChange}
+                  variant="outlined"
+                  fullWidth
+                />
+              </Grid>
+              <Grid item className="sGitem">
+                <SearchInput
+                  options={[
+                    { id: -1, nombre: "Seleccione una ciudad" },
+                    ...ciudadSelect,
+                  ]}
+                  value={form.ciudadDestinoId}
+                  placeholder={"Seleccione una ciudad"}
+                  id={"ciudadDestinoId"}
+                  name={"ciudadDestinoId"}
+                  label={"Ciudad Destino"}
+                  getOptionLabel={"nombre"}
+                  getIndexLabel={"id"}
+                  onChange={handleInputChange}
+                />
+              </Grid>
             </Grid>
             <Grid item md={6} sm={6} xs={12}>
               <TextField
@@ -342,10 +386,10 @@ const AddOrden = () => {
             </Grid>
             <Grid item md={6} sm={6} xs={12}>
               <TextField
-                id="descripcion"
-                name="descripcion"
-                label="Descripción"
-                value={form.descripcion}
+                id="costo"
+                name="costo"
+                label="Costo envio"
+                value={form.costo}
                 onChange={handleInputChange}
                 variant="outlined"
                 fullWidth
@@ -411,35 +455,38 @@ const AddOrden = () => {
               />
             </Grid>
             <Grid item md={6} sm={6} xs={12}>
-              <SearchInput
-                options={[
-                  { id: -1, nombre: "Seleccione una ciudad" },
-                  ...ciudadSelect,
-                ]}
-                value={form.ciudadOrigenId}
-                placeholder={"Seleccione una ciudad"}
-                id={"ciudadOrigenId"}
-                name={"ciudadOrigenId"}
-                label={"Ciudad Origen"}
-                getOptionLabel={"nombre"}
-                getIndexLabel={"id"}
+              <TextField
+                id="producto"
+                name="producto"
+                label="Producto"
+                value={form.producto}
                 onChange={handleInputChange}
+                variant="outlined"
+                fullWidth
               />
             </Grid>
             <Grid item md={6} sm={6} xs={12}>
-              <SearchInput
-                options={[
-                  { id: -1, nombre: "Seleccione una ciudad" },
-                  ...ciudadSelect,
-                ]}
-                value={form.ciudadDestinoId}
-                placeholder={"Seleccione una ciudad"}
-                id={"ciudadDestinoId"}
-                name={"ciudadDestinoId"}
-                label={"Ciudad Destino"}
-                getOptionLabel={"nombre"}
-                getIndexLabel={"id"}
+              <TextField
+                id="precio"
+                name="precio"
+                label="Precio producto"
+                value={form.precio}
                 onChange={handleInputChange}
+                variant="outlined"
+                fullWidth
+              />
+            </Grid>
+            <Grid item md={12} sm={12} xs={12}>
+              <TextField
+                id="descripcion"
+                name="descripcion"
+                label="Descripción"
+                value={form.descripcion}
+                onChange={handleInputChange}
+                variant="outlined"
+                fullWidth
+                multiline
+                rows={3}
               />
             </Grid>
             <Grid item md={12} sm={12} xs={12} className="text-start">

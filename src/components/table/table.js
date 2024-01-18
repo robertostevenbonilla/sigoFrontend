@@ -230,9 +230,11 @@ function EnhancedTableHead(props) {
               sortDirection={orderBy === headCell.field ? order : false}
               style={{
                 flexGrow: headCell.flex,
+                padding: "16px 8px",
                 ...(headCell.style ? headCell.style : {}),
               }}
             >
+              {console.log(headCell)}
               <TableSortLabel
                 active={orderBy === headCell.field}
                 direction={orderBy === headCell.field ? order : "asc"}
@@ -479,32 +481,17 @@ function EnhancedTableToolbar(props) {
     <>
       <Toolbar
         sx={{
-          width: "100%",
+          width: "calc(100% - 32px)",
+          margin: "2px 16px",
           borderRadius: "8px",
           display: "flex",
           justifyContent: "space-between",
           pl: { sm: numSelected > 0 ? 2 : 1 },
           pr: { xs: 1, sm: 1 },
           mb: 2,
-          ...(numSelected > 0 && {
-            bgcolor: (theme) =>
-              alpha(
-                theme.palette.primary.main,
-                theme.palette.action.activatedOpacity
-              ),
-          }),
         }}
       >
-        {numSelected > 0 ? (
-          <Typography
-            sx={{ flex: "1 1 100%" }}
-            color="inherit"
-            variant="subtitle1"
-            component="div"
-          >
-            {numSelected} seleccionado{numSelected > 1 ? "s" : ""}
-          </Typography>
-        ) : isModalTable ? (
+        {isModalTable ? (
           modalFilters ?? (
             <Grid item container sm={6} alignItems={"center"}>
               {icon ? (
@@ -568,49 +555,46 @@ function EnhancedTableToolbar(props) {
           </Grid>
         )}
 
-        {numSelected > 0 ? (
-          <>{selectedItemsButtons}</>
-        ) : (
-          <Grid
-            item
-            xs={6}
-            container
-            spacing={1}
-            justifyContent={"flex-end"}
-            alignItems={"center"}
-          >
-            {extraButtons}
-            {isModalTable && (
-              <SearchModal>
-                <SearchIconWrapper>
-                  <SearchIcon />
-                </SearchIconWrapper>
-                <StyledInputBase
-                  value={search}
-                  placeholder="Buscar..."
-                  style={{ width: 250 }}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </SearchModal>
-            )}
-            {showAddButton && (
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                sx={{ marginLeft: 2 }}
-                onClick={props.onAddFunction}
-              >
-                Agregar
-              </Button>
-            )}
-          </Grid>
-        )}
+        <Grid
+          item
+          xs={6}
+          container
+          spacing={1}
+          justifyContent={"flex-end"}
+          alignItems={"center"}
+        >
+          {extraButtons}
+          {isModalTable && (
+            <SearchModal>
+              <SearchIconWrapper>
+                <SearchIcon />
+              </SearchIconWrapper>
+              <StyledInputBase
+                value={search}
+                placeholder="Buscar..."
+                style={{ width: 250 }}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </SearchModal>
+          )}
+          {showAddButton && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              sx={{ marginLeft: 2 }}
+              onClick={props.onAddFunction}
+            >
+              Agregar
+            </Button>
+          )}
+        </Grid>
       </Toolbar>
       {extraFilters && (
         <Paper
           elevation={3}
           sx={{
-            width: "100%",
+            width: "calc(100% - 32px)",
+            margin: "2.5px 16px",
             borderRadius: "8px",
             display: "flex",
             justifyContent: "space-between",
@@ -627,6 +611,38 @@ function EnhancedTableToolbar(props) {
             {extraFilters(resetPagination)}
           </Collapse>
         </Paper>
+      )}
+      {numSelected > 0 && (
+        <Toolbar
+          sx={{
+            width: "calc(100% - 32px)",
+            margin: "2.5px 16px",
+            borderRadius: "8px",
+            display: "flex",
+            justifyContent: "space-between",
+            pl: { sm: numSelected > 0 ? 2 : 1 },
+            pr: { xs: 1, sm: 1 },
+            mb: 2,
+            ...(numSelected > 0 && {
+              bgcolor: (theme) =>
+                alpha(
+                  theme.palette.primary.main,
+                  theme.palette.action.activatedOpacity
+                ),
+            }),
+          }}
+        >
+          <Typography
+            sx={{ flex: "1 1 100%" }}
+            color="inherit"
+            variant="subtitle1"
+            component="div"
+          >
+            {numSelected} seleccionado{numSelected > 1 ? "s" : ""}
+          </Typography>
+
+          {numSelected > 0 ? <>{selectedItemsButtons}</> : <></>}
+        </Toolbar>
       )}
     </>
   );
@@ -855,10 +871,7 @@ export default function EnhancedTable(props) {
     const perPage = parseInt(event.target.value, 10);
     if (paginationServer) handlePagination(0, perPage);
     if (!disablePathParameters)
-      navigate(
-        location.pathname +
-          `?page=${page + 1}&rowsPerPage=${perPage}`
-      );
+      navigate(location.pathname + `?page=${page + 1}&rowsPerPage=${perPage}`);
     setRowsPerPage(perPage);
     setPage(0);
   };
@@ -982,38 +995,37 @@ export default function EnhancedTable(props) {
 
   const getRows = () => {
     let rows = stableSort(dataTable?.rows, getComparator(order, orderBy));
-    if (!paginationServer){
+    if (!paginationServer) {
       rows = rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     }
-    return rows
-      .map((row, index) => {
-        const isItemSelected = isSelected(row[rowId]);
-        const labelId = `enhanced-table-checkbox-${index}`;
-        const isExpandable =
-          row[rowId] ===
-          (expandableItem !== null ? expandableItem : innerExpandableTable);
-        return (
-          <EnhancedTableRow
-            isItemSelected={isItemSelected}
-            row={row}
-            rowId={rowId}
-            handleClick={handleClick}
-            labelId={labelId}
-            columns={dataTable.columns}
-            showCheckboxes={showCheckboxes}
-            disableCheckboxes={disableCheckboxes}
-            disableButtons={disableButtons}
-            showExpandableTable={showExpandableTable}
-            expandable={isExpandable}
-            setExpandable={
-              setExpandableItem ? setExpandableItem : setInnerExpandableTable
-            }
-            expandedItems={expandedItems}
-            buttons={getButtons(row[rowId], row)}
-            expandibleButtonPosition={expandibleButtonPosition}
-          />
-        );
-      });
+    return rows.map((row, index) => {
+      const isItemSelected = isSelected(row[rowId]);
+      const labelId = `enhanced-table-checkbox-${index}`;
+      const isExpandable =
+        row[rowId] ===
+        (expandableItem !== null ? expandableItem : innerExpandableTable);
+      return (
+        <EnhancedTableRow
+          isItemSelected={isItemSelected}
+          row={row}
+          rowId={rowId}
+          handleClick={handleClick}
+          labelId={labelId}
+          columns={dataTable.columns}
+          showCheckboxes={showCheckboxes}
+          disableCheckboxes={disableCheckboxes}
+          disableButtons={disableButtons}
+          showExpandableTable={showExpandableTable}
+          expandable={isExpandable}
+          setExpandable={
+            setExpandableItem ? setExpandableItem : setInnerExpandableTable
+          }
+          expandedItems={expandedItems}
+          buttons={getButtons(row[rowId], row)}
+          expandibleButtonPosition={expandibleButtonPosition}
+        />
+      );
+    });
   };
 
   return (
@@ -1054,7 +1066,7 @@ export default function EnhancedTable(props) {
       <Paper
         elevation={isModalTable ? 0 : 3}
         sx={{
-          width: "100%",
+          width: "calc(100% - 32px)",
           mb: isModalTable ? 0 : 2,
           padding: 1,
           margin: "10px 16px",
@@ -1104,7 +1116,7 @@ export default function EnhancedTable(props) {
                   );
                 })
               ) : dataTable.rows?.length > 0 ? (
-                getRows() 
+                getRows()
               ) : (
                 <TableRow>
                   <TableCell colSpan={dataTable.columns.length}>
@@ -1125,7 +1137,7 @@ export default function EnhancedTable(props) {
         container
         justifyContent={"space-between"}
         alignItems={"center"}
-        style={{ padding: 15 }}
+        style={{ padding: "8px", margin: "10px 16px" }}
       >
         <Grid item>
           <Grid container alignItems={"center"}>

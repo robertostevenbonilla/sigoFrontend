@@ -43,6 +43,20 @@
   color: #61dafb;
 }
 
+.subGrid {
+  padding: 8px;
+  background: #e6f1f7;
+  border-radius: 7px;
+  margin: 8px 0px 0px 8px;
+  width: calc(50% - 8px) !important;
+  padding: 8px;
+}
+
+.sGitem {
+  width: 100%;
+  padding-top: 8px;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
