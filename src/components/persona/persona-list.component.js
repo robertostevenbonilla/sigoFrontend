@@ -42,7 +42,7 @@ const columnsPersona = [
     flex: 2,
     type: "render",
     renderFunction: (row) => {
-      return row.Empresa?.nombre;
+      return row.empresa?.nombre;
     },
   },
 ];

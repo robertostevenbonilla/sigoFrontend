@@ -47,6 +47,7 @@ const Usuario = () => {
   const getUsuario = (id) => {
     UsuarioDataService.get(id)
       .then((response) => {
+        response.data.roles = response.data.roles.map( role =>role.name)
         setForm(response.data);
         setEmpresaSelect(response.data.persona.empresa.nombre);
         console.log(response, response.data);
