@@ -234,7 +234,7 @@ function EnhancedTableHead(props) {
                 ...(headCell.style ? headCell.style : {}),
               }}
             >
-              {console.log(headCell)}
+              {/* {console.log(headCell)} */}
               <TableSortLabel
                 active={orderBy === headCell.field}
                 direction={orderBy === headCell.field ? order : "asc"}

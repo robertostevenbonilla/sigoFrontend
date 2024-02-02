@@ -98,7 +98,27 @@ const AddOrden = () => {
   const handleInputChange = async (event) => {
     const { id, value } = event.target;
     console.log(form, event.target, id, value);
-    setForm({ ...form, [id]: value });
+    if (id === "empresaId" && value > 0) {
+      console.log("gui", value);
+      var response = await EmpresaDataService.findGuia(value)
+        /* .then((response) => {
+          var guia = (response.codigo+(((response.Guia)*1)+1));
+          console.log("guia", response, guia);
+          setForm({ ...form, "guia": guia });
+        }) */
+        .catch((error) => {
+          console.error(error);
+        });
+      response = response.data;
+      var guia = response.codigo + (response.Guias * 1 + 1);
+      console.log("guia", response, guia);
+      //setForm({ ...form, [id]: value });
+      setForm({ ...form, [id]: value, guia: guia });
+    } else if (id === "empresaId" && value <= 0) {
+      setForm({ ...form, [id]: value, guia: "" });
+    } else {
+      setForm({ ...form, [id]: value });
+    }
   };
 
   const handleSearchInputChange = async (event) => {
@@ -145,6 +165,7 @@ const AddOrden = () => {
       guia: form.guia,
       costo: form.costo,
       precio: form.precio,
+      producto: form.producto,
       empresaId: form.empresaId,
       servicioId: form.servicioId,
       faseId: form.faseId,
@@ -174,6 +195,7 @@ const AddOrden = () => {
 
   const newUsuario = () => {
     console.log(form);
+    setForm({ ...ordenForm, fechaRecepcion: moment(), fechaEntrega: moment() });
     setSubmitted(false);
   };
 
@@ -247,6 +269,34 @@ const AddOrden = () => {
                 />
               </LocalizationProvider>
             </Grid>
+            <Grid item md={6} sm={6} xs={12}>
+              <TextField
+                id="guia"
+                name="guia"
+                label="Guía"
+                value={form.guia}
+                onChange={handleInputChange}
+                variant="outlined"
+                fullWidth
+                disabled={true}
+              />
+            </Grid>
+            <Grid item md={6} sm={6} xs={12}>
+              <SearchInput
+                options={[
+                  { id: -1, nombre: "Seleccione una empresa" },
+                  ...empresaSelect,
+                ]}
+                value={form.empresaId}
+                placeholder={"Seleccione una empresa"}
+                id={"empresaId"}
+                name={"empresaId"}
+                label={"Empresa"}
+                getOptionLabel={"nombre"}
+                getIndexLabel={"id"}
+                onChange={handleInputChange}
+              />
+            </Grid>
             <Grid container className="subGrid">
               <h2 className="card__title">Origen</h2>
               <Grid item className="sGitem">
@@ -275,7 +325,7 @@ const AddOrden = () => {
                 <TextField
                   id="remitente"
                   name="remitente"
-                  label="Remitente"
+                  label="Envia"
                   value={form.remitente}
                   onChange={handleInputChange}
                   variant="outlined"
@@ -338,7 +388,7 @@ const AddOrden = () => {
                 <TextField
                   id="destinatario"
                   name="destinatario"
-                  label="Destinatario"
+                  label="Recibe"
                   value={form.destinatario}
                   onChange={handleInputChange}
                   variant="outlined"
@@ -393,33 +443,6 @@ const AddOrden = () => {
                 onChange={handleInputChange}
                 variant="outlined"
                 fullWidth
-              />
-            </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="guia"
-                name="guia"
-                label="Guía"
-                value={form.guia}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <SearchInput
-                options={[
-                  { id: -1, nombre: "Seleccione una empresa" },
-                  ...empresaSelect,
-                ]}
-                value={form.empresaId}
-                placeholder={"Seleccione una empresa"}
-                id={"empresaId"}
-                name={"empresaId"}
-                label={"Empresa"}
-                getOptionLabel={"nombre"}
-                getIndexLabel={"id"}
-                onChange={handleInputChange}
               />
             </Grid>
             <Grid item md={6} sm={6} xs={12}>

@@ -35,7 +35,9 @@ const findByNombre = async (nombres) => {
   return await http.get(`/empresa/list?nombre=${nombres}`, { headers: {...header()} });
 }
 
-
+const findGuia = async (id) => {
+  return await http.get(`/empresa/${id}/guia`, { headers: {...header()} });
+}
 
 const EmpresaDataService = {
   getAll,
@@ -46,6 +48,7 @@ const EmpresaDataService = {
   deleted,
   findByCodigo,
   findByNombre,
+  findGuia,
 }
 
 export default EmpresaDataService;

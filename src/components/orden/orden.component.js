@@ -48,7 +48,6 @@ const Orden = () => {
   const loadSelects = () => {
     CiudadDataService.getSelect()
       .then((response) => {
-        console.log("ciudad", response);
         setCiudadSelect(response.data);
       })
       .catch((error) => {
@@ -56,7 +55,6 @@ const Orden = () => {
       });
     EmpresaDataService.getSelect()
       .then((response) => {
-        console.log("empresa", response);
         setEmpresaSelect(response.data);
       })
       .catch((error) => {
@@ -64,7 +62,6 @@ const Orden = () => {
       });
     ServicioDataService.getSelect()
       .then((response) => {
-        console.log("servicio", response);
         setServicioSelect(response.data);
       })
       .catch((error) => {
@@ -72,7 +69,6 @@ const Orden = () => {
       });
     FaseDataService.getSelect()
       .then((response) => {
-        console.log("fase", response);
         setFaseSelect(response.data);
       })
       .catch((error) => {
@@ -128,8 +124,8 @@ const Orden = () => {
   };
 
   const handleEdited = () => {
-    setEdited(!edited);
     console.log(form);
+    setEdited(!edited);
   };
 
   const handleSave = () => {
@@ -244,8 +240,35 @@ const Orden = () => {
               />
             </LocalizationProvider>
           </Grid>
-          {/* <Grid container md={6} sm={6} xs={12} style={{paddingLeft: 8, paddingTop: 8}}>
-            <Grid item md={12} sm={12} xs={12}> */}
+          <Grid item md={6} sm={6} xs={12}>
+            <TextField
+              id="guia"
+              name="guia"
+              label="Guía"
+              value={form.guia}
+              onChange={handleInputChange}
+              variant="outlined"
+              fullWidth
+              disabled={true}
+            />
+          </Grid>
+          <Grid item md={6} sm={6} xs={12}>
+            <SearchInput
+              options={[
+                { id: -1, nombre: "Seleccione una empresa" },
+                ...empresaSelect,
+              ]}
+              value={form.empresaId}
+              placeholder={"Seleccione una empresa"}
+              id={"empresaId"}
+              name={"empresaId"}
+              label={"Empresa"}
+              getOptionLabel={"nombre"}
+              getIndexLabel={"id"}
+              onChange={handleInputChange}
+              disabled={true}
+            />
+          </Grid>
           <Grid container className="subGrid">
             <h2 className="card__title">Origen</h2>
             <Grid item className="sGitem">
@@ -404,36 +427,6 @@ const Orden = () => {
               onChange={handleInputChange}
               variant="outlined"
               fullWidth
-              disabled={edited}
-            />
-          </Grid>
-          <Grid item md={6} sm={6} xs={12}>
-            <TextField
-              type="number"
-              id="guia"
-              name="guia"
-              label="Guía"
-              value={form.guia}
-              onChange={handleInputChange}
-              variant="outlined"
-              fullWidth
-              disabled={edited}
-            />
-          </Grid>
-          <Grid item md={6} sm={6} xs={12}>
-            <SearchInput
-              options={[
-                { id: -1, nombre: "Seleccione una empresa" },
-                ...empresaSelect,
-              ]}
-              value={form.empresaId}
-              placeholder={"Seleccione una empresa"}
-              id={"empresaId"}
-              name={"empresaId"}
-              label={"Empresa"}
-              getOptionLabel={"nombre"}
-              getIndexLabel={"id"}
-              onChange={handleInputChange}
               disabled={edited}
             />
           </Grid>

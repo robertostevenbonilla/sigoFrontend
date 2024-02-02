@@ -72,6 +72,7 @@ export const ordenForm = {
     guia: '',
     costo: 0,
     precio: 0,
+    producto: '',
     empresaId: null,
     servicioId: null,
     faseId: null,
