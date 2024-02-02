@@ -23,7 +23,7 @@ export const SearchInput = ({
   useEffect(() => {
     setItem(
       options.find((i) => {
-        console.log(getIndexLabel, i, value);
+        //console.log(getIndexLabel, i, value);
         return i[getIndexLabel ? getIndexLabel : "id"] === value
       })
     );

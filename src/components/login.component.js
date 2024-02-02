@@ -2,11 +2,9 @@ import React, { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate, useNavigate } from "react-router-dom";
 
-import Form from "react-validation/build/form";
-import Input from "react-validation/build/input";
-import CheckButton from "react-validation/build/button";
-
 import { UserAuth } from "../actions/auth";
+import { Form } from "react-bootstrap";
+import { Input } from "@mui/material";
 
 const required = (value) => {
   if (!value) {
@@ -49,9 +47,9 @@ const Login = (props) => {
 
     setLoading(true);
 
-    form.current.validateAll();
+    //form.current.validateAll();
 
-    if (checkBtn.current.context._errors.length === 0) {
+    //if (checkBtn.current.context._errors.length === 0) {
       const data = {
         username: username,
         password: password,
@@ -66,9 +64,9 @@ const Login = (props) => {
           console.log("catch",res);
           setLoading(false);
         });
-    } else {
+    /* } else {
       setLoading(false);
-    }
+    } */
   };
 
   if (isLoggedIn) {
@@ -127,7 +125,7 @@ const Login = (props) => {
               </div>
             </div>
           )}
-          <CheckButton style={{ display: "none" }} ref={checkBtn} />
+          {/* <CheckButton style={{ display: "none" }} ref={checkBtn} /> */}
         </Form>
       </div>
     </div>
