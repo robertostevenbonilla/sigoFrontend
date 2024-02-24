@@ -14,6 +14,7 @@ import {
   Check,
   FilterAltOutlined,
   ListAlt,
+  Pages,
   Person,
   PictureAsPdf,
   Room,
@@ -21,8 +22,10 @@ import {
   Today,
 } from "@mui/icons-material";
 import {
+  Box,
   Button,
   Card,
+  Container,
   Grid,
   List,
   ListItem,
@@ -33,7 +36,14 @@ import { loadingTable } from "../../reducers/ui";
 import { SearchInput } from "../form/AutoCompleteInput";
 import { ordenFilterForm } from "../../helpers/forms";
 import jsPDF from "jspdf";
+
+import { PdfPage } from "../form/PdfPage";
+
 import autoTable from "jspdf-autotable";
+import logo from "./../../assets/logo-goya.png";
+import QRCode from "react-qr-code";
+import HTMLComment from "../../hooks/HTMLComment";
+import html2canvas from "html2canvas";
 
 var doc = new jsPDF();
 
@@ -179,7 +189,7 @@ const columnsOrden = [
     headerName: "Empresa",
     type: "render",
     renderFunction: (row) => {
-      return row.empresa?.nombre;
+      return row.Empresa?.nombre;
     },
   },
   {
@@ -187,7 +197,7 @@ const columnsOrden = [
     headerName: "Servicio",
     type: "render",
     renderFunction: (row) => {
-      return row.servicio?.nombre;
+      return row.Servicio?.nombre;
     },
   },
   {
@@ -195,7 +205,7 @@ const columnsOrden = [
     headerName: "Estado",
     type: "render",
     renderFunction: (row) => {
-      return row.fase?.nombre;
+      return row.Fase?.nombre;
     },
   },
   {
@@ -249,6 +259,7 @@ const OrdenList = (props) => {
 
   const [filtersLoaded, setFiltersLoaded] = useState(false);
   const [selected, setSelected] = useState([]);
+  const [selectedObj, setSelectedObj] = useState([]);
 
   const loadSelects = () => {
     CiudadDataService.getSelect()
@@ -304,8 +315,12 @@ const OrdenList = (props) => {
   };
 
   const handleSelected = (items) => {
-    setSelected(items)
-  }
+    setSelected(items);
+  };
+
+  const handleSelectedObj = (items) => {
+    setSelectedObj(items);
+  };
 
   const handleInputChange = async (event) => {
     const { id, value } = event.target;
@@ -328,7 +343,7 @@ const OrdenList = (props) => {
   };
 
   const downloadPdf = () => {
-    doc = new jsPDF();
+    /* doc = new jsPDF();
 
     setPrintPdf(true);
     setTimeout(() => {
@@ -338,10 +353,42 @@ const OrdenList = (props) => {
         html: "#reportTable",
         margin: { top: 28 },
         styles: { fontSize: 8 },
-        didDrawPage: header,
+        /* didDrawPage: header, * /
       });
       doc.save(`Reporte.pdf`);
-    }, 0);
+    }, 0); */
+
+    /* const domElement=document.querySelector('#reportTable')
+    html2canvas(domElement, { onclose: (document)=>{
+    document.querySelector('#save-button').style.visibility='hidden'
+    }})
+    .then((canvas)=>{
+      const imgData=canvas.toDataURL('image/jpeg')
+      const pdf=new jsPDF()
+      pdf.addImage(imgData, 'JPEG',0,0,width,height)
+      pdf.save('filename.pdf')
+    }) */
+
+    //const content = pdfRef.current;
+
+    var svgElements = document.body.querySelectorAll('svg');
+    svgElements.forEach(function(item) {
+      item.setAttribute("width", item.getBoundingClientRect().width);
+      item.setAttribute("height", item.getBoundingClientRect().height);
+      item.style.width = null;
+      item.style.height= null;
+    });
+
+    const content = document.querySelector("#reportTable");
+    const screenWidth = parseFloat(window.getComputedStyle(content).width);
+    console.log(screenWidth, 2480/screenWidth);
+    const doc = new jsPDF();
+    doc.html(content, {
+      callback: function (doc) {
+        doc.save("sample.pdf");
+      },
+      html2canvas: { scale: 0.215 }, // change the scale to whatever number you need
+    });
   };
 
   var header = function (data) {
@@ -357,7 +404,7 @@ const OrdenList = (props) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.text(
-      "Reporte de " + ("PRUEBA").toLowerCase(),
+      "Reporte de " + "PRUEBA".toLowerCase(),
       doc.internal.pageSize.width - 15,
       10,
       {
@@ -376,38 +423,18 @@ const OrdenList = (props) => {
       }
     );
     doc.setFontSize(8);
-    doc.text(
-      "Red Efectiva SA de CV",
-      55,
-      11,
-      {
-        align: "left",
-      }
-    );
-    doc.text(
-      "Blvd. Antonio L. Rdz. 3058 Suite 201-A",
-      55,
-      14,
-      {
-        align: "left",
-      }
-    );
-    doc.text(
-      "Colonia Santa Maria",
-      55,
-      17,
-      {
-        align: "left",
-      }
-    );
-    doc.text(
-      "Monterrey, N.L. C.P. 64650",
-      55,
-      20,
-      {
-        align: "left",
-      }
-    );
+    doc.text("Red Efectiva SA de CV", 55, 11, {
+      align: "left",
+    });
+    doc.text("Blvd. Antonio L. Rdz. 3058 Suite 201-A", 55, 14, {
+      align: "left",
+    });
+    doc.text("Colonia Santa Maria", 55, 17, {
+      align: "left",
+    });
+    doc.text("Monterrey, N.L. C.P. 64650", 55, 20, {
+      align: "left",
+    });
 
     //FOOTER
     const pageCount = doc.internal.getNumberOfPages();
@@ -430,6 +457,7 @@ const OrdenList = (props) => {
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
       <Card
+        key="Ordenes"
         title="Ordenes"
         icon={<ListAlt sx={{ color: "white", fontSize: "23px" }} />}
         openCollapse={true}
@@ -464,7 +492,9 @@ const OrdenList = (props) => {
           orderASC="asc"
           showCheckboxes={true}
           selected={selected}
+          selectedObj={selectedObj}
           setSelected={handleSelected}
+          setSelectedObj={handleSelectedObj}
           add={true}
           onAddFunction={() => {
             navigate("/orden/add");
@@ -584,13 +614,21 @@ const OrdenList = (props) => {
               onClick={() => {
                 console.log("handleSelect ");
                 downloadPdf();
-             }}
+              }}
             >
               Generar
             </Button>
           }
         />
       </Card>
+      {selected.length > 0 ? (
+        <PdfPage
+          selected={selected}
+          selectedObj={selectedObj}
+        />
+      ) : (
+        <></>
+      )}
     </div>
   );
 };

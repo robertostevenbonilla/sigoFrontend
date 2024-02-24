@@ -358,7 +358,7 @@ function EnhancedTableRow(props) {
               <Checkbox
                 color="primary"
                 checked={isItemSelected}
-                onClick={(event) => handleClick(event, row[rowId])}
+                onClick={(event) => handleClick(event, row[rowId], row)}
                 disabled={disableCheckboxes && !isItemSelected}
                 inputProps={{
                   "aria-labelledby": labelId,
@@ -669,7 +669,9 @@ export default function EnhancedTable(props) {
     extraFilters = null,
     getFilters = null,
     selected = null,
+    selectedObj = null,
     setSelected = null,
+    setSelectedObj = null,
     handleSelectedChange = null,
     selectedItemsButtons,
     maxSelected = null,
@@ -692,6 +694,7 @@ export default function EnhancedTable(props) {
   const [order, setOrder] = React.useState(orderASC);
   const [orderBy, setOrderBy] = React.useState("");
   const [innerSelected, setInnerSelected] = React.useState([]);
+  const [innerSelectedObj, setInnerSelectedObj] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [openDialog, setOpenDialog] = React.useState(false);
@@ -783,6 +786,14 @@ export default function EnhancedTable(props) {
     }
   };
 
+  const handleSelectedObj = (newSelectedObj) => {
+    if (setSelectedObj) {
+      setSelectedObj(newSelectedObj);
+    } else {
+      setInnerSelectedObj(newSelectedObj);
+    }
+  };
+
   const triggerDeleteDialog = (value) => {
     setItem(value);
     setOpenDialog(true);
@@ -810,10 +821,16 @@ export default function EnhancedTable(props) {
       const newSelected = table.rows
         .filter((row) => !row.disableCheckbox)
         .map((row) => row[rowId]);
+      const newObjSelected = table.rows
+        .filter((row) => !row.disableCheckbox)
+        .map((row) => row);
+      console.log(newObjSelected);
       handleSelected(newSelected);
+      handleSelectedObj(newObjSelected);
       return;
     }
     handleSelected([]);
+    handleSelectedObj([]);
   };
 
   const resetPagination = () => {
@@ -823,9 +840,10 @@ export default function EnhancedTable(props) {
     setRowsPerPage(10);
   };
 
-  const handleClick = (event, name) => {
+  const handleClick = (event, name, row) => {
     const selectedIndex = (selected ? selected : innerSelected).indexOf(name);
     let newSelected = [];
+    console.log('handleClick',name, row, selectedIndex);
 
     if (selectedIndex === -1) {
       newSelected = newSelected.concat(
@@ -836,6 +854,9 @@ export default function EnhancedTable(props) {
       newSelected = newSelected.concat(
         (selected ? selected : innerSelected).slice(1)
       );
+      const element = document.getElementById(row.id);
+      console.log(element,`#row.id`);
+      element.parentNode.removeChild(element);
     } else if (
       selectedIndex ===
       (selected ? selected : innerSelected).length - 1
@@ -843,11 +864,17 @@ export default function EnhancedTable(props) {
       newSelected = newSelected.concat(
         (selected ? selected : innerSelected).slice(0, -1)
       );
+      const element = document.getElementById(row.id);
+      console.log(element,`#row.id`);
+      element.parentNode.removeChild(element);
     } else if (selectedIndex > 0) {
       newSelected = newSelected.concat(
         (selected ? selected : innerSelected).slice(0, selectedIndex),
         (selected ? selected : innerSelected).slice(selectedIndex + 1)
       );
+      const element = document.getElementById(row.id);
+      console.log(element,`#row.id`);
+      element.parentNode.removeChild(element);
     }
 
     if (maxSelected !== null && newSelected.length >= maxSelected) {
@@ -855,7 +882,37 @@ export default function EnhancedTable(props) {
     } else {
       setDisableCheckboxes(false);
     }
+
+    console.log("index", selectedObj);
+    const selectedIndexObj = (selectedObj ? selectedObj : innerSelectedObj).findIndex((obj) => obj.id === name );
+    let newSelectedObj = [];
+    console.log(selectedIndexObj);
+
+    if (selectedIndexObj === -1) {
+      newSelectedObj = newSelectedObj.concat(
+        selectedObj ? selectedObj : innerSelectedObj,
+        row
+      );
+    } else if (selectedIndexObj === 0) {
+      newSelectedObj = newSelectedObj.concat(
+        (selectedObj ? selectedObj : innerSelectedObj).slice(1)
+      );
+    } else if (
+      selectedIndexObj ===
+      (selectedObj ? selectedObj : innerSelectedObj).length - 1
+    ) {
+      newSelectedObj = newSelectedObj.concat(
+        (selectedObj ? selectedObj : innerSelectedObj).slice(0, -1)
+      );
+    } else if (selectedIndexObj > 0) {
+      newSelectedObj = newSelectedObj.concat(
+        (selectedObj ? selectedObj : innerSelectedObj).slice(0, selectedIndexObj),
+        (selectedObj ? selectedObj : innerSelectedObj).slice(selectedIndexObj + 1)
+      );
+    }
+
     handleSelected(newSelected);
+    handleSelectedObj(newSelectedObj);
   };
 
   const handleChangePage = (event, newPage) => {

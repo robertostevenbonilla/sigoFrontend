@@ -57,6 +57,18 @@
   padding-top: 8px;
 }
 
+.pdfItem {
+  padding: 2px 5px;
+  font-weight: bolder;
+  border: solid 1px #a3a3a3;
+}
+
+.pdfValue {
+  padding: 2px 5px;
+  background: white;
+  border: solid 1px #a3a3a3;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
