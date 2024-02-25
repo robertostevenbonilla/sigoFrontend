@@ -282,8 +282,8 @@ function App() {
                 />
               </ListItemButton>
             </ListItem>
-            {currentUser.auth.roles.find((rol) => rol.name == "admin") !==
-              undefined && (
+            {console.log("restricciones",(currentUser.auth.roles.find((rol) => rol.name == "admin") !== undefined))}
+            {(currentUser.auth.roles.find((rol) => rol.name == "admin") !== undefined) && (
               <>
                 <ListItem
                   key={"empresa"}
