@@ -12,6 +12,7 @@ import { usePersonasTable } from "../../hooks/usePersonaTable";
 import {
   AccountBox,
   Check,
+  DeliveryDining,
   FilterAltOutlined,
   ListAlt,
   Pages,
@@ -26,6 +27,10 @@ import {
   Button,
   Card,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Grid,
   List,
   ListItem,
@@ -45,6 +50,7 @@ import logo from "./../../assets/logo-goya.png";
 //import QRCode from "react-qr-code";
 import HTMLComment from "../../hooks/HTMLComment";
 import html2canvas from "html2canvas";
+import UsuarioDataService from "../../services/usuario.service";
 
 var doc = new jsPDF();
 
@@ -219,6 +225,29 @@ const columnsOrden = [
     style: { textAlign: "right" },
   },
   {
+    field: "mensajero",
+    headerName: "Mensajero",
+    type: "render",
+    renderFunction: (row) => {
+      return (
+        <>
+        { row.mensajero ? (
+        <List>
+          <ListItem>
+            <ListItemIcon style={{ minWidth: 30 }}>
+              <DeliveryDining />
+            </ListItemIcon>
+            {row.mensajero?.persona.fullName}
+          </ListItem>
+        </List>
+      ) : (
+        <></>
+      )}
+      </>
+      )
+    },
+  },
+  {
     field: "createdAt",
     headerName: "Creada",
     flex: 1,
@@ -244,6 +273,12 @@ const columnsOrden = [
   }, */
 ];
 
+const flexContainer = {
+  display: "flex",
+  flexDirection: "row",
+  padding: 0,
+};
+
 const OrdenList = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -257,6 +292,7 @@ const OrdenList = (props) => {
   const [empresaSelect, setEmpresaSelect] = useState([]);
   const [servicioSelect, setServicioSelect] = useState([]);
   const [faseSelect, setFaseSelect] = useState([]);
+  const [motorizadoSelect, setMotorizadoSelect] = useState([]);
   const [printPdf, setPrintPdf] = useState(false);
 
   const [filtersLoaded, setFiltersLoaded] = useState(false);
@@ -266,8 +302,9 @@ const OrdenList = (props) => {
   const [download, setDownload] = useState(false);
   const [downloadObj, setDownloadObj] = useState([]);
 
-  const [pageS, setPage] = useState(0);
-  const [sizeS, setSize] = useState(0);
+  const [reloadData, setReload] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [morotizadoId, setMorotizadoId] = useState(-1);
 
   const loadSelects = () => {
     CiudadDataService.getSelect()
@@ -342,6 +379,12 @@ const OrdenList = (props) => {
     setForm({ ...form, [id]: value });
   };
 
+  const handleInputChangeM = async (event) => {
+    const { id, value } = event.target;
+    console.log(form, event.target, id, value);
+    setMorotizadoId(value);
+  };
+
   const retrieveOrdenes = (page = 0, size = 10) => {
     dispatch(loadingTable(true));
     OrdenDataService.getAll(page, size)
@@ -353,6 +396,16 @@ const OrdenList = (props) => {
       .catch((e) => {
         console.log(e);
         dispatch(loadingTable(false));
+      });
+  };
+
+  const loadMotirizados = () => {
+    UsuarioDataService.motorizados()
+      .then((response) => {
+        console.log("motorizado", response.data);
+        setMotorizadoSelect(response.data);
+      }).catch((err) => {
+        console.log(err);
       });
   };
 
@@ -397,6 +450,60 @@ const OrdenList = (props) => {
       });
       console.log(index);
     }) */
+  };
+
+  const addMensajero = () => {
+    console.log(selected);
+    loadMotirizados();
+    setOpenDialog(true);
+  };
+
+  const removeMensajero = () => {
+    let guias = selectedObj.map((registro) => registro.guia);
+    const dataM = {
+      guias: guias,
+      mensajeroId: null,
+    };
+    console.log(dataM);
+    OrdenDataService.asignar(dataM)
+      .then((response) => {
+        const message = {
+          title: "Mensajero",
+          msg: "Mensajero quitado correctamente.",
+          error: true,
+        };
+        dispatch(setMessage({ ...message }));
+        dispatch(setOpenModal(true));
+        setReload(true);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const saveMotorizado = () => {
+    let guias = selectedObj.map((registro) => registro.guia);
+    const dataM = {
+      guias: guias,
+      mensajeroId: morotizadoId,
+    };
+    console.log(dataM);
+    OrdenDataService.asignar(dataM)
+      .then((response) => {
+        setOpenDialog(false);
+        const message = {
+          title: "Mensajero",
+          msg: "Mensajero asignado correctamente.",
+          error: true,
+        };
+        dispatch(setMessage({ ...message }));
+        dispatch(setOpenModal(true));
+        setReload(true);
+      })
+      .catch((err) => {
+        console.log(err);
+        setOpenDialog(false);
+      });
   };
 
   var header = function (data) {
@@ -462,6 +569,11 @@ const OrdenList = (props) => {
     }
   };
 
+  const handleCloseDialog = () => {
+    setMorotizadoId(-1);
+    setOpenDialog(false);
+  };
+
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
       <Card
@@ -472,6 +584,42 @@ const OrdenList = (props) => {
         idElement="datosGenerales-ordenes"
         className="text-start"
       >
+        {<Dialog
+          open={openDialog}
+          onClose={handleCloseDialog}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"¿Estas seguro/a de asignar el motorizado? "}
+          </DialogTitle>
+          <DialogContent sx={{paddingTop: "10px !important"}}>
+            <Grid container spacing={2} alignItems={"center"}>
+              <Grid item xs={12} sm={12}>
+                <SearchInput
+                  options={[
+                    { id: -1, fullname: "Seleccione un motorizado" },
+                    ...motorizadoSelect,
+                  ]}
+                  value={morotizadoId}
+                  placeholder={"Seleccione un motorizado"}
+                  id={"morotizadoId"}
+                  name={"motorizadoId"}
+                  label={"Motorizado"}
+                  getOptionLabel={"fullname"}
+                  getIndexLabel={"id"}
+                  onChange={handleInputChangeM}
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog} color="error">Cancelar</Button>
+            <Button onClick={saveMotorizado} variant="contained">
+              Quiero asignar el motorizado
+            </Button>
+          </DialogActions>
+        </Dialog>}
         <EnhancedTable
           table={{
             columns: columnsOrden,
@@ -495,6 +643,10 @@ const OrdenList = (props) => {
           }}
           delete={true}
           showDeleteAlert={true}
+          refreshData={reloadData}
+          onRefreshData={() => {
+            setReload(false);
+          }}
           onDeleteFunction={async (id) => {
             console.log(id);
             /* OrdenDataService.deleted(id)
@@ -507,7 +659,7 @@ const OrdenList = (props) => {
 
             const data = {
               id: id,
-              estado: 0
+              estado: 0,
             };
             await OrdenDataService.update(data)
               .then((response) => {
@@ -519,9 +671,7 @@ const OrdenList = (props) => {
                     error: true,
                   };
                   console.log(response.data.message);
-                  dispatch(
-                    setMessage({ ...message })
-                  );
+                  dispatch(setMessage({ ...message }));
                   dispatch(setOpenModal(true));
                 }
               })
@@ -660,15 +810,45 @@ const OrdenList = (props) => {
             </Grid>
           )}
           selectedItemsButtons={
-            <Button
-              variant="contained"
-              startIcon={<PictureAsPdf />}
-              onClick={() => {
-                downloadPdf();
-              }}
-            >
-              Imprimir
-            </Button>
+            <List style={flexContainer}>
+              <ListItem>
+                <Button
+                  className="extraButton"
+                  variant="contained"
+                  startIcon={<DeliveryDining />}
+                  onClick={() => {
+                    addMensajero();
+                  }}
+                >
+                  Asignar Mensajero
+                </Button>
+              </ListItem>
+              <ListItem>
+                <Button
+                  className="extraButton"
+                  variant="contained"
+                  startIcon={<DeliveryDining />}
+                  onClick={() => {
+                    removeMensajero();
+                  }}
+                  color="error"
+                >
+                  Quitar Mensajero
+                </Button>
+              </ListItem>
+              <ListItem>
+                <Button
+                  className="extraButton"
+                  variant="contained"
+                  startIcon={<PictureAsPdf />}
+                  onClick={() => {
+                    downloadPdf();
+                  }}
+                >
+                  Imprimir
+                </Button>
+              </ListItem>
+            </List>
           }
         />
       </Card>

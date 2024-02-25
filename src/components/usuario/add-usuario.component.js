@@ -124,12 +124,18 @@ const AddUsuario = () => {
           </Grid>
           <Grid item md={6} sm={6} xs={12}>
             <SearchInput
-              options={[
-                { id: "admin", rol: "Administrador" },
-                { id: "empresa", rol: "Empresa" },
-                { id: "empresaLectura", rol: "Empresa Lectura" },
-                { id: "mensajero", rol: "Mensajero" },
-              ]}
+              options={
+                (currentUser.auth.roles.find((rol) => rol.name == "admin") !== undefined) ? [
+                  { id: "admin", rol: "Administrador" },
+                  { id: "empresa", rol: "Empresa" },
+                  { id: "empresaLectura", rol: "Empresa Lectura" },
+                  { id: "mensajero", rol: "Mensajero" },
+                ] : [
+                  { id: "empresa", rol: "Empresa" },
+                  { id: "empresaLectura", rol: "Empresa Lectura" },
+                  { id: "mensajero", rol: "Mensajero" },
+                ]
+              }
               value={form.roles}
               id={"roles"}
               name={"roles"}

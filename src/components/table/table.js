@@ -696,6 +696,8 @@ export default function EnhancedTable(props) {
     searchableKeys = [],
     paginationServer = false,
     handlePagination = null,
+    refreshData=null,
+    onRefreshData=null,
   } = props;
   const [order, setOrder] = React.useState(orderASC);
   const [orderBy, setOrderBy] = React.useState("");
@@ -714,6 +716,7 @@ export default function EnhancedTable(props) {
     rows: [],
     total: 0,
   });
+  const [refresh, setRefresh] = React.useState(refreshData);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -733,7 +736,9 @@ export default function EnhancedTable(props) {
   }, [rowId]);
 
   React.useEffect(() => {
-    if (searchParams && !disablePathParameters) {
+    console.log("searchParams", refresh);
+    if (searchParams && !disablePathParameters && !refresh) {
+      console.log("searchParams1", refresh);
       const innerPage = parseInt(
         searchParams.get("page") ? searchParams.get("page") : 1
       );
@@ -784,6 +789,25 @@ export default function EnhancedTable(props) {
       handleSelectedChange(innerSelected);
     }
   }, [innerSelected]);
+
+  React.useEffect(() => {
+    setRefresh(refreshData);
+  }, [refreshData]);
+
+  React.useEffect(() => {
+    console.log("React",refresh);
+    if(refresh) {
+      console.log("Refreshing", refreshData, page, rowsPerPage);
+      if (!disablePathParameters)
+        navigate(
+          location.pathname + `?page=${page}&rowsPerPage=${rowsPerPage}`
+        );
+      if (paginationServer) handlePagination(page, rowsPerPage);
+      if (onRefreshData) {
+        onRefreshData();
+      }
+    }
+  }, [refresh]);
 
   const handleSelected = (newSelected) => {
     if (setSelected) {

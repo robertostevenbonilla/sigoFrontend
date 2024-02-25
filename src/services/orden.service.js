@@ -35,6 +35,9 @@ const findByDestinatario = async (destinatario) => {
   return await http.get(`/orden/list?destinatario=${destinatario}`, { headers: {...header()} });
 }
 
+const asignar = async (data) => {
+  return await http.post(`/orden/asignar`, data, { headers: {...header()} });
+}
 
 
 const OrdenDataService = {
@@ -46,6 +49,7 @@ const OrdenDataService = {
   deleted,
   findByRemitente,
   findByDestinatario,
+  asignar,
 }
 
 export default OrdenDataService;

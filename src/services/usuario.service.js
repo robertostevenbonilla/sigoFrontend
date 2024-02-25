@@ -15,6 +15,10 @@ const get = async (id) => {
   return await http.get(`/usuario/${id}`, { headers: {...header()} });
 }
 
+const motorizados = async () => {
+  return await http.get(`/usuario/motorizados`, { headers: {...header()} });
+}
+
 const update = async (data) => {
   return await http.put(`/usuario/${data.id}`, data, { headers: {...header()} });
 }
@@ -32,7 +36,8 @@ const UsuarioDataService = {
   getSelect,
   get,
   update,
-  findByUsuario
+  findByUsuario,
+  motorizados
 }
 
 export default UsuarioDataService;

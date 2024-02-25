@@ -18,7 +18,7 @@ export const PdfPage = ({ selectedObj, body }) => {
   useEffect(() => {
     console.log(selectedObj);
     selectedObj.map((row, index) => {
-      qr(row.guia,"http://sigo.goyaexpressdelivery.com/recibo/" + row.id)
+      qr(row.guia,"http://sigo.goyaexpressdelivery.com/recibo/" + row.guia)
     });
   }, [selectedObj]);
 
