@@ -6,7 +6,7 @@ import Form from "react-validation/build/form";
 import Input from "react-validation/build/input";
 import CheckButton from "react-validation/build/button";
 
-import { login } from "../actions/auth";
+import { UserAuth } from "../actions/auth";
 import { usuarioForm } from "../helpers/forms";
 
 const required = (value) => {
@@ -25,6 +25,8 @@ const ChangePassword = (props) => {
   const [formUsuario, setForm] = useState(usuarioForm);
   const [loading, setLoading] = useState(false);
 
+  const { resetPassword } = UserAuth();
+
   const { auth: currentUser } = useSelector((state) => state.auth);
 
   useEffect(() => {
@@ -36,8 +38,19 @@ const ChangePassword = (props) => {
     }
   }, []);
 
-  const handleChangePassword = async () => {
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setLoading(true);
     console.log("handleChangePassword");
+    resetPassword({...formUsuario})
+      .then((res) => {
+        console.log("data", res);
+        navigate("/login");
+      })
+      .catch((res) => {
+        console.log("catch",res);
+        setLoading(false);
+      });
   };
 
   return (

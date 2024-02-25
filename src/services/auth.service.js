@@ -17,10 +17,18 @@ const logoutAPI = () => {
   //localStorage.removeItem("user");
 };
 
+const resetPassword = async (data) => {
+  const { header } = AuthHeader();
+  const token = header();
+  const response = await http.post("/auth/resetpassword", data, { headers: {...token} });
+  return response.data;
+};
+
 const AuthDataService = {
   loginAPI,
   signupAPI,
   logoutAPI,
+  resetPassword,
 };
 
 export default AuthDataService;

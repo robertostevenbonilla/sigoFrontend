@@ -209,9 +209,10 @@ const Usuario = () => {
           <Grid item md={6} sm={6} xs={12}>
             <SelectInput
               data={[
-                { value: "admin", text: "admin" },
-                { value: "moderator", text: "moderator" },
-                { value: "user", text: "user" },
+                { value: "admin", text: "Administrador" },
+                { value: "empresa", text: "Empresa" },
+                { value: "empresaLectura", text: "Empresa Lectura" },
+                { value: "mensajero", text: "Mensajero" },
               ]}
               multiple={true}
               value={form.roles}

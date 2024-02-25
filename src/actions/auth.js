@@ -58,9 +58,16 @@ export const UserAuth = () => {
     }
   };
 
+  const resetPassword = async (data) => {
+    console.log("resetPassword");
+    const response = await AuthDataService.resetPassword(data);
+    console.log(response);
+  };
+
   return {
     login,
     logout,
     signup,
+    resetPassword,
   };
 };

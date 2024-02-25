@@ -38,10 +38,11 @@ import { ordenFilterForm } from "../../helpers/forms";
 import jsPDF from "jspdf";
 
 import { PdfPage } from "../form/PdfPage";
+import { setMessage, setOpenModal } from "../../reducers/message";
 
 import autoTable from "jspdf-autotable";
 import logo from "./../../assets/logo-goya.png";
-import QRCode from "react-qr-code";
+//import QRCode from "react-qr-code";
 import HTMLComment from "../../hooks/HTMLComment";
 import html2canvas from "html2canvas";
 
@@ -133,12 +134,7 @@ const columnsOrden = [
       );
     },
   },
-  /* {
-    field: "fechaEntrega",
-    headerName: "Entrega",
-    flex: 1,
-    format: "date",
-  },
+  /* 
   {
     field: "direccionOrigen",
     headerName: "Dirección Remitente",
@@ -222,6 +218,12 @@ const columnsOrden = [
     numeric: true,
     style: { textAlign: "right" },
   },
+  {
+    field: "createdAt",
+    headerName: "Creada",
+    flex: 1,
+    format: "datetime",
+  },
   /* {
     field: "ciudadOrigen",
     headerName: "Ciudad Origen",
@@ -260,6 +262,12 @@ const OrdenList = (props) => {
   const [filtersLoaded, setFiltersLoaded] = useState(false);
   const [selected, setSelected] = useState([]);
   const [selectedObj, setSelectedObj] = useState([]);
+
+  const [download, setDownload] = useState(false);
+  const [downloadObj, setDownloadObj] = useState([]);
+
+  const [pageS, setPage] = useState(0);
+  const [sizeS, setSize] = useState(0);
 
   const loadSelects = () => {
     CiudadDataService.getSelect()
@@ -307,6 +315,12 @@ const OrdenList = (props) => {
     }
   }, []);
 
+  useEffect(() => {
+    if (downloadObj.length > 0) {
+      downloadPdf();
+    }
+  }, [downloadObj]);
+
   const getFilters = async () => {
     if (!filtersLoaded) {
       loadSelects();
@@ -343,52 +357,46 @@ const OrdenList = (props) => {
   };
 
   const downloadPdf = () => {
-    /* doc = new jsPDF();
-
-    setPrintPdf(true);
-    setTimeout(() => {
-      doc.setFont("helvetica");
-      doc.setFontSize(9);
-      autoTable(doc, {
-        html: "#reportTable",
-        margin: { top: 28 },
-        styles: { fontSize: 8 },
-        /* didDrawPage: header, * /
-      });
-      doc.save(`Reporte.pdf`);
-    }, 0); */
-
-    /* const domElement=document.querySelector('#reportTable')
-    html2canvas(domElement, { onclose: (document)=>{
-    document.querySelector('#save-button').style.visibility='hidden'
-    }})
-    .then((canvas)=>{
-      const imgData=canvas.toDataURL('image/jpeg')
-      const pdf=new jsPDF()
-      pdf.addImage(imgData, 'JPEG',0,0,width,height)
-      pdf.save('filename.pdf')
-    }) */
-
-    //const content = pdfRef.current;
-
-    var svgElements = document.body.querySelectorAll('svg');
-    svgElements.forEach(function(item) {
-      item.setAttribute("width", item.getBoundingClientRect().width);
-      item.setAttribute("height", item.getBoundingClientRect().height);
-      item.style.width = null;
-      item.style.height= null;
-    });
-
     const content = document.querySelector("#reportTable");
-    const screenWidth = parseFloat(window.getComputedStyle(content).width);
-    console.log(screenWidth, 2480/screenWidth);
-    const doc = new jsPDF();
+    let contents = document.querySelectorAll(".qrPage");
+
+    const pgFormat = {
+      orientation: "p",
+      unit: "px",
+      format: "a4",
+    };
+    const doc = new jsPDF(pgFormat);
     doc.html(content, {
       callback: function (doc) {
-        doc.save("sample.pdf");
+        if (download) {
+          doc.save(downloadObj[0].guia + ".pdf");
+          setDownload(false);
+          setDownloadObj([]);
+        } else {
+          doc.save("rutas.pdf");
+          setSelected([]);
+          setSelectedObj([]);
+        }
       },
-      html2canvas: { scale: 0.215 }, // change the scale to whatever number you need
+      html2canvas: { scale: 0.705 }, //0.215
+      autoPaging: true,
     });
+    /* contents.forEach(async (cont, index)=>{
+      await doc.html(contents[index], {
+        callback: function (doc) {
+          console.log(contents.length-1, index)
+          if(contents.length-1 === index) {
+            doc.save("rutas.pdf");
+          } else {
+            doc.addPage(pgFormat);
+          }
+        },
+        html2canvas: { scale: 0.615 },
+        autoPaging: true,
+        y: (297*index)
+      });
+      console.log(index);
+    }) */
   };
 
   var header = function (data) {
@@ -476,6 +484,50 @@ const OrdenList = (props) => {
           view={true}
           onViewFunction={(id, row) => {
             navigate(`/orden/${id}`);
+          }}
+          download={true}
+          onDownloadFunction={(id, row) => {
+            console.log("handleSelect ");
+            setDownload(true);
+            let data = [];
+            data = data.concat(data, row);
+            setDownloadObj(data);
+          }}
+          delete={true}
+          showDeleteAlert={true}
+          onDeleteFunction={async (id) => {
+            console.log(id);
+            /* OrdenDataService.deleted(id)
+              .then((response) => {
+                console.log(response.data);
+              })
+              .catch((e) => {
+                console.log(e);
+              }); */
+
+            const data = {
+              id: id,
+              estado: 0
+            };
+            await OrdenDataService.update(data)
+              .then((response) => {
+                console.log(response);
+                if (response.status === 200) {
+                  const message = {
+                    title: "Orden eliminada",
+                    msg: "Orden eliminada correctamente.",
+                    error: true,
+                  };
+                  console.log(response.data.message);
+                  dispatch(
+                    setMessage({ ...message })
+                  );
+                  dispatch(setOpenModal(true));
+                }
+              })
+              .catch((error) => {
+                console.log(error);
+              });
           }}
           searchableKeys={[
             "fechaEntrega",
@@ -612,20 +664,39 @@ const OrdenList = (props) => {
               variant="contained"
               startIcon={<PictureAsPdf />}
               onClick={() => {
-                console.log("handleSelect ");
                 downloadPdf();
               }}
             >
-              Generar
+              Imprimir
             </Button>
           }
         />
       </Card>
-      {selected.length > 0 ? (
-        <PdfPage
-          selected={selected}
-          selectedObj={selectedObj}
-        />
+      {selected.length > 0 && !download ? (
+        <div
+          style={{
+            width: 0,
+            height: 0,
+            overflow: "hidden",
+          }}
+        >
+          <PdfPage selectedObj={selectedObj} body={3} />
+        </div>
+      ) : (
+        <></>
+      )}
+
+      {download ? (
+        <div
+          style={{
+            width: 0,
+            height: 0,
+            overflow: "hidden",
+          }}
+        >
+          {console.log(downloadObj)}
+          <PdfPage selectedObj={downloadObj} body={3} />
+        </div>
       ) : (
         <></>
       )}

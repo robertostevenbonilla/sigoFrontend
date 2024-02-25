@@ -48,6 +48,7 @@ import moment from "moment";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 import { Stack } from "@mui/system";
+import { PictureAsPdf } from "@mui/icons-material";
 
 export const EllipsisTable = (props) => {
   const ref = React.useRef();
@@ -188,6 +189,7 @@ function EnhancedTableHead(props) {
     disableCheckboxes,
     loading,
     expandibleButtonPosition,
+    buttons,
   } = props;
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
@@ -252,7 +254,10 @@ function EnhancedTableHead(props) {
             </TableCell>
           ))}
           {!disableButtons && (
-            <TableCell align={"right"} style={{ width: 150 }}></TableCell>
+            <>
+              {console.log(buttons)}
+              <TableCell align={"right"} sx={{ width: (150*buttons) }}></TableCell>
+            </>
           )}
           {showExpandableTable && expandibleButtonPosition === "end" && (
             <TableCell align={"right"} style={{ width: 20 }}></TableCell>
@@ -391,7 +396,8 @@ function EnhancedTableRow(props) {
         })}
 
         {!disableButtons && (
-          <TableCell align="right" style={{ width: 150 }}>
+          <TableCell align="right" sx={{ width: (150*buttons.length) }}>
+            {console.log(buttons.length)}
             <div>
               {buttons.map((btn) => {
                 return btn;
@@ -706,6 +712,7 @@ export default function EnhancedTable(props) {
     title: "",
     columns: [],
     rows: [],
+    total: 0,
   });
 
   const location = useLocation();
@@ -794,7 +801,8 @@ export default function EnhancedTable(props) {
     }
   };
 
-  const triggerDeleteDialog = (value) => {
+  const triggerDeleteDialog = (value, obj) => {
+    console.log(`deleting ${value}`,obj);
     setItem(value);
     setOpenDialog(true);
   };
@@ -805,7 +813,14 @@ export default function EnhancedTable(props) {
   };
 
   const deleteItem = (innerItem, row) => {
-    props.onDeleteFunction(innerItem ? innerItem : item[rowId], row);
+    console.log(`deleteItem`, page, rowsPerPage, item);
+    props.onDeleteFunction(item).then(() => {
+      if (!disablePathParameters)
+        navigate(
+          location.pathname + `?page=${page}&rowsPerPage=${rowsPerPage}`
+        );
+      if (paginationServer) handlePagination(page, rowsPerPage);
+    });
     handleCloseDialog();
   };
 
@@ -849,7 +864,7 @@ export default function EnhancedTable(props) {
       newSelected = newSelected.concat(
         selected ? selected : innerSelected,
         name
-      );
+      ); 
     } else if (selectedIndex === 0) {
       newSelected = newSelected.concat(
         (selected ? selected : innerSelected).slice(1)
@@ -1014,7 +1029,7 @@ export default function EnhancedTable(props) {
             size="small"
             onClick={() => props.onDownloadFunction(id, row)}
           >
-            <DownloadIcon fontSize={"small"} />
+            <PictureAsPdf fontSize={"small"} />
           </IconButton>
         </Tooltip>
       );
@@ -1024,11 +1039,12 @@ export default function EnhancedTable(props) {
         <Tooltip title="Eliminar" placement="top">
           <IconButton
             size="small"
-            onClick={() =>
+            onClick={() => {
+              console.log(id,row)
               props.showDeleteAlert
                 ? triggerDeleteDialog(id, row)
                 : deleteItem(id, row)
-            }
+            }}
           >
             <DeleteIcon fontSize={"small"} />
           </IconButton>
@@ -1036,6 +1052,28 @@ export default function EnhancedTable(props) {
       );
 
     return arrayButtons;
+  };
+
+  const countButtons = () => {
+    let numButtons = 0;
+    if (props.view)
+      numButtons++;
+    if (props.edit)
+    numButtons++;
+    if (props.productos)
+      numButtons++;
+    if (props.rutas)
+      numButtons++;
+    if (props.permisos)
+      numButtons++;
+    if (props.conciliacion)
+      numButtons++;
+    if (props.download)
+      numButtons++;
+    /* if (extraRowButtons !== null) arrayButtons.push(extraRowButtons(id, row)); */
+    if (props.delete)
+      numButtons++;
+    return numButtons;
   };
 
   const searchFilter = (row) => {
@@ -1157,6 +1195,7 @@ export default function EnhancedTable(props) {
               disableButtons={disableButtons}
               loading={loading}
               expandibleButtonPosition={expandibleButtonPosition}
+              buttons={countButtons()}
             />
             <TableBody>
               {loading ? (
@@ -1218,6 +1257,20 @@ export default function EnhancedTable(props) {
             </Select>
           </Grid>
         </Grid>
+        {/* <Grid item>
+          <span style={{ fontSize: 14, marginRight: 10 }}>
+            {console.log(dataTable)}
+            {(dataTable?.total) ? (
+              <>
+                Número de {dataTable?.total > 1 ? "registros" : "registro" }: {dataTable?.total}
+              </>
+            ) : (
+              <>
+                Número de {dataTable?.rows.length > 1 ? "registros" : "registro" }: {dataTable?.rows.length}
+              </>
+            )}
+          </span>
+        </Grid> */}
         <Pagination
           sx={{ color: "neutral" }}
           count={

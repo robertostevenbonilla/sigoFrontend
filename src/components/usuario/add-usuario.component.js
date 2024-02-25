@@ -125,9 +125,10 @@ const AddUsuario = () => {
           <Grid item md={6} sm={6} xs={12}>
             <SearchInput
               options={[
-                { id: "admin", rol: "admin" },
-                { id: "moderator", rol: "moderator" },
-                { id: "user", rol: "user" },
+                { id: "admin", rol: "Administrador" },
+                { id: "empresa", rol: "Empresa" },
+                { id: "empresaLectura", rol: "Empresa Lectura" },
+                { id: "mensajero", rol: "Mensajero" },
               ]}
               value={form.roles}
               id={"roles"}

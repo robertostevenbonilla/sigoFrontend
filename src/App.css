@@ -57,6 +57,10 @@
   padding-top: 8px;
 }
 
+.qrPage {
+  font-size: 12px !important;
+}
+
 .pdfItem {
   padding: 2px 5px;
   font-weight: bolder;
