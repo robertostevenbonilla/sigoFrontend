@@ -16,7 +16,7 @@ export const PdfPage = ({ selectedObj, body }) => {
   const [qrs, setQR] = useState([]);
 
   useEffect(() => {
-    console.log(selectedObj);
+    console.log("PdfPage",selectedObj);
     selectedObj.map((row, index) => {
       qr(row.guia,"http://sigo.goyaexpressdelivery.com/recibo/" + row.guia)
     });

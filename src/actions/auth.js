@@ -14,6 +14,7 @@ export const UserAuth = () => {
         isLoggedIn: true,
         auth: response,
       };
+      localStorage.setItem("userAuth", JSON.stringify({ ...auth }));
       dispatch(setAuth({ ...auth }));
     } catch (error) {
       const msg =
@@ -45,6 +46,8 @@ export const UserAuth = () => {
       isLoggedIn: false,
       auth: null,
     };
+    localStorage.removeItem("userAuth");
+    window.localStorage.clear();
     dispatch(setAuth(auth));
   };
 

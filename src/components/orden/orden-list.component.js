@@ -853,30 +853,33 @@ const OrdenList = (props) => {
         />
       </Card>
       {selected.length > 0 && !download ? (
-        <div
-          style={{
+        <Grid
+          /* style={{
             width: 0,
             height: 0,
             overflow: "hidden",
-          }}
+          }} */
         >
+          {console.log("selectedObj",selectedObj)}
+          <div>
           <PdfPage selectedObj={selectedObj} body={3} />
-        </div>
+          </div>
+        </Grid>
       ) : (
         <></>
       )}
 
       {download ? (
-        <div
-          style={{
+        <Grid
+          /* style={{
             width: 0,
             height: 0,
             overflow: "hidden",
-          }}
+          }} */
         >
-          {console.log(downloadObj)}
+          {console.log("downloadObj",downloadObj)}
           <PdfPage selectedObj={downloadObj} body={3} />
-        </div>
+        </Grid>
       ) : (
         <></>
       )}
