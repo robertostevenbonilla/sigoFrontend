@@ -255,7 +255,6 @@ function EnhancedTableHead(props) {
           ))}
           {!disableButtons && (
             <>
-              {console.log(buttons)}
               <TableCell align={"right"} sx={{ width: (150*buttons) }}></TableCell>
             </>
           )}
@@ -397,7 +396,7 @@ function EnhancedTableRow(props) {
 
         {!disableButtons && (
           <TableCell align="right" sx={{ width: (150*buttons.length) }}>
-            {console.log(buttons.length)}
+            
             <div>
               {buttons.map((btn) => {
                 return btn;
@@ -795,9 +794,7 @@ export default function EnhancedTable(props) {
   }, [refreshData]);
 
   React.useEffect(() => {
-    console.log("React",refresh);
     if(refresh) {
-      console.log("Refreshing", refreshData, page, rowsPerPage);
       if (!disablePathParameters)
         navigate(
           location.pathname + `?page=${page}&rowsPerPage=${rowsPerPage}`
@@ -882,7 +879,6 @@ export default function EnhancedTable(props) {
   const handleClick = (event, name, row) => {
     const selectedIndex = (selected ? selected : innerSelected).indexOf(name);
     let newSelected = [];
-    console.log('handleClick',name, row, selectedIndex);
 
     if (selectedIndex === -1) {
       newSelected = newSelected.concat(
@@ -893,9 +889,7 @@ export default function EnhancedTable(props) {
       newSelected = newSelected.concat(
         (selected ? selected : innerSelected).slice(1)
       );
-      const element = document.getElementById(row.id);
-      console.log(element,`#row.id`);
-      element.parentNode.removeChild(element);
+
     } else if (
       selectedIndex ===
       (selected ? selected : innerSelected).length - 1
@@ -903,17 +897,11 @@ export default function EnhancedTable(props) {
       newSelected = newSelected.concat(
         (selected ? selected : innerSelected).slice(0, -1)
       );
-      const element = document.getElementById(row.id);
-      console.log(element,`#row.id`);
-      element.parentNode.removeChild(element);
     } else if (selectedIndex > 0) {
       newSelected = newSelected.concat(
         (selected ? selected : innerSelected).slice(0, selectedIndex),
         (selected ? selected : innerSelected).slice(selectedIndex + 1)
       );
-      const element = document.getElementById(row.id);
-      console.log(element,`#row.id`);
-      element.parentNode.removeChild(element);
     }
 
     if (maxSelected !== null && newSelected.length >= maxSelected) {
@@ -922,36 +910,15 @@ export default function EnhancedTable(props) {
       setDisableCheckboxes(false);
     }
 
-    console.log("index", selectedObj);
     const selectedIndexObj = (selectedObj ? selectedObj : innerSelectedObj).findIndex((obj) => obj.id === name );
     let newSelectedObj = [];
-    console.log(selectedIndexObj);
 
-    if (selectedIndexObj === -1) {
-      newSelectedObj = newSelectedObj.concat(
-        selectedObj ? selectedObj : innerSelectedObj,
-        row
-      );
-    } else if (selectedIndexObj === 0) {
-      newSelectedObj = newSelectedObj.concat(
-        (selectedObj ? selectedObj : innerSelectedObj).slice(1)
-      );
-    } else if (
-      selectedIndexObj ===
-      (selectedObj ? selectedObj : innerSelectedObj).length - 1
-    ) {
-      newSelectedObj = newSelectedObj.concat(
-        (selectedObj ? selectedObj : innerSelectedObj).slice(0, -1)
-      );
-    } else if (selectedIndexObj > 0) {
-      newSelectedObj = newSelectedObj.concat(
-        (selectedObj ? selectedObj : innerSelectedObj).slice(0, selectedIndexObj),
-        (selectedObj ? selectedObj : innerSelectedObj).slice(selectedIndexObj + 1)
-      );
-    }
+    const newObjSelected = table.rows
+        .filter((obj) => newSelected.includes(obj.id) )
+        .map((obj) => obj);
 
     handleSelected(newSelected);
-    handleSelectedObj(newSelectedObj);
+    handleSelectedObj(newObjSelected);
   };
 
   const handleChangePage = (event, newPage) => {

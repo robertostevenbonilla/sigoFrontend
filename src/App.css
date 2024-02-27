@@ -57,14 +57,15 @@
   padding-top: 8px;
 }
 
-.qrPage {
-  font-size: 12px !important;
+.qrPage, .qrPageC {
+  font-size: 10px !important;
 }
 
 .pdfItem {
   padding: 2px 5px;
   font-weight: bolder;
   border: solid 1px #a3a3a3;
+  background: #b8cce4;
 }
 
 .pdfValue {

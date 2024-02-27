@@ -416,10 +416,11 @@ const OrdenList = (props) => {
     const pgFormat = {
       orientation: "p",
       unit: "px",
-      format: "a4",
+      format: [595, 841],
     };
     const doc = new jsPDF(pgFormat);
-    doc.html(content, {
+    
+    /* doc.html(content, {
       callback: function (doc) {
         if (download) {
           doc.save(downloadObj[0].guia + ".pdf");
@@ -431,11 +432,12 @@ const OrdenList = (props) => {
           setSelectedObj([]);
         }
       },
-      html2canvas: { scale: 0.705 }, //0.215
+      html2canvas: { scale: 0.98 }, //0.215
       autoPaging: true,
-    });
-    /* contents.forEach(async (cont, index)=>{
-      await doc.html(contents[index], {
+    }); */
+
+    contents.forEach(async (cont, index)=>{
+      /* await doc.html(contents[index], {
         callback: function (doc) {
           console.log(contents.length-1, index)
           if(contents.length-1 === index) {
@@ -447,9 +449,36 @@ const OrdenList = (props) => {
         html2canvas: { scale: 0.615 },
         autoPaging: true,
         y: (297*index)
+      }); */
+      console.log(cont);
+      var scaleBy = 2;
+      var w = 595;
+      var h = 841;
+      var canvas = document.createElement('canvas');
+      canvas.width = w * scaleBy;
+      canvas.height = h * scaleBy;
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      var context = canvas.getContext('2d');
+      context.scale(scaleBy, scaleBy);
+      await html2canvas(cont,{
+        canvas:canvas}).then(function(canvas){
+        var wid = 595; 
+        var hgt = 841;
+        var img = canvas.toDataURL("image/png", wid = canvas.width, hgt = canvas.height);
+        var hratio = hgt/wid;
+        /* var doc = new jsPDF('p','pt','a4'); */
+        var width = doc.internal.pageSize.width;    
+        var height = width * hratio;
+        doc.addImage(img,'PNG',0,0, width, height);
+        if(contents.length-1 === index) {
+          console.log("save");
+          doc.save('Test.pdf');
+        } else {
+          doc.addPage(pgFormat);
+        }
       });
-      console.log(index);
-    }) */
+    })
   };
 
   const addMensajero = () => {
@@ -853,7 +882,7 @@ const OrdenList = (props) => {
         />
       </Card>
       {selected.length > 0 && !download ? (
-        <Grid
+        <Grid  sx={{width:"590px",height:"840px", margin: "0 auto"}}
           /* style={{
             width: 0,
             height: 0,
@@ -870,7 +899,7 @@ const OrdenList = (props) => {
       )}
 
       {download ? (
-        <Grid
+        <Grid  sx={{width:"590px",height:"840px", margin: "0 auto"}}
           /* style={{
             width: 0,
             height: 0,
