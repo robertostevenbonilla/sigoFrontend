@@ -30,13 +30,16 @@ import {
   AppBar,
   Box,
   Divider,
+  Grid,
   IconButton,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  MenuItem,
   Toolbar,
+  Typography,
   createTheme,
 } from "@mui/material";
 import EmpresaList from "./components/empresa/empresa-list.component";
@@ -64,6 +67,7 @@ import {
   DisplaySettings,
   HolidayVillage,
   ListAlt,
+  Logout,
   Menu,
 } from "@mui/icons-material";
 import MuiDrawer from "@mui/material/Drawer";
@@ -137,6 +141,9 @@ function App() {
   const { logout } = UserAuth();
   let navigate = useNavigate();
   const theme = useTheme();
+
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
   const [showModeratorBoard, setShowModeratorBoard] = useState(false);
   const [showAdminBoard, setShowAdminBoard] = useState(false);
   const [open, setOpen] = useState(true);
@@ -152,15 +159,11 @@ function App() {
 
   const [showModal, setShow] = useState(false);
 
-  const handleClose = () => {
+  const handleCloseModal = () => {
     console.log("close modal");
     dispatch(setOpenModal(false));
     setShow(false);
   };
-
-  const logOut = useCallback(() => {
-    dispatch(logout(null));
-  }, [dispatch]);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -171,24 +174,65 @@ function App() {
     setOpen(false);
   };
 
+  const handleMenu = (event) => {
+    console.log(event);
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const cerrarSesion = () => {
+    logout().then((respose) => {
+      navigate("/login");
+    });
+  }
+
   return (
     <div className="App">
       {isLoading && <Loading />}
-      <AppBar position="fixed" open={open} sx={{ background: "white" }}>
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            edge="start"
-            sx={{
-              marginRight: 5,
-              ...(open && { display: "none" }),
-            }}
-          >
-            <Menu />
-          </IconButton>
-        </Toolbar>
+      <AppBar position="fixed" sx={{ background: "white" }}>
+        {currentUser.isLoggedIn /* && currentUser.auth?.reset_password == 0 */ && (
+          <Grid container justify="flex-end" alignItems="center">
+            <Grid item sm={8}></Grid>
+            <Grid item sm={3} sx={{ textAlign: "right" }}>
+              <Typography
+                variant="subtitle2"
+                component="div"
+                sx={{ flexGrow: 1, color: "black" }}
+              >
+                {currentUser.auth.persona.fullName}
+              </Typography>
+            </Grid>
+            <Grid item sm={1}>
+              <IconButton
+                size="large"
+                onClick={cerrarSesion}
+                color="black"
+              >
+                <Logout />
+              </IconButton>
+            </Grid>
+            {/* <Menu
+                id="menu-appbar"
+                anchorEl={anchorEl}
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                open={Boolean(anchorEl)}
+              >
+                <MenuItem onClick={handleClose}>Profile</MenuItem>
+                <MenuItem onClick={handleClose}>My account</MenuItem>
+              </Menu> */}
+          </Grid>
+        )}
       </AppBar>
       <Drawer className="navSide" variant="permanent" open={open}>
         <DrawerHeader>
@@ -282,8 +326,13 @@ function App() {
                 />
               </ListItemButton>
             </ListItem>
-            {console.log("restricciones",(currentUser.auth.roles.find((rol) => rol.name == "admin") !== undefined))}
-            {(currentUser.auth.roles.find((rol) => rol.name == "admin") !== undefined) && (
+            {console.log(
+              "restricciones",
+              currentUser.auth.roles.find((rol) => rol.name == "admin") !==
+                undefined
+            )}
+            {currentUser.auth.roles.find((rol) => rol.name == "admin") !==
+              undefined && (
               <>
                 <ListItem
                   key={"empresa"}
@@ -472,7 +521,7 @@ function App() {
         </Modal.Header>
         <Modal.Body>{currentMessage.msg}</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
+          <Button variant="secondary" onClick={handleCloseModal}>
             Cerrar
           </Button>
         </Modal.Footer>

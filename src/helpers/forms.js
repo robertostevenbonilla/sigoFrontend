@@ -13,13 +13,10 @@ export const personaForm = {
 export const usuarioForm = {
     id: null,
     username: '',
-    oldPassword: '',
+    password: '',
     newPassword: '',
-    active: false,
     reset_password: false,
     roles: [],
-    empresaId: -1,
-    personaId: -1,
 }
 
 export const empresaForm = {

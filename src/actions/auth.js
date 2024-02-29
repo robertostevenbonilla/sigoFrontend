@@ -40,8 +40,7 @@ export const UserAuth = () => {
   };
 
   const logout = async () => {
-    AuthDataService.logoutAPI();
-    console.log("logged out");
+    const response = await AuthDataService.logoutAPI();
     const auth = {
       isLoggedIn: false,
       auth: null,
@@ -62,7 +61,7 @@ export const UserAuth = () => {
   };
 
   const resetPassword = async (data) => {
-    console.log("resetPassword");
+    console.log("resetPassword",data);
     const response = await AuthDataService.resetPassword(data);
     console.log(response);
   };

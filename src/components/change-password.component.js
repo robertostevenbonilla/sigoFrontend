@@ -30,10 +30,11 @@ const ChangePassword = (props) => {
   const { auth: currentUser } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (!currentUser.isLoggedIn) {
+    console.log(currentUser);
+    if (!currentUser?.isLoggedIn) {
       navigate("/login");
     } else {
-      setForm({...currentUser.auth});
+      setForm({...formUsuario, ...currentUser.auth});
       console.log("ChangePassword",currentUser);
     }
   }, []);
@@ -51,6 +52,13 @@ const ChangePassword = (props) => {
         console.log("catch",res);
         setLoading(false);
       });
+  };
+
+  const onChange = (e, name = null, value = null) => {
+    const inputName = name !== null ? name : e.target.name;
+    const inputValue = value !== null ? value : e.target.value;
+    console.log(inputName,inputValue,formUsuario);
+    setForm({ ...formUsuario, [inputName]: inputValue });
   };
 
   return (
@@ -71,7 +79,7 @@ const ChangePassword = (props) => {
               type="text"
               className="form-control"
               name="username"
-              value={formUsuario.username}
+              value={formUsuario?.username}
               validations={[required]}
               disabled
               readOnly
@@ -84,8 +92,8 @@ const ChangePassword = (props) => {
               type="password"
               className="form-control"
               name="password"
-              value={formUsuario.oldPassword}
-              /* onChange={onChangePassword} */
+              value={formUsuario.password}
+              onChange={onChange}
               validations={[required]}
             />
           </div>
@@ -95,9 +103,9 @@ const ChangePassword = (props) => {
             <Input
               type="password"
               className="form-control"
-              name="newpassword"
+              name="newPassword"
               value={formUsuario.newPassword}
-              /* onChange={onChangePassword} */
+              onChange={onChange}
               validations={[required]}
             />
           </div>
