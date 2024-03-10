@@ -63,7 +63,12 @@ const DashboardPage = () => {
   const dispatch = useDispatch();
   const [dashboardData, setDashboard] = useState([]);
   const [ordenesEstatus, setOrdenesEstatus] = useState([]);
-  const [ordenesService, setOrdenesService] = useState([]);
+  const [ordenesService, setOrdenesService] = useState([{
+    "id": 1,
+    "codigo": "",
+    "label": "",
+    "value": 0
+  }]);
   const [TOTAL, setTotalFase] = useState(0);
   const { auth: currentUser } = useSelector((state) => state.auth);
 
