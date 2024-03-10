@@ -17,6 +17,7 @@ export const SearchInput = ({
   size = "large",
   focused,
   placeholder,
+  required=false,
 }) => {
   const [item, setItem] = useState({});
 
@@ -83,6 +84,7 @@ export const SearchInput = ({
             ...params.InputProps,
             type: "search",
           }}
+          required={required}
         />
       )}
       renderOption={(props, option, { inputValue }) => {

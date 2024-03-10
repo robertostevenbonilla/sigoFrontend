@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import PersonaDataService from "../../services/persona.service";
 import EmpresaDataService from "../../services/empresa.service";
 import { personaForm } from "../../helpers/forms";
 import { Link } from "react-router-dom";
 import { AccountCircle, Save } from "@mui/icons-material";
 import { Card } from "../Card";
-import { Button, Grid, TextField } from "@mui/material";
+import { Box, Button, Grid, TextField } from "@mui/material";
 import { SearchInput } from "../form/AutoCompleteInput";
+import { ci } from "ecuador-validator";
+import { setMessage, setOpenModal } from "../../reducers/message";
 
 const AddPersona = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState(personaForm);
+  const dispatch = useDispatch();
 
   const { auth: currentUser } = useSelector((state) => state.auth);
   const [submitted, setSubmitted] = useState(false);
@@ -41,7 +44,21 @@ const AddPersona = () => {
     }
   }, []);
 
-  const savePersona = () => {
+  const savePersona = (e) => {
+    e.preventDefault();
+    console.log(e.target.checkValidity(), !ci(form.identificacion) && form.empresaId > 0, !ci(form.identificacion), form.empresaId);
+
+    if (!ci(form.identificacion) && (form.empresaId > 0 || form.empresaId === null)) {
+      const message = {
+        title: "Completar campos requeridos",
+        msg: "Es necesario completar los campos requeridos",
+        error: true,
+      };
+      dispatch(setMessage({ ...message }));
+      dispatch(setOpenModal(true));
+      return false;
+    }
+
     var data = {
       nombres: form.nombres,
       apellidos: form.apellidos,
@@ -89,6 +106,7 @@ const AddPersona = () => {
             </button>
           </div>
         ) : (
+          <form noValidate onSubmit={savePersona} >
           <Grid container spacing={1}>
             <Grid item md={6} sm={6} xs={12}>
               <TextField
@@ -117,10 +135,24 @@ const AddPersona = () => {
                 id="identificacion"
                 name="identificacion"
                 label="Identificación"
+                type="number"
                 value={form.identificacion}
                 onChange={handleInputChange}
                 variant="outlined"
                 fullWidth
+                inputProps= {{
+                  maxLength: 10,
+                  max: 10,
+                }}
+                helperText={
+                  !ci(form.identificacion) && form.identificacion !== ""
+                    ? "La cedula no es valida"
+                    : ""
+                }
+                error={
+                  form.identificacion !== "" ? !ci(form.identificacion) : false
+                }
+                required
               />
             </Grid>
             <Grid item md={6} sm={6} xs={12}>
@@ -159,11 +191,13 @@ const AddPersona = () => {
                 getOptionLabel={"nombre"}
                 getIndexLabel={"id"}
                 onChange={handleInputChange}
+                required={true}
               />
             </Grid>
             <Grid item md={12} sm={12} xs={12} className="text-start">
               <Button
-                onClick={savePersona}
+                //onClick={savePersona}
+                type="submit"
                 endIcon={<Save />}
                 variant="contained"
                 color="success"
@@ -172,6 +206,7 @@ const AddPersona = () => {
               </Button>
             </Grid>
           </Grid>
+          </form>
         )}
       </Card>
     </div>

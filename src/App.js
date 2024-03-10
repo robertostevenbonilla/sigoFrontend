@@ -42,6 +42,7 @@ import {
   Typography,
   createTheme,
 } from "@mui/material";
+import DashboardPage from "./components/dashboardPage.component";
 import EmpresaList from "./components/empresa/empresa-list.component";
 import Empresa from "./components/empresa/empresa.component";
 import AddEmpresa from "./components/empresa/add-empresa.component";
@@ -64,6 +65,7 @@ import {
   Business,
   ChevronLeft,
   ChevronRight,
+  Dashboard,
   DisplaySettings,
   HolidayVillage,
   ListAlt,
@@ -187,7 +189,7 @@ function App() {
     logout().then((respose) => {
       navigate("/login");
     });
-  }
+  };
 
   return (
     <div className="App">
@@ -206,11 +208,7 @@ function App() {
               </Typography>
             </Grid>
             <Grid item sm={1}>
-              <IconButton
-                size="large"
-                onClick={cerrarSesion}
-                color="black"
-              >
+              <IconButton size="large" onClick={cerrarSesion} color="black">
                 <Logout />
               </IconButton>
             </Grid>
@@ -236,7 +234,7 @@ function App() {
       </AppBar>
       <Drawer className="navSide" variant="permanent" open={open}>
         <DrawerHeader>
-          <Link to={"/persona"} className="nav-link">
+          <Link to={"/"} className="nav-link">
             <img
               src={logo}
               alt="Goya Express Delivery"
@@ -260,6 +258,73 @@ function App() {
 
         {currentUser.isLoggedIn && currentUser.auth?.reset_password == 0 && (
           <List>
+            <ListItem
+              key={"dashboard"}
+              onClick={() => {
+                navigate("/");
+              }}
+              disablePadding
+              sx={{ display: "block" }}
+            >
+              <ListItemButton
+                sx={{
+                  minHeight: 48,
+                  justifyContent: open ? "initial" : "center",
+                  px: 2.5,
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: open ? 3 : "auto",
+                    justifyContent: "center",
+                    color: "white",
+                    paddingRight: "10px",
+                    width: 35,
+                  }}
+                >
+                  <Dashboard />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Dashboard"
+                  sx={{ opacity: open ? 1 : 0 }}
+                />
+              </ListItemButton>
+            </ListItem>
+            <ListItem
+              key={"orden"}
+              onClick={() => {
+                navigate("/orden");
+              }}
+              disablePadding
+              sx={{ display: "block" }}
+            >
+              <ListItemButton
+                sx={{
+                  minHeight: 48,
+                  justifyContent: open ? "initial" : "center",
+                  px: 2.5,
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: open ? 3 : "auto",
+                    justifyContent: "center",
+                    paddingRight: "10px",
+                    width: 35,
+                  }}
+                >
+                  <ListAlt />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Ordenes"
+                  sx={{
+                    opacity: open ? 1 : 0,
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
             <ListItem
               key={"persona"}
               onClick={() => {
@@ -472,40 +537,6 @@ function App() {
                 </ListItem>
               </>
             )}
-            <ListItem
-              key={"orden"}
-              onClick={() => {
-                navigate("/orden");
-              }}
-              disablePadding
-              sx={{ display: "block" }}
-            >
-              <ListItemButton
-                sx={{
-                  minHeight: 48,
-                  justifyContent: open ? "initial" : "center",
-                  px: 2.5,
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : "auto",
-                    justifyContent: "center",
-                    paddingRight: "10px",
-                    width: 35,
-                  }}
-                >
-                  <ListAlt />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Ordenes"
-                  sx={{
-                    opacity: open ? 1 : 0,
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
           </List>
         )}
       </Drawer>
@@ -516,12 +547,16 @@ function App() {
         aria-labelledby="contained-modal-title-vcenter"
         centered
       >
-        <Modal.Header closeButton>
+        <Modal.Header closeButton onClick={handleCloseModal}>
           <Modal.Title>{currentMessage.title}</Modal.Title>
         </Modal.Header>
         <Modal.Body>{currentMessage.msg}</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseModal}>
+          <Button
+            variant="secondary"
+            onClick={handleCloseModal}
+            color={currentMessage.error ? "error" : "inherit"}
+          >
             Cerrar
           </Button>
         </Modal.Footer>
@@ -550,7 +585,7 @@ function App() {
           }}
         >
           <Routes>
-            <Route path="/" element={<PersonaList />} />
+            <Route path="/" element={<DashboardPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/changepassword" element={<ChangePassword />} />
             <Route path="/persona" element={<PersonaList />} />

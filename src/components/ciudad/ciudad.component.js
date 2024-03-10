@@ -101,11 +101,11 @@ const Ciudad = () => {
         if(response.status === 200) {
           const message = {
             title: "Actualización Ciudad",
-            msg: "",
+            msg: response.data?.message === undefined ? "Ciudad guardada exitosamente" : response.data.message,
             error: true,
           };
           console.log(response.data.message);
-          dispatch(setMessage({ ...message, msg: response.data.message }));
+          dispatch(setMessage({ ...message }));
           dispatch(setOpenModal(true));
           setLoading(false);
           setEdited(true);

@@ -41,7 +41,6 @@ const AddCiudad = () => {
     e.preventDefault();
     setLoading(true);
     const dataAU = {
-        id: form.id,
         codigo: form.codigo,
         nombre: form.nombre,
         descripcion: form.descripcion,
@@ -50,7 +49,7 @@ const AddCiudad = () => {
     CiudadDataService.create(dataAU)
       .then((response) => {
         console.log(response);
-        if(response.status === 200) {
+        if(response.status === 200 || response.status === 201) {
           const message = {
             title: "Creación Ciudad",
             msg: "",
@@ -69,13 +68,14 @@ const AddCiudad = () => {
 
   const newUsuario = () => {
     console.log(form);
+    setForm(usuarioForm);
     setSubmitted(false);
   };
 
   return (
     
     <Card
-      title="Usuario"
+      title="Ciudad"
       icon={<HolidayVillage sx={{ color: "white", fontSize: "23px" }} />}
       openCollapse={true}
       idElement="datosGenerales-ciudad"
