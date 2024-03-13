@@ -697,6 +697,8 @@ export default function EnhancedTable(props) {
     handlePagination = null,
     refreshData=null,
     onRefreshData=null,
+    setPages=null,
+    setRows=null,
   } = props;
   const [order, setOrder] = React.useState(orderASC);
   const [orderBy, setOrderBy] = React.useState("");
@@ -733,6 +735,16 @@ export default function EnhancedTable(props) {
     //setOrder("desc");
     setOrderBy(rowId);
   }, [rowId]);
+
+  React.useEffect(() => {
+    console.log(page);
+    if(props.setPages) setPages(page);
+  }, [page]);
+
+  React.useEffect(() => {
+    console.log(rowsPerPage);
+    if(props.setRows) setRows(rowsPerPage);
+  }, [rowsPerPage]);
 
   React.useEffect(() => {
     console.log("searchParams", refresh);

@@ -78,10 +78,10 @@ export const ordenForm = {
 }
 
 export const ordenFilterForm = {
-    empresaId: null,
-    servicioId: null,
-    faseId: null,
-    ciudadOrigenId: null,
-    ciudadDestinoId: null,
+    empresaId: [],
+    servicioId: [],
+    faseId: [],
+    ciudadOrigenId: [],
+    ciudadDestinoId: [],
 }
 

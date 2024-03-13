@@ -57,6 +57,7 @@ const AddUsuario = () => {
     signup(dataAU)
       .then((response) => {
         console.log(response);
+        setSubmitted(true);
       })
       .catch((e) => {
         console.log(e /* .response.data.message */);

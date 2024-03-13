@@ -23,7 +23,10 @@ export const SelectInput = ({
   errorMgs,
   disabled,
   multiple,
-  input
+  input,
+  getIndexLabel=null,
+  getOptionLabel=null,
+  backgroundLabel=null
 }) => {
 
   return (
@@ -35,7 +38,7 @@ export const SelectInput = ({
       disabled={disabled}
       error={error}
     >
-      <InputLabel id={`lable-${id}`} shrink sx={{ pl: '0.1rem', pr: '0.5rem', backgroundColor: 'white' }}> {label} </InputLabel>
+      <InputLabel id={`lable-${id}`} shrink sx={{ pl: '0.1rem', pr: '0.5rem', background: (backgroundLabel !== null ? backgroundLabel : 'white') }}> {label} </InputLabel>
       <Select
         labelId={`lable-${id}`}
         id={id}
@@ -51,11 +54,21 @@ export const SelectInput = ({
         <MenuItem value="" disabled sx={{ whiteSpace: 'normal' }}>
           <em>Ninguno</em>
         </MenuItem>
-        {data.map((v, i) => (
-          <MenuItem key={i} value={v.value} text={v.text} sx={{ whiteSpace: 'normal'}}>
-            {v.text}
-          </MenuItem>
-        ))}
+        {data.map((v, i) => {
+          if(getIndexLabel !== null) {
+            return (
+              <MenuItem key={i} value={v[getIndexLabel]} text={v[getOptionLabel]} sx={{ whiteSpace: 'normal' }}>
+                {v[getOptionLabel]}
+              </MenuItem>
+            );
+          } else {
+            return ( 
+              <MenuItem key={i} value={v.value} text={v.text} sx={{ whiteSpace: 'normal'}}>
+                {v.text}
+              </MenuItem>
+            );
+          }
+        })}
       </Select>
       {error && <FormHelperText>{errorMgs || 'Requerido'}</FormHelperText>}
     </FormControl>

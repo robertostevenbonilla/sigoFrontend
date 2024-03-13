@@ -36,6 +36,7 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  OutlinedInput,
 } from "@mui/material";
 import { loadingTable } from "../../reducers/ui";
 import { SearchInput } from "../form/AutoCompleteInput";
@@ -51,6 +52,7 @@ import logo from "./../../assets/logo-goya.png";
 import HTMLComment from "../../hooks/HTMLComment";
 import html2canvas from "html2canvas";
 import UsuarioDataService from "../../services/usuario.service";
+import { SelectInput } from "../form/SelectInput";
 
 var doc = new jsPDF();
 
@@ -305,8 +307,11 @@ const OrdenList = (props) => {
   const [reloadData, setReload] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [morotizadoId, setMorotizadoId] = useState(-1);
+  const [filtros, setFiltros] = useState("");
+  const [pages, setPages] = useState(1);
+  const [rows, setRows] = useState(10);
 
-  const loadSelects = () => {
+  const loadSelects = async () => {
     CiudadDataService.getSelect()
       .then((response) => {
         console.log("ciudad", response);
@@ -358,6 +363,12 @@ const OrdenList = (props) => {
     }
   }, [downloadObj]);
 
+  useEffect(() => {
+    if (filtros !== "") {
+      retrieveOrdenes(pages, rows, filtros);
+    }
+  }, [filtros]);
+
   const getFilters = async () => {
     if (!filtersLoaded) {
       loadSelects();
@@ -379,15 +390,21 @@ const OrdenList = (props) => {
     setForm({ ...form, [id]: value });
   };
 
+  const handleSearchInputChange = async (event) => {
+    const { name, value } = event.target;
+    console.log(form, event, name, value);
+    setForm({ ...form, [name]: [...value] });
+  };
+
   const handleInputChangeM = async (event) => {
     const { id, value } = event.target;
     console.log(form, event.target, id, value);
     setMorotizadoId(value);
   };
 
-  const retrieveOrdenes = (page = 0, size = 10) => {
+  const retrieveOrdenes = (page = 0, size = 10, filtros = "") => {
     dispatch(loadingTable(true));
-    OrdenDataService.getAll(page, size)
+    OrdenDataService.getAll(page, size, filtros)
       .then((response) => {
         console.log(response.data);
         setOrdenes(response.data);
@@ -533,6 +550,18 @@ const OrdenList = (props) => {
         console.log(err);
         setOpenDialog(false);
       });
+  };
+
+  const getFiltered = () => {
+    console.log(form);
+    let filtered = "";
+    Object.keys(form).forEach((key) => {
+      const ids = form[key].join(",");
+      console.log(ids);
+      if(ids !== "") filtered += key+":in:"+ids+";";
+    });
+    console.log(filtered);
+    setFiltros(filtered);
   };
 
   var header = function (data) {
@@ -735,7 +764,7 @@ const OrdenList = (props) => {
               container
               justifyContent={"space-between"}
               alignItems={"center"}
-              sx={{ padding: 2 }}
+              sx={{ padding: "15px", backgroundColor: "#d9d9d9" }}
             >
               <Grid item sm={1} xs={12}>
                 Filtros:
@@ -743,83 +772,97 @@ const OrdenList = (props) => {
               <Grid item sm={9} xs={12}>
                 <Grid container spacing={2} alignItems={"center"}>
                   <Grid item xs={12} sm={4}>
-                    <SearchInput
-                      options={[
-                        { id: -1, nombre: "Seleccione una ciudad" },
+                    <SelectInput
+                      data={[
+                        /* { id: -1, nombre: "Seleccione una ciudad" }, */
                         ...ciudadSelect,
                       ]}
+                      multiple={true}
                       value={form.ciudadOrigenId}
-                      placeholder={"Seleccione una ciudad"}
                       id={"ciudadOrigenId"}
                       name={"ciudadOrigenId"}
                       label={"Ciudad Origen"}
+                      input={<OutlinedInput id="select-multiple-cOrig" placeholder="Ciudad Origen" />}
+                      onChange={handleSearchInputChange}
                       getOptionLabel={"nombre"}
                       getIndexLabel={"id"}
-                      onChange={handleInputChange}
+                      backgroundLabel={"#d9d9d9"}
                     />
                   </Grid>
                   <Grid item xs={12} sm={4}>
-                    <SearchInput
-                      options={[
-                        { id: -1, nombre: "Seleccione una ciudad" },
+                    <SelectInput
+                      data={[
+                        /* { id: -1, nombre: "Seleccione una ciudad" }, */
                         ...ciudadSelect,
                       ]}
+                      multiple={true}
                       value={form.ciudadDestinoId}
                       placeholder={"Seleccione una ciudad"}
                       id={"ciudadDestinoId"}
                       name={"ciudadDestinoId"}
                       label={"Ciudad Destino"}
+                      input={<OutlinedInput id="select-multiple-cDest" placeholder="Ciudad Destino" />}
+                      onChange={handleSearchInputChange}
                       getOptionLabel={"nombre"}
                       getIndexLabel={"id"}
-                      onChange={handleInputChange}
+                      backgroundLabel={"#d9d9d9"}
                     />
                   </Grid>
                   <Grid item xs={12} sm={3}>
-                    <SearchInput
-                      options={[
-                        { id: -1, nombre: "Seleccione un estado" },
+                    <SelectInput
+                      data={[
+                        /* { id: -1, nombre: "Seleccione un estado" }, */
                         ...faseSelect,
                       ]}
+                      multiple={true}
                       value={form.faseId}
                       placeholder={"Seleccione un estado"}
                       id={"faseId"}
                       name={"faseId"}
                       label={"Estado"}
+                      input={<OutlinedInput id="select-multiple-estado" placeholder="Estado" />}
+                      onChange={handleSearchInputChange}
                       getOptionLabel={"nombre"}
                       getIndexLabel={"id"}
-                      onChange={handleInputChange}
+                      backgroundLabel={"#d9d9d9"}
                     />
                   </Grid>
                   <Grid item xs={12} sm={3}>
-                    <SearchInput
-                      options={[
-                        { id: -1, nombre: "Seleccione un servicio" },
+                    <SelectInput
+                      data={[
+                        /* { id: -1, nombre: "Seleccione un servicio" }, */
                         ...servicioSelect,
                       ]}
+                      multiple={true}
                       value={form.servicioId}
                       placeholder={"Seleccione un servicio"}
                       id={"servicioId"}
                       name={"servicioId"}
                       label={"Servicio"}
+                      input={<OutlinedInput id="select-multiple-servicio" placeholder="Servicio" />}
+                      onChange={handleSearchInputChange}
                       getOptionLabel={"nombre"}
                       getIndexLabel={"id"}
-                      onChange={handleInputChange}
+                      backgroundLabel={"#d9d9d9"}
                     />
                   </Grid>
                   <Grid item xs={12} sm={3}>
-                    <SearchInput
-                      options={[
-                        { id: -1, nombre: "Seleccione una empresa" },
+                    <SelectInput
+                      data={[
+                        /* { id: -1, nombre: "Seleccione una empresa" }, */
                         ...empresaSelect,
                       ]}
+                      multiple={true}
                       value={form.empresaId}
                       placeholder={"Seleccione una empresa"}
                       id={"empresaId"}
                       name={"empresaId"}
                       label={"Empresa"}
+                      input={<OutlinedInput id="select-multiple-empresa" placeholder="Empresa" />}
+                      onChange={handleSearchInputChange}
                       getOptionLabel={"nombre"}
                       getIndexLabel={"id"}
-                      onChange={handleInputChange}
+                      backgroundLabel={"#d9d9d9"}
                     />
                   </Grid>
                 </Grid>
@@ -829,8 +872,9 @@ const OrdenList = (props) => {
                   variant="contained"
                   startIcon={<FilterAltOutlined />}
                   onClick={() => {
-                    //getFiltered();
-                    resetPagination();
+                    //resetPagination();
+                    console.log(form);
+                    getFiltered();
                   }}
                 >
                   Filtrar
@@ -879,6 +923,8 @@ const OrdenList = (props) => {
               </ListItem>
             </List>
           }
+          setPages={setPages}
+          setRows={setRows}
         />
       </Card>
       {selected.length > 0 && !download ? (

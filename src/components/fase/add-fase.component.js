@@ -48,7 +48,7 @@ const AddFase = () => {
     FaseDataService.create(dataAU)
       .then((response) => {
         console.log(response);
-        if(response.status === 200) {
+        if(response.status === 200 || response.status === 201) {
           const message = {
             title: "Creación Fase",
             msg: "",
@@ -67,6 +67,7 @@ const AddFase = () => {
 
   const newUsuario = () => {
     console.log(form);
+    setForm(faseForm);
     setSubmitted(false);
   };
 

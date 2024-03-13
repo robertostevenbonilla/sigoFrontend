@@ -49,7 +49,7 @@ const Usuario = () => {
       .then((response) => {
         response.data.roles = response.data.roles.map( role =>role.name)
         setForm(response.data);
-        setEmpresaSelect(response.data.persona.empresa.nombre);
+        setEmpresaSelect(response.data.persona?.empresa?.nombre);
         console.log(response, response.data);
       })
       .catch((e) => {
@@ -77,6 +77,7 @@ const Usuario = () => {
   }, []);
 
   useEffect(() => {
+    console.log(id);
     if (id) {
       getUsuario(id);
     }
@@ -261,7 +262,7 @@ const Usuario = () => {
                 { id: -1, fullName: "Seleccione una persona" },
                 ...personaSelect,
               ]}
-              value={form.personaId}
+              value={form.persona?.id}
               placeholder={"Seleccione una persona"}
               id={"personaId"}
               name={"personaId"}

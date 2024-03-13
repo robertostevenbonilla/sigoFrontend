@@ -27,7 +27,7 @@ const columnsUsuario = [
     headerName: "Empresa",
     flex: 3,
     renderFunction: (row) => {
-      return row.persona.empresa.nombre;
+      return row.persona.empresa?.nombre;
     },
   },
   {
@@ -121,6 +121,7 @@ const UsuarioList = (props) => {
           /* loading={isLoadingTable} */
           view={true}
           onViewFunction={(id, row) => {
+            console.log(id, row);
             navigate(`/usuario/${id}`);
           }}
           searchableKeys={["username", "persona", "empresa", "email"]}

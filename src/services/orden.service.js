@@ -3,8 +3,10 @@ import { AuthHeader } from "./auth-header";
 
 const { header } = AuthHeader();
 
-const getAll = async (page,size) => {
-  return await http.get(`/orden/?page=${page}&size=${size}`, { headers: {...header()} });
+const getAll = async (page,size,filter="") => {
+  let url = `/orden/?page=${page}&size=${size}`
+  if(filter !== "") url = `/orden/?filter=${filter}&page=${page}&size=${size}`;
+  return await http.get(url, { headers: {...header()} });
 }
 
 const getSelect = async () => {
