@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate, useNavigate } from "react-router-dom";
 
@@ -19,6 +19,7 @@ const required = (value) => {
 const Login = (props) => {
   let navigate = useNavigate();
   const { login } = UserAuth();
+  const { auth: currentUser } = useSelector((state) => state.auth);
 
   const form = useRef();
   const checkBtn = useRef();
@@ -31,6 +32,15 @@ const Login = (props) => {
   const { msg } = useSelector((state) => state.message);
 
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    console.log(currentUser.isLoggedIn, currentUser);
+    if (currentUser.isLoggedIn) {
+      navigate("/");
+    } else if (currentUser.user?.reset_password === 1) {
+      navigate("/changepassword");
+    }
+  }, []);
 
   const onChangeUsername = (e) => {
     const username = e.target.value;
@@ -58,7 +68,7 @@ const Login = (props) => {
       login(data)
         .then((res) => {
           console.log("data", res);
-          navigate("/persona");
+          navigate("/");
         })
         .catch((res) => {
           console.log("catch",res);
@@ -70,7 +80,7 @@ const Login = (props) => {
   };
 
   if (isLoggedIn) {
-    return <Navigate to="/persona" />;
+    navigate("/");
   }
 
   return (

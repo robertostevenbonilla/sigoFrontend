@@ -71,8 +71,10 @@ import {
   ListAlt,
   Logout,
   Menu,
+  QrCodeScanner,
 } from "@mui/icons-material";
 import MuiDrawer from "@mui/material/Drawer";
+import AsignarXqr from "./components/asignarxQR/asignarXqr";
 
 const drawerWidth = 240;
 
@@ -391,11 +393,39 @@ function App() {
                 />
               </ListItemButton>
             </ListItem>
-            {console.log(
-              "restricciones",
-              currentUser.auth.roles.find((rol) => rol.name == "admin") !==
-                undefined
-            )}
+            <ListItem
+              key={"asignar"}
+              onClick={() => {
+                navigate("/asignarqr");
+              }}
+              disablePadding
+              sx={{ display: "block" }}
+            >
+              <ListItemButton
+                sx={{
+                  minHeight: 48,
+                  justifyContent: open ? "initial" : "center",
+                  px: 2.5,
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: open ? 3 : "auto",
+                    justifyContent: "center",
+                    color: "white",
+                    paddingRight: "10px",
+                    width: 35,
+                  }}
+                >
+                  <QrCodeScanner />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Asignar"
+                  sx={{ opacity: open ? 1 : 0 }}
+                />
+              </ListItemButton>
+            </ListItem>
             {currentUser.auth.roles.find((rol) => rol.name == "admin") !==
               undefined && (
               <>
@@ -609,6 +639,7 @@ function App() {
             <Route path="/orden" element={<OrdenList />} />
             <Route path="/orden/add" element={<AddOrden />} />
             <Route path="/orden/:id" element={<Orden />} />
+            <Route path="/asignarqr" element={<AsignarXqr />} />
           </Routes>
         </Box>
       </div>

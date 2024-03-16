@@ -17,6 +17,10 @@ const get = async (id) => {
   return await http.get(`/orden/${id}`, { headers: {...header()} });
 }
 
+const getByGuia = async (guia) => {
+  return await http.get(`/orden/guia/${guia}`, { headers: {...header()} });
+}
+
 const create = async (data) => {
   return await http.post("/orden/create", data, { headers: {...header()} });
 }
@@ -63,6 +67,7 @@ const OrdenDataService = {
   asignar,
   faseCount,
   serviceCount,
+  getByGuia,
 }
 
 export default OrdenDataService;
