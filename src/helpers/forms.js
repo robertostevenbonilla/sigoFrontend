@@ -75,6 +75,7 @@ export const ordenForm = {
     faseId: null,
     ciudadOrigenId: null,
     ciudadDestinoId: null,
+    Evidencias: [],
 }
 
 export const ordenFilterForm = {

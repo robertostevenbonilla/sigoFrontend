@@ -52,8 +52,18 @@ const faseCount = async (id) => {
 
 const serviceCount = async (id) => {
   const qp = id === null ? "" : "?empresaIdFilter="+id;
-  return await http.get(`/orden/serviceCount${qp}`, { headers: {...header()} });
+  return await http.get(`/orden/serviceCount${qp}`);
 }
+
+const evidencia = async (file, id) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return await http.post(`/evidencia/orden/${id}`, formData, { headers: {...header(), 'Content-type': 'multipart/form-data'} });
+}
+
+const incidencia = async (data) => {
+  return await http.post("/incidencia/create", data, { headers: {...header()} });
+};
 
 const OrdenDataService = {
   getAll,
@@ -68,6 +78,8 @@ const OrdenDataService = {
   faseCount,
   serviceCount,
   getByGuia,
+  evidencia,
+  incidencia,
 }
 
 export default OrdenDataService;

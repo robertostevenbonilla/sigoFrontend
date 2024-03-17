@@ -8,8 +8,22 @@ import ServicioDataService from "../../services/servicio.service";
 import FaseDataService from "../../services/fase.service";
 import { ordenForm } from "../../helpers/forms";
 import { Card as CardContent } from "../Card";
-import { AssignmentInd, Business, Edit, Save } from "@mui/icons-material";
-import { Card, Button, Grid, Paper, TextField } from "@mui/material";
+import { AssignmentInd, Business, Edit, Info, Save } from "@mui/icons-material";
+import {
+  Card,
+  Button,
+  Grid,
+  Paper,
+  TextField,
+  ImageListItem,
+  ImageList,
+  ImageListItemBar,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+} from "@mui/material";
 import { SearchInput } from "../form/AutoCompleteInput";
 import { SelectInput } from "../form/SelectInput";
 import { setMessage, setOpenModal } from "../../reducers/message";
@@ -205,7 +219,9 @@ const Orden = () => {
                 sx={{ width: "100% " }}
                 label="Recepción"
                 inputFormat="YYYY-MM-DD"
-                renderInput={(params) => <TextField {...params} sx={{width: '100%'}} />}
+                renderInput={(params) => (
+                  <TextField {...params} sx={{ width: "100%" }} />
+                )}
                 value={dayjs(form.fechaRecepcion)}
                 onChange={(e) =>
                   onChange(
@@ -227,7 +243,9 @@ const Orden = () => {
                 sx={{ width: "100% " }}
                 label="Recepción"
                 inputFormat="YYYY-MM-DD"
-                renderInput={(params) => <TextField {...params} sx={{width: '100%'}} />}
+                renderInput={(params) => (
+                  <TextField {...params} sx={{ width: "100%" }} />
+                )}
                 value={dayjs(form.fechaRecepcion)}
                 onChange={(e) =>
                   onChange(
@@ -405,7 +423,7 @@ const Orden = () => {
               />
             </Grid>
           </Grid>
-                    
+
           <Grid item md={6} sm={6} xs={12}>
             <TextField
               id="email"
@@ -487,7 +505,7 @@ const Orden = () => {
               fullWidth
               disabled={edited}
             />
-          </Grid>        
+          </Grid>
           <Grid item md={12} sm={12} xs={12}>
             <TextField
               id="descripcion"
@@ -524,6 +542,61 @@ const Orden = () => {
                 Guardar
               </Button>
             )}
+          </Grid>
+          <Grid item md={8} sm={8} sx={12}>
+            <ImageList
+              sx={{ width: "100%", maxHeight: 450 }}
+              variant="quilted"
+              cols={3}
+              rowHeight={200}
+            >
+              {form.Evidencias.map((item, key) => (
+                <ImageListItem key={key} sx={{ objectFit: "contain" }}>
+                  <img
+                    srcSet={`${process.env.REACT_APP_IMG_URL}${item.codigo}`}
+                    src={`${process.env.REACT_APP_IMG_URL}${item.codigo}`}
+                    /* alt={item.title} */
+                    loading="lazy"
+                    style={{ objectFit: "contain" }}
+                  />
+                  <ImageListItemBar
+                    title={item.nombre}
+                    subtitle={moment(
+                      item.createdAt[item.createdAt.length - 1] === "Z"
+                        ? item.createdAt.slice(0, -1)
+                        : item.createdAt
+                    ).format("YYYY-MM-DD hh:mm:ss")}
+                    actionIcon={
+                      <IconButton
+                        sx={{ color: "rgba(255, 255, 255, 0.54)" }}
+                        aria-label={`info about ${item.title}`}
+                      >
+                        <Info />
+                      </IconButton>
+                    }
+                  />
+                </ImageListItem>
+              ))}
+            </ImageList>
+          </Grid>
+          <Grid item md={4} sm={4} sx={12}>
+            <List dense={true} sx={{ width: "100%", maxHeight: 450 }}>
+              {form.Incidencias?.map((item, key) => (
+                <>
+                  <ListItem>
+                    <ListItemText
+                      primary={item.descripcion}
+                      secondary={moment(
+                        item.createdAt[item.fecha.length - 1] === "Z"
+                          ? item.fecha.slice(0, -1)
+                          : item.fecha
+                      ).format("YYYY-MM-DD hh:mm:ss")}
+                    />
+                  </ListItem>
+                  <Divider variant="middle" component="li" />
+                </>
+              ))}
+            </List>
           </Grid>
         </Grid>
       </CardContent>

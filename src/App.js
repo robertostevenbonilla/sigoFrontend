@@ -74,7 +74,8 @@ import {
   QrCodeScanner,
 } from "@mui/icons-material";
 import MuiDrawer from "@mui/material/Drawer";
-import AsignarXqr from "./components/asignarxQR/asignarXqr";
+import AsignarXqr from "./components/asignarxQR/asignarXqr.component";
+import Recibo from "./components/orden/recibo.component";
 
 const drawerWidth = 240;
 
@@ -640,6 +641,7 @@ function App() {
             <Route path="/orden/add" element={<AddOrden />} />
             <Route path="/orden/:id" element={<Orden />} />
             <Route path="/asignarqr" element={<AsignarXqr />} />
+            <Route path="/recibo/:guia" element={<Recibo />} />
           </Routes>
         </Box>
       </div>

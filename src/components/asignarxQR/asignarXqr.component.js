@@ -3,46 +3,25 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import OrdenDataService from "../../services/orden.service";
 import FaseDataService from "../../services/fase.service";
-import { styled } from "@mui/material/styles";
-import EnhancedTable from "../table/table";
-import { usePersonasTable } from "../../hooks/usePersonaTable";
 import { Close, QrCodeScanner, Save } from "@mui/icons-material";
 import { Card } from "../Card";
 import {
   Box,
   Button,
-  Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Grid,
-  IconButton,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  OutlinedInput,
   Paper,
   TextField,
 } from "@mui/material";
-import { loadingTable } from "../../reducers/ui";
 import { SearchInput } from "../form/AutoCompleteInput";
-import { ordenFilterForm } from "../../helpers/forms";
-import jsPDF from "jspdf";
-
-import { PdfPage } from "../form/PdfPage";
 import { setMessage, setOpenModal } from "../../reducers/message";
 
 import UsuarioDataService from "../../services/usuario.service";
-import { SelectInput } from "../form/SelectInput";
 
 const AsignarXqr = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const { auth: currentUser } = useSelector((state) => state.auth);
-  const { isLoadingTable } = useSelector((state) => state.ui);
   const [motorizadoSelect, setMotorizadoSelect] = useState([]);
   const [morotizadoId, setMorotizadoId] = useState(-1);
   const [faseSelect, setFaseSelect] = useState([]);
@@ -51,7 +30,6 @@ const AsignarXqr = (props) => {
   const [ordenes, setOrdenes] = useState({});
 
   useEffect(() => {
-    console.log(currentUser, currentUser);
     if (currentUser.auth?.reset_password === 1) {
       navigate("/changepassword");
     } else if (!currentUser.isLoggedIn) {
@@ -65,10 +43,19 @@ const AsignarXqr = (props) => {
   const getOrdenByGuia = (guiaR) => {
     OrdenDataService.getByGuia(guiaR)
       .then((response) => {
-        let ordenGuia = [];
-        ordenGuia[guiaR] = response.data;
-        setOrdenes({ ...ordenes, ...ordenGuia });
-        console.log(response.data, ordenes);
+        if(Object.keys(response.data).length > 0) {
+          let ordenGuia = [];
+          ordenGuia[guiaR] = response.data;
+          setOrdenes({ ...ordenes, ...ordenGuia });
+        } else {
+          const message = {
+            title: "Orden",
+            msg: "No se encontro una orden activa o correcta.",
+            error: true,
+          };
+          dispatch(setMessage({ ...message }));
+          dispatch(setOpenModal(true));
+        }
       })
       .catch((e) => {
         console.log(e);
@@ -108,12 +95,11 @@ const AsignarXqr = (props) => {
   };
 
   const handleInputChange = async (event) => {
-    const { id, value } = event.target;
+    const { value } = event.target;
     setGuia(value);
   };
 
   const handleQRread = async (event) => {
-    const { id, value } = event.target;
     if (event.key === "Enter") {
       let guiaR = guia.replace(
         "httpÑ--sigo.goyaexpressdelivery.com-recibo-",
@@ -204,8 +190,8 @@ const AsignarXqr = (props) => {
     OrdenDataService.asignar(dataM)
       .then((response) => {
         const message = {
-          title: "Mensajero",
-          msg: "Mensajero asignado correctamente.",
+          title: "Asignación",
+          msg: "Procesado correctamente.",
           error: true,
         };
         dispatch(setMessage({ ...message }));
@@ -272,7 +258,7 @@ const AsignarXqr = (props) => {
               fullWidth
             />
           </Grid>
-          <Grid item md={6} sm={6} xs={12}>
+          <Grid item md={6} sm={6} xs={12} sx={{margin: "auto 0"}}>
             <Button
               onClick={saveAsignar}
               endIcon={<Save />}
