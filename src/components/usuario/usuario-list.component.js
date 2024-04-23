@@ -65,6 +65,14 @@ const columnsUsuario = [
       }
     },
   },
+  {
+    field: "roles[0].name",
+    headerName: "Rol",
+    flex: 3,
+    renderFunction: (row) => {
+      return row.roles[0].name;
+    },
+  },
 ];
 
 const UsuarioList = (props) => {

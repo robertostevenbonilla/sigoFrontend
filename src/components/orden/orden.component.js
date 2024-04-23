@@ -23,6 +23,7 @@ import {
   ListItem,
   ListItemText,
   Divider,
+  Typography,
 } from "@mui/material";
 import { SearchInput } from "../form/AutoCompleteInput";
 import { SelectInput } from "../form/SelectInput";
@@ -586,11 +587,21 @@ const Orden = () => {
                   <ListItem>
                     <ListItemText
                       primary={item.descripcion}
-                      secondary={moment(
-                        item.createdAt[item.fecha.length - 1] === "Z"
-                          ? item.fecha.slice(0, -1)
-                          : item.fecha
-                      ).format("YYYY-MM-DD hh:mm:ss")}
+                      secondary={
+                        <>
+                          <Typography
+                            sx={{ display: "inline" }}
+                            component="span"
+                            variant="body2"
+                            color="text.primary"
+                          >
+                            {item.usuario.persona.fullName}: 
+                          </Typography>
+                          {moment( item.createdAt[item.fecha.length - 1] === "Z"
+                          ? item.fecha.slice(0, -1) : item.fecha
+                          ).format("YYYY-MM-DD hh:mm:ss")}
+                        </>
+                      }
                     />
                   </ListItem>
                   <Divider variant="middle" component="li" />

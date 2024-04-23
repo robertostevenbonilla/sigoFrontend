@@ -20,16 +20,19 @@ import {
   Title,
 } from "@mui/icons-material";
 import { Box, Button, Grid, TextField } from "@mui/material";
-import { BarChart, DefaultizedPieValueType } from '@mui/x-charts';
-import { PieArcLabelPlot, PieChart, pieArcLabelClasses } from "@mui/x-charts/PieChart";
+import { BarChart, DefaultizedPieValueType } from "@mui/x-charts";
+import {
+  PieArcLabelPlot,
+  PieChart,
+  pieArcLabelClasses,
+} from "@mui/x-charts/PieChart";
 import { useDrawingArea } from "@mui/x-charts/hooks";
 import { styled } from "@mui/material/styles";
-import { axisClasses } from '@mui/x-charts';
+import { axisClasses } from "@mui/x-charts";
 import { SearchInput } from "./form/AutoCompleteInput";
 import OrdenDataService from "../services/orden.service";
 
 const size = {
-  width: 600,
   height: 500,
 };
 
@@ -43,32 +46,34 @@ const StyledText = styled("text")(({ theme }) => ({
 const chartSetting = {
   yAxis: [
     {
-      label: 'Ordenes',
+      label: "Ordenes",
     },
   ],
   width: 400,
   height: 300,
   sx: {
     [`.${axisClasses.left} .${axisClasses.label}`]: {
-      transform: 'translate(-10px, 0)',
-      fontWeight: 'bold',
+      transform: "translate(-10px, 0)",
+      fontWeight: "bold",
     },
   },
 };
 
-const valueFormatter = (value: number) => `${value} ordenes`;
+const valueFormatter = (value) => `${value} ordenes`;
 
 const DashboardPage = () => {
   let navigate = useNavigate();
   const dispatch = useDispatch();
   const [dashboardData, setDashboard] = useState([]);
   const [ordenesEstatus, setOrdenesEstatus] = useState([]);
-  const [ordenesService, setOrdenesService] = useState([{
-    "id": 1,
-    "codigo": "",
-    "label": "",
-    "value": 0
-  }]);
+  const [ordenesService, setOrdenesService] = useState([
+    {
+      id: 1,
+      codigo: "",
+      label: "",
+      value: 0,
+    },
+  ]);
   const [TOTAL, setTotalFase] = useState(0);
   const { auth: currentUser } = useSelector((state) => state.auth);
 
@@ -113,8 +118,10 @@ const DashboardPage = () => {
   }, []);
 
   useEffect(() => {
-    if(ordenesEstatus !== null) {
-      setTotalFase(ordenesEstatus.map((item) => item.value).reduce((a, b) => a + b, 0));
+    if (ordenesEstatus !== null) {
+      setTotalFase(
+        ordenesEstatus.map((item) => item.value).reduce((a, b) => a + b, 0)
+      );
     }
   }, [ordenesEstatus]);
 
@@ -125,11 +132,6 @@ const DashboardPage = () => {
         {children}
       </StyledText>
     );
-  };
-
-  const getArcLabel = (params: DefaultizedPieValueType) => {
-    const percent = params.value / TOTAL;
-    return `${(percent * 100).toFixed(0)}%`;
   };
 
   return (
@@ -244,21 +246,56 @@ const DashboardPage = () => {
           </Grid>
         </Grid>
         <Grid container spacing={2}>
-          <Grid item xs={12} md={6} sd={6}>
-            <>
-              <PieChart
-                series={[
-                  {
-                    data: [...ordenesEstatus],
-                    innerRadius: 60,
-                    outerRadius: 110,
-                  },
-                ]}
-                {...size}
-              >
-                <PieCenterLabel>Ordenes</PieCenterLabel>
-              </PieChart>
-            </>
+          <Grid item xs={12} md={8} sd={8}>
+            <PieChart
+              series={[
+                {
+                  data: [...ordenesEstatus],
+                  innerRadius: 60,
+                  /* outerRadius: 110, */
+                  arcLabel: (item) =>
+                    item.value === 0 ? "" : `${item.label} (${item.value})`,
+                  arcLabelMinAngle: 0,
+                  arcLabelRadius: 195,
+                  outerRadius: 160,
+                },
+              ]}
+              sx={{
+                [`& .${pieArcLabelClasses.root}`]: {
+                  fontWeight: "bold",
+                },
+              }}
+              slotProps={{ legend: { hidden: true } }}
+              {...size}
+            >
+              <PieCenterLabel>Ordenes</PieCenterLabel>
+            </PieChart>
+          </Grid>
+          <Grid item xs={12} md={4} sd={4} sx={{margin: "auto 0"}}>
+            {ordenesEstatus.map((estado, index) => {
+              return (
+                <Grid
+                  item
+                  xs={12}
+                  md={12}
+                  sd={12}
+                  sx={{ 
+                    background: `${estado.color}`,
+                    margin: "5px",
+                  }}
+                >
+                  <span
+                    style={{
+                      color: `${estado.color}`,
+                      filter: "invert(1) grayscale(1) contrast(9)",
+                      fontWeight: "400",
+                    }}
+                  >
+                    {estado.codigo} - {estado.label}: {estado.value}
+                  </span>
+                </Grid>
+              );
+            })}
           </Grid>
         </Grid>
         <Grid container spacing={2}>
@@ -266,9 +303,9 @@ const DashboardPage = () => {
             <>
               <BarChart
                 dataset={ordenesService}
-                xAxis={[{ scaleType: 'band', dataKey: 'label' }]}
+                xAxis={[{ scaleType: "band", dataKey: "label" }]}
                 series={[
-                  { dataKey: 'value', label: 'Ordenes', valueFormatter },
+                  { dataKey: "value", label: "Ordenes", valueFormatter },
                 ]}
                 {...chartSetting}
               />

@@ -4,6 +4,8 @@ import { AuthHeader } from "./auth-header";
 const { header } = AuthHeader();
 
 const getAll = async (page,size,filter="") => {
+  if( page -1 < 0 ) page = 0;
+  else page = page -1;
   let url = `/orden/?page=${page}&size=${size}`
   if(filter !== "") url = `/orden/?filter=${filter}&page=${page}&size=${size}`;
   return await http.get(url, { headers: {...header()} });
@@ -52,7 +54,7 @@ const faseCount = async (id) => {
 
 const serviceCount = async (id) => {
   const qp = id === null ? "" : "?empresaIdFilter="+id;
-  return await http.get(`/orden/serviceCount${qp}`);
+  return await http.get(`/orden/serviceCount${qp}`, { headers: {...header()} });
 }
 
 const evidencia = async (file, id) => {
@@ -63,6 +65,10 @@ const evidencia = async (file, id) => {
 
 const incidencia = async (data) => {
   return await http.post("/incidencia/create", data, { headers: {...header()} });
+};
+
+const bulkcreate = async (data) => {
+  return await http.post("/orden/bulkcreate", {ordenes: data}, { headers: {...header()} });
 };
 
 const OrdenDataService = {
@@ -80,6 +86,7 @@ const OrdenDataService = {
   getByGuia,
   evidencia,
   incidencia,
+  bulkcreate,
 }
 
 export default OrdenDataService;

@@ -29,6 +29,7 @@ export const empresaForm = {
     celular: '',
     direccion: '',
     ciudadId: null,
+    costo: '',
 }
 
 export const ciudadForm = {
@@ -42,6 +43,7 @@ export const faseForm = {
     id: null,
     codigo: '',
     nombre: '',
+    color: '',
 }
 
 export const servicioForm = {
@@ -84,5 +86,8 @@ export const ordenFilterForm = {
     faseId: [],
     ciudadOrigenId: [],
     ciudadDestinoId: [],
+    motorizadoId: [],
+    fechaDesde: moment().subtract(1, 'months').format("YYYY-MM-DD"),
+    fechaHasta: moment().format("YYYY-MM-DD"),
 }
 

@@ -109,6 +109,7 @@ const Empresa = () => {
       celular: form.celular,
       direccion: form.direccion,
       ciudadId: form.ciudadId,
+      costo: form.costo,
     }
     EmpresaDataService.update(data)
       .then((response) => {
@@ -116,7 +117,7 @@ const Empresa = () => {
         if(response.status === 200) {
           const message = {
             title: "Actualización Empresa",
-            msg: "",
+            msg: "Empresa actualizada exitosamente",
             error: true,
           };
           console.log(response.data.message);
@@ -226,10 +227,11 @@ const Empresa = () => {
             </Grid>
             <Grid item md={6} sm={6} xs={12}>
               <TextField
-                id="direccion"
-                name="direccion"
-                label="Direccion"
-                value={form.direccion}
+                id="costo"
+                name="costo"
+                label="Costo"
+                type="number"
+                value={form.costo}
                 onChange={handleInputChange}
                 variant="outlined"
                 fullWidth
@@ -251,6 +253,18 @@ const Empresa = () => {
                 getIndexLabel={"id"}
                 onChange={handleInputChange}
                 onClear={OnClearInput}
+                disabled={edited}
+              />
+            </Grid>
+            <Grid item md={12} sm={12} xs={12}>
+              <TextField
+                id="direccion"
+                name="direccion"
+                label="Direccion"
+                value={form.direccion}
+                onChange={handleInputChange}
+                variant="outlined"
+                fullWidth
                 disabled={edited}
               />
             </Grid>

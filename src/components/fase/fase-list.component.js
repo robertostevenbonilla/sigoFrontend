@@ -4,11 +4,8 @@ import { useSelector } from "react-redux";
 import FaseDataService from "../../services/fase.service";
 import EnhancedTable from "../table/table";
 import { usePersonasTable } from "../../hooks/usePersonaTable";
-import {
-  Approval,
-  HolidayVillage,
-} from "@mui/icons-material";
-import { Card } from "@mui/material";
+import { Approval, HolidayVillage } from "@mui/icons-material";
+import { Card, TextField } from "@mui/material";
 
 const columnsFase = [
   {
@@ -20,7 +17,28 @@ const columnsFase = [
     field: "nombre",
     headerName: "Cuidad",
     flex: 2,
-  }
+  },
+  {
+    field: "origen",
+    headerName: "Origen",
+    type: "render",
+    renderFunction: (row) => {
+      return (
+        <TextField
+          hiddenLabel
+          id="filled-hidden-label-small"
+          value={row.color}
+          variant="standard"
+          size="small"
+          type="color"
+          disabled="true"
+          sx={{
+            width: '40px',
+          }}
+        />
+      );
+    },
+  },
 ];
 
 const FaseList = (props) => {
@@ -75,7 +93,9 @@ const FaseList = (props) => {
           searchableKeys={["codigo", "nombre"]}
           rowId={"id"}
           add={true}
-          onAddFunction={() => {navigate("/estado/add")}}
+          onAddFunction={() => {
+            navigate("/estado/add");
+          }}
         />
       </Card>
     </div>

@@ -4,16 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import FaseDataService from "../../services/fase.service";
 import { faseForm } from "../../helpers/forms";
 import { Card } from "../Card";
-import {
-  Approval,
-  Edit,
-  Save,
-} from "@mui/icons-material";
-import {
-  Button,
-  Grid,
-  TextField,
-} from "@mui/material";
+import { Approval, Edit, Save } from "@mui/icons-material";
+import { Button, Grid, TextField } from "@mui/material";
 import { setMessage, setOpenModal } from "../../reducers/message";
 
 const Fase = () => {
@@ -88,11 +80,12 @@ const Fase = () => {
       id: form.id,
       codigo: form.codigo,
       nombre: form.nombre,
-    }
+      color: form.color,
+    };
     FaseDataService.update(data)
       .then((response) => {
         console.log(response);
-        if(response.status === 200) {
+        if (response.status === 200) {
           const message = {
             title: "Actualización Estado",
             msg: "",
@@ -123,63 +116,76 @@ const Fase = () => {
 
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
-        <Card
-          title="Estado"
-          icon={<Approval sx={{ color: "white", fontSize: "23px" }} />}
-          openCollapse={true}
-          idElement="datosGenerales-estado"
-          className="text-start"
-        >
-          <Grid container spacing={1}>
-            <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="codigo"
-                name="codigo"
-                label="Codigo"
-                value={form.codigo}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-                disabled={edited}
-              />
-            </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="nombre"
-                name="nombre"
-                label="Nombre"
-                value={form.nombre}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-                disabled={edited}
-              />
-            </Grid>
-            <Grid item md={12} sm={12} xs={12} className="text-start">
-              {edited ? (
-                <Button
-                  onClick={handleEdited}
-                  endIcon={<Edit />}
-                  variant="contained"
-                  color="success"
-                  className="align-middle"
-                >
-                  Editar
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleSave}
-                  endIcon={<Save />}
-                  variant="contained"
-                  color="success"
-                  className="align-middle"
-                >
-                  Guardar
-                </Button>
-              )}
-            </Grid>
+      <Card
+        title="Estado"
+        icon={<Approval sx={{ color: "white", fontSize: "23px" }} />}
+        openCollapse={true}
+        idElement="datosGenerales-estado"
+        className="text-start"
+      >
+        <Grid container spacing={1}>
+          <Grid item md={6} sm={6} xs={12}>
+            <TextField
+              id="codigo"
+              name="codigo"
+              label="Codigo"
+              value={form.codigo}
+              onChange={handleInputChange}
+              variant="outlined"
+              fullWidth
+              disabled={edited}
+            />
           </Grid>
-        </Card>
+          <Grid item md={6} sm={6} xs={12}>
+            <TextField
+              id="nombre"
+              name="nombre"
+              label="Nombre"
+              value={form.nombre}
+              onChange={handleInputChange}
+              variant="outlined"
+              fullWidth
+              disabled={edited}
+            />
+          </Grid>
+          <Grid item md={6} sm={6} xs={12}>
+            <TextField
+              id="color"
+              name="color"
+              label="Color"
+              value={form.color}
+              onChange={handleInputChange}
+              variant="outlined"
+              fullWidth
+              disabled={edited}
+              type="color"
+            />
+          </Grid>
+          <Grid item md={12} sm={12} xs={12} className="text-start">
+            {edited ? (
+              <Button
+                onClick={handleEdited}
+                endIcon={<Edit />}
+                variant="contained"
+                color="success"
+                className="align-middle"
+              >
+                Editar
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSave}
+                endIcon={<Save />}
+                variant="contained"
+                color="success"
+                className="align-middle"
+              >
+                Guardar
+              </Button>
+            )}
+          </Grid>
+        </Grid>
+      </Card>
     </div>
   );
 };

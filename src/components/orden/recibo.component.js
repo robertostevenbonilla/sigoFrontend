@@ -29,6 +29,7 @@ import {
   Paper,
   Switch,
   TextField,
+  Typography,
   styled,
 } from "@mui/material";
 import { SearchInput } from "../form/AutoCompleteInput";
@@ -127,8 +128,8 @@ const Recibo = (props) => {
     OrdenDataService.evidencia(fileForm, orden.id)
       .then((response) => {
         console.log(response.data);
-        setImageID([...imgID, response.data.id]);
-        setImageURL([...imgURL, response.data.codigo]);
+        setImageID([response.data.id, ...imgID]);
+        setImageURL([response.data, ...imgURL]);
       })
       .catch((e) => {
         console.log(e);
@@ -146,7 +147,7 @@ const Recibo = (props) => {
     OrdenDataService.incidencia(data)
       .then((response) => {
         console.log(response.data);
-        setIncidenciasList([...incidenciasList, response.data]);
+        setIncidenciasList([response.data, ...incidenciasList]);
       })
       .catch((e) => {
         console.log(e);
@@ -350,7 +351,7 @@ const Recibo = (props) => {
                 startIcon={<CloudUpload />}
                 onClick={saveEvidencia}
               >
-                Subir archivo
+                Guardar incidencia
               </Button>
             </Grid>
             <Grid item md={8} sm={8} sx={12}>
@@ -360,6 +361,7 @@ const Recibo = (props) => {
                 cols={3}
                 rowHeight={200}
               >
+                {console.log(imgURL)}
                 {imgURL.map((item, key) => (
                   <ImageListItem key={key} sx={{ objectFit: "contain" }}>
                     <img
@@ -396,11 +398,21 @@ const Recibo = (props) => {
                     <ListItem>
                       <ListItemText
                         primary={item.descripcion}
-                        secondary={moment(
-                            item.createdAt[item.fecha.length - 1] === "Z"
-                              ? item.fecha.slice(0, -1)
-                              : item.fecha
-                          ).format("YYYY-MM-DD hh:mm:ss")}
+                        secondary={
+                            <>
+                              <Typography
+                                sx={{ display: "inline" }}
+                                component="span"
+                                variant="body2"
+                                color="text.primary"
+                              >
+                                {item.usuario.persona.fullName}: 
+                              </Typography>
+                               {moment( item.createdAt[item.fecha.length - 1] === "Z"
+                              ? item.fecha.slice(0, -1) : item.fecha
+                              ).format("YYYY-MM-DD hh:mm:ss")}
+                            </>
+                          }
                       />
                     </ListItem>
                     <Divider variant="middle" component="li" />

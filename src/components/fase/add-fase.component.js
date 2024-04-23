@@ -43,6 +43,7 @@ const AddFase = () => {
         id: form.id,
         codigo: form.codigo,
         nombre: form.nombre,
+        color: form.color,
     };
     console.log(dataAU);
     FaseDataService.create(dataAU)
@@ -110,6 +111,18 @@ const AddFase = () => {
               onChange={handleInputChange}
               variant="outlined"
               fullWidth
+            />
+          </Grid>
+          <Grid item md={6} sm={6} xs={12}>
+            <TextField
+              id="color"
+              name="color"
+              label="Color"
+              value={form.color}
+              onChange={handleInputChange}
+              variant="outlined"
+              fullWidth
+              type="color"
             />
           </Grid>
           <Grid item md={6} sm={6} xs={12} className="text-start">

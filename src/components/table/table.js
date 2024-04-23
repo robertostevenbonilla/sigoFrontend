@@ -946,7 +946,7 @@ export default function EnhancedTable(props) {
     const perPage = parseInt(event.target.value, 10);
     if (paginationServer) handlePagination(0, perPage);
     if (!disablePathParameters)
-      navigate(location.pathname + `?page=${page + 1}&rowsPerPage=${perPage}`);
+      navigate(location.pathname + `?page=${1}&rowsPerPage=${perPage}`);
     setRowsPerPage(perPage);
     setPage(0);
   };

@@ -14,6 +14,7 @@ import {
   Check,
   DeliveryDining,
   FilterAltOutlined,
+  GridOn,
   ListAlt,
   Pages,
   Person,
@@ -37,6 +38,7 @@ import {
   ListItemIcon,
   ListItemText,
   OutlinedInput,
+  TextField,
 } from "@mui/material";
 import { loadingTable } from "../../reducers/ui";
 import { SearchInput } from "../form/AutoCompleteInput";
@@ -53,6 +55,11 @@ import HTMLComment from "../../hooks/HTMLComment";
 import html2canvas from "html2canvas";
 import UsuarioDataService from "../../services/usuario.service";
 import { SelectInput } from "../form/SelectInput";
+import { DesktopDatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
+import moment from "moment";
+import xlsx, { read, utils, write } from "xlsx";
 
 var doc = new jsPDF();
 
@@ -233,20 +240,20 @@ const columnsOrden = [
     renderFunction: (row) => {
       return (
         <>
-        { row.mensajero ? (
-        <List>
-          <ListItem>
-            <ListItemIcon style={{ minWidth: 30 }}>
-              <DeliveryDining />
-            </ListItemIcon>
-            {row.mensajero?.persona.fullName}
-          </ListItem>
-        </List>
-      ) : (
-        <></>
-      )}
-      </>
-      )
+          {row.mensajero ? (
+            <List>
+              <ListItem>
+                <ListItemIcon style={{ minWidth: 30 }}>
+                  <DeliveryDining />
+                </ListItemIcon>
+                {row.mensajero?.persona.fullName}
+              </ListItem>
+            </List>
+          ) : (
+            <></>
+          )}
+        </>
+      );
     },
   },
   {
@@ -300,6 +307,7 @@ const OrdenList = (props) => {
   const [filtersLoaded, setFiltersLoaded] = useState(false);
   const [selected, setSelected] = useState([]);
   const [selectedObj, setSelectedObj] = useState([]);
+  const [fileForm, setFile] = useState(null);
 
   const [download, setDownload] = useState(false);
   const [downloadObj, setDownloadObj] = useState([]);
@@ -328,22 +336,6 @@ const OrdenList = (props) => {
       .catch((error) => {
         console.error(error);
       });
-    ServicioDataService.getSelect()
-      .then((response) => {
-        console.log("servicio", response);
-        setServicioSelect(response.data);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-    FaseDataService.getSelect()
-      .then((response) => {
-        console.log("fase", response);
-        setFaseSelect(response.data);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
   };
 
   useEffect(() => {
@@ -353,7 +345,24 @@ const OrdenList = (props) => {
     } else if (!currentUser.isLoggedIn) {
       navigate("/login");
     } else {
+      ServicioDataService.getSelect()
+        .then((response) => {
+          console.log("servicio", response);
+          setServicioSelect(response.data);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+      FaseDataService.getSelect()
+        .then((response) => {
+          console.log("fase", response);
+          setFaseSelect(response.data);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
       retrieveOrdenes();
+      loadMotirizados();
     }
   }, []);
 
@@ -391,9 +400,13 @@ const OrdenList = (props) => {
   };
 
   const handleSearchInputChange = async (event) => {
-    const { name, value } = event.target;
-    console.log(form, event, name, value);
-    setForm({ ...form, [name]: [...value] });
+    let { name, value } = event.target;
+    console.log(form, event, name, value, name === "motorizadoIds");
+    if (name === "motorizadoIds") {
+      setForm({ ...form, ["motorizadoId"]: [...value] });
+    } else {
+      setForm({ ...form, [name]: [...value] });
+    }
   };
 
   const handleInputChangeM = async (event) => {
@@ -421,10 +434,140 @@ const OrdenList = (props) => {
       .then((response) => {
         console.log("motorizado", response.data);
         setMotorizadoSelect(response.data);
-      }).catch((err) => {
+      })
+      .catch((err) => {
         console.log(err);
       });
   };
+
+  const downloadXLS = async () => {
+    // Datos de ejemplo
+    const data = [
+      [
+        "fechaEntrega",
+        "origen",
+        "direccionOrigen",
+        "remitente",
+        "telefonoRemitente",
+        "ciudadOrigenId",
+        "destino",
+        "direccionDestino",
+        "destinatario",
+        "telefonoDestinatario",
+        "ciudadDestinoId",
+        "email",
+        "costo",
+        "producto",
+        "precio",
+        "descripcion",
+      ],
+      [
+        'En el libro "Ciudades" puede encontrar las ciudades a donde puede realizar sus envios. En la columna Ciudad Origen y Ciudad destino ingresar el identificador de la misma.',
+      ],
+      // Agrega más filas según sea necesario
+    ];
+
+    // Crear un libro de Excel
+    const workbook = utils.book_new();
+    // Crear una hoja en el libro de Excel
+    const worksheet = utils.aoa_to_sheet(data);
+
+    // Definir opciones para la lista desplegable de ciudades
+    const cities = ["Ciudad1", "Ciudad2", "Ciudad3"]; // Obtener estas opciones de la base de datos
+
+    // Crear una regla de validación para las celdas de ciudades
+    const citiesValidation = {
+      sqref: "H2:H100", // Rango de celdas para aplicar la validación
+      type: "list",
+      formula1: '"' + cities.join(",") + '"',
+    };
+
+    // Aplicar la regla de validación a la hoja de cálculo
+    //utils.sheet_set_validation(worksheet, citiesValidation);
+
+    // Agregar la hoja al libro
+    utils.book_append_sheet(workbook, worksheet, "Plantilla");
+    let citiesList = await CiudadDataService.getSelect();
+    citiesList = citiesList.data;
+    const citiesData = [
+      ["identificador", "Ciudad"],
+      ...Object.keys(citiesList).map((key) => [key, citiesList[key].nombre]),
+    ];
+    console.log("citiesData", citiesData);
+    const citiesSheet = utils.aoa_to_sheet(citiesData);
+    utils.book_append_sheet(workbook, citiesSheet, "Ciudades");
+
+    // Convertir el libro a un archivo de Excel binario
+    const excelBuffer = write(workbook, { bookType: "xlsx", type: "array" });
+
+    // Crear un blob desde el archivo binario de Excel
+    const blob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    // Crear un objeto URL para el blob
+    const url = URL.createObjectURL(blob);
+
+    // Crear un enlace invisible y hacer clic en él para iniciar la descarga
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "plantilla.xlsx";
+    a.click();
+
+    // Liberar el objeto URL
+    URL.revokeObjectURL(url);
+  };
+
+  /* const downloadXLS1 = async () => {
+    try {
+      // Datos de ejemplo
+      const data = [
+        ["Fecha Entrega", "Entrega", "Empresa", "Origen", "Direccion Origen", "Envia", "Telefono Envia", "Ciudad Origen", "Destino", "Direccion Destino", "Recibe", "Telefono Destino", "Ciudad Destino", "Email", "Costo envio", "Producto", "Precio Producto", "Descripción"],
+        ["2024-04-11", "Entrega1", "Empresa1", "Origen1", "Direccion1", "Envia1", "123456789", "", "Destino1", "Direccion1", "Recibe1", "987654321", "", "email@example.com", "$50", "Producto1", "$10", "Descripción1"],
+        // Agrega más filas según sea necesario
+      ];
+
+      // Crear un nuevo archivo de Excel
+      const workbook = await XlsxPopulate.fromBlankAsync();
+
+      // Obtener la hoja activa
+      const sheet = workbook.sheet("Sheet1");
+
+      // Establecer los datos
+      sheet.cell("A1").value(data);
+
+      // Definir opciones para la lista desplegable de ciudades
+      const cities = ["Ciudad1", "Ciudad2", "Ciudad3"]; // Obtener estas opciones de la base de datos
+
+      // Establecer la validación de datos para las celdas de ciudad origen y ciudad destino
+      const cityRange = "H2:H100"; // Rango de celdas para aplicar la validación
+      const validationFormula = cities.map(city => `"${city}"`).join(',');
+      sheet.range(cityRange).dataValidation({
+        type: 'list',
+        formula1: validationFormula
+      });
+
+      // Guardar el archivo
+      const buffer = await workbook.outputAsync();
+
+      // Crear un blob desde el archivo binario de Excel
+      const blob = new Blob([buffer], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+
+      // Crear un objeto URL para el blob
+      const url = URL.createObjectURL(blob);
+
+      // Crear un enlace invisible y hacer clic en él para iniciar la descarga
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'plantilla.xlsx';
+      a.click();
+
+      // Liberar el objeto URL
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }; */
 
   const downloadPdf = () => {
     const content = document.querySelector("#reportTable");
@@ -436,7 +579,7 @@ const OrdenList = (props) => {
       format: [595, 841],
     };
     const doc = new jsPDF(pgFormat);
-    
+
     /* doc.html(content, {
       callback: function (doc) {
         if (download) {
@@ -453,7 +596,7 @@ const OrdenList = (props) => {
       autoPaging: true,
     }); */
 
-    contents.forEach(async (cont, index)=>{
+    contents.forEach(async (cont, index) => {
       /* await doc.html(contents[index], {
         callback: function (doc) {
           console.log(contents.length-1, index)
@@ -471,36 +614,40 @@ const OrdenList = (props) => {
       var scaleBy = 2;
       var w = 595;
       var h = 841;
-      var canvas = document.createElement('canvas');
+      var canvas = document.createElement("canvas");
       canvas.width = w * scaleBy;
       canvas.height = h * scaleBy;
-      canvas.style.width = w + 'px';
-      canvas.style.height = h + 'px';
-      var context = canvas.getContext('2d');
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      var context = canvas.getContext("2d");
       context.scale(scaleBy, scaleBy);
-      await html2canvas(cont,{
-        canvas:canvas}).then(function(canvas){
-        var wid = 595; 
+      await html2canvas(cont, {
+        canvas: canvas,
+      }).then(function (canvas) {
+        var wid = 595;
         var hgt = 841;
-        var img = canvas.toDataURL("image/png", wid = canvas.width, hgt = canvas.height);
-        var hratio = hgt/wid;
+        var img = canvas.toDataURL(
+          "image/png",
+          (wid = canvas.width),
+          (hgt = canvas.height)
+        );
+        var hratio = hgt / wid;
         /* var doc = new jsPDF('p','pt','a4'); */
-        var width = doc.internal.pageSize.width;    
+        var width = doc.internal.pageSize.width;
         var height = width * hratio;
-        doc.addImage(img,'PNG',0,0, width, height);
-        if(contents.length-1 === index) {
+        doc.addImage(img, "PNG", 0, 0, width, height);
+        if (contents.length - 1 === index) {
           console.log("save");
-          doc.save('Test.pdf');
+          doc.save("Test.pdf");
         } else {
           doc.addPage(pgFormat);
         }
       });
-    })
+    });
   };
 
   const addMensajero = () => {
     console.log(selected);
-    loadMotirizados();
     setOpenDialog(true);
   };
 
@@ -556,9 +703,20 @@ const OrdenList = (props) => {
     console.log(form);
     let filtered = "";
     Object.keys(form).forEach((key) => {
-      const ids = form[key].join(",");
-      console.log(ids);
-      if(ids !== "") filtered += key+":in:"+ids+";";
+      console.log(key);
+      if (key === "fechaDesde") {
+        if (form[key] !== undefined) {
+          filtered += "fechaRecepcion:gte:" + form[key] + ";";
+        }
+      } else if (key === "fechaHasta") {
+        if (form[key] !== undefined) {
+          filtered += "fechaRecepcion:lte:" + form[key] + ";";
+        }
+      } else {
+        const ids = form[key].join(",");
+        console.log(ids);
+        if (ids !== "") filtered += key + ":in:" + ids + ";";
+      }
     });
     console.log(filtered);
     setFiltros(filtered);
@@ -632,6 +790,65 @@ const OrdenList = (props) => {
     setOpenDialog(false);
   };
 
+  const onChange = (e, name = null, value = null) => {
+    const inputName = name !== null ? name : e.target.name;
+    const inputValue = value !== null ? value : e.target.value;
+
+    setForm({ ...form, [inputName]: inputValue });
+  };
+
+  const uploadXLS = (event) => {
+    const file = event.target.files[0];
+    console.log(file);
+    /*
+    setFile(file);
+    */
+    let reader = new FileReader();
+
+    reader.onload = async function (e) {
+      let data = new Uint8Array(e.target.result);
+      let workbook = read(data, {
+        type: "array",
+        raw: false,
+        cellDates: true,
+        dateNF: "yyyy-mm-dd",
+      });
+      // find the name of your sheet in the workbook first
+      let worksheet = workbook.Sheets["Plantilla"];
+
+      // convert to json format
+      let jsonData = utils.sheet_to_json(worksheet, {
+        raw: false,
+        dateNF: "yyyy-mm-dd",
+      });
+      console.log(jsonData);
+      delete jsonData[0];
+      let orden = await EmpresaDataService.findGuia(
+        currentUser.auth.persona.empresaId
+      )
+        .catch((error) => {
+          console.error(error);
+        });
+      orden = orden.data;
+      let addGuia = 1;
+      jsonData.forEach((obj, pos) => {
+        obj.fechaRecepcion = moment().format("YYYY-MM-DD");
+        obj.guia = orden.codigo + (orden.Guias * 1 + addGuia);
+        obj.empresaId = currentUser.auth.persona.empresaId;
+        obj.servicioId = servicioSelect.filter((x) => x.codigo === "STD")[0].id;
+        obj.faseId = faseSelect.filter((x) => x.codigo === "CRD")[0].id;
+        addGuia++;
+      });
+      jsonData = jsonData.filter(function (e) {
+        return e;
+      });
+      console.log(jsonData);
+      /* let bulkcreate = await OrdenDataService.bulkcreate(jsonData);
+      console.log(bulkcreate); */
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
       <Card
@@ -639,45 +856,49 @@ const OrdenList = (props) => {
         title="Ordenes"
         icon={<ListAlt sx={{ color: "white", fontSize: "23px" }} />}
         openCollapse={true}
-        idElement="datosGenerales-ordenes"
+        id="datosGenerales-ordenes"
         className="text-start"
       >
-        {<Dialog
-          open={openDialog}
-          onClose={handleCloseDialog}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-title">
-            {"¿Estas seguro/a de asignar el motorizado? "}
-          </DialogTitle>
-          <DialogContent sx={{paddingTop: "10px !important"}}>
-            <Grid container spacing={2} alignItems={"center"}>
-              <Grid item xs={12} sm={12}>
-                <SearchInput
-                  options={[
-                    { id: -1, fullname: "Seleccione un motorizado" },
-                    ...motorizadoSelect,
-                  ]}
-                  value={morotizadoId}
-                  placeholder={"Seleccione un motorizado"}
-                  id={"morotizadoId"}
-                  name={"motorizadoId"}
-                  label={"Motorizado"}
-                  getOptionLabel={"fullname"}
-                  getIndexLabel={"id"}
-                  onChange={handleInputChangeM}
-                />
+        {
+          <Dialog
+            open={openDialog}
+            onClose={handleCloseDialog}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">
+              {"¿Estas seguro/a de asignar el motorizado? "}
+            </DialogTitle>
+            <DialogContent sx={{ paddingTop: "10px !important" }}>
+              <Grid container spacing={2} alignItems={"center"}>
+                <Grid item xs={12} sm={12}>
+                  <SearchInput
+                    options={[
+                      { id: -1, fullname: "Seleccione un motorizado" },
+                      ...motorizadoSelect,
+                    ]}
+                    value={morotizadoId}
+                    placeholder={"Seleccione un motorizado"}
+                    id={"morotizadoId"}
+                    name={"motorizadoId"}
+                    label={"Motorizado"}
+                    getOptionLabel={"fullname"}
+                    getIndexLabel={"id"}
+                    onChange={handleInputChangeM}
+                  />
+                </Grid>
               </Grid>
-            </Grid>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialog} color="error">Cancelar</Button>
-            <Button onClick={saveMotorizado} variant="contained">
-              Quiero asignar el motorizado
-            </Button>
-          </DialogActions>
-        </Dialog>}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseDialog} color="error">
+                Cancelar
+              </Button>
+              <Button onClick={saveMotorizado} variant="contained">
+                Quiero asignar el motorizado
+              </Button>
+            </DialogActions>
+          </Dialog>
+        }
         <EnhancedTable
           table={{
             columns: columnsOrden,
@@ -771,7 +992,7 @@ const OrdenList = (props) => {
               </Grid>
               <Grid item sm={9} xs={12}>
                 <Grid container spacing={2} alignItems={"center"}>
-                  <Grid item xs={12} sm={4}>
+                  <Grid item xs={12} sm={3}>
                     <SelectInput
                       data={[
                         /* { id: -1, nombre: "Seleccione una ciudad" }, */
@@ -782,14 +1003,19 @@ const OrdenList = (props) => {
                       id={"ciudadOrigenId"}
                       name={"ciudadOrigenId"}
                       label={"Ciudad Origen"}
-                      input={<OutlinedInput id="select-multiple-cOrig" placeholder="Ciudad Origen" />}
+                      input={
+                        <OutlinedInput
+                          id="select-multiple-cOrig"
+                          placeholder="Ciudad Origen"
+                        />
+                      }
                       onChange={handleSearchInputChange}
                       getOptionLabel={"nombre"}
                       getIndexLabel={"id"}
                       backgroundLabel={"#d9d9d9"}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={4}>
+                  <Grid item xs={12} sm={3}>
                     <SelectInput
                       data={[
                         /* { id: -1, nombre: "Seleccione una ciudad" }, */
@@ -801,7 +1027,12 @@ const OrdenList = (props) => {
                       id={"ciudadDestinoId"}
                       name={"ciudadDestinoId"}
                       label={"Ciudad Destino"}
-                      input={<OutlinedInput id="select-multiple-cDest" placeholder="Ciudad Destino" />}
+                      input={
+                        <OutlinedInput
+                          id="select-multiple-cDest"
+                          placeholder="Ciudad Destino"
+                        />
+                      }
                       onChange={handleSearchInputChange}
                       getOptionLabel={"nombre"}
                       getIndexLabel={"id"}
@@ -820,7 +1051,12 @@ const OrdenList = (props) => {
                       id={"faseId"}
                       name={"faseId"}
                       label={"Estado"}
-                      input={<OutlinedInput id="select-multiple-estado" placeholder="Estado" />}
+                      input={
+                        <OutlinedInput
+                          id="select-multiple-estado"
+                          placeholder="Estado"
+                        />
+                      }
                       onChange={handleSearchInputChange}
                       getOptionLabel={"nombre"}
                       getIndexLabel={"id"}
@@ -839,7 +1075,12 @@ const OrdenList = (props) => {
                       id={"servicioId"}
                       name={"servicioId"}
                       label={"Servicio"}
-                      input={<OutlinedInput id="select-multiple-servicio" placeholder="Servicio" />}
+                      input={
+                        <OutlinedInput
+                          id="select-multiple-servicio"
+                          placeholder="Servicio"
+                        />
+                      }
                       onChange={handleSearchInputChange}
                       getOptionLabel={"nombre"}
                       getIndexLabel={"id"}
@@ -858,12 +1099,89 @@ const OrdenList = (props) => {
                       id={"empresaId"}
                       name={"empresaId"}
                       label={"Empresa"}
-                      input={<OutlinedInput id="select-multiple-empresa" placeholder="Empresa" />}
+                      input={
+                        <OutlinedInput
+                          id="select-multiple-empresa"
+                          placeholder="Empresa"
+                        />
+                      }
                       onChange={handleSearchInputChange}
                       getOptionLabel={"nombre"}
                       getIndexLabel={"id"}
                       backgroundLabel={"#d9d9d9"}
                     />
+                  </Grid>
+                  <Grid item xs={12} sm={3}>
+                    <SelectInput
+                      data={[
+                        { id: -1, fullname: "Seleccione un motorizado" },
+                        ...motorizadoSelect,
+                      ]}
+                      multiple={true}
+                      value={form.motorizadoId}
+                      placeholder={"Seleccione un motorizado"}
+                      id={"morotizadoIds"}
+                      name={"motorizadoIds"}
+                      label={"Motorizado"}
+                      input={
+                        <OutlinedInput
+                          id="select-multiple-empresa"
+                          placeholder="Empresa"
+                        />
+                      }
+                      onChange={handleSearchInputChange}
+                      getOptionLabel={"fullname"}
+                      getIndexLabel={"id"}
+                      backgroundLabel={"#d9d9d9"}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={3}>
+                    <LocalizationProvider
+                      dateAdapter={AdapterDayjs}
+                      adapterLocale={"es"}
+                    >
+                      <DesktopDatePicker
+                        sx={{ width: "100% " }}
+                        label="Desde"
+                        inputFormat="YYYY-MM-DD"
+                        renderInput={(params) => (
+                          <TextField {...params} sx={{ width: "100%" }} />
+                        )}
+                        value={dayjs(form.fechaDesde)}
+                        disableFuture={true}
+                        onChange={(e) =>
+                          onChange(
+                            null,
+                            "fechaDesde",
+                            moment(e["$d"]).format("YYYY-MM-DD")
+                          )
+                        }
+                      />
+                    </LocalizationProvider>
+                  </Grid>
+                  <Grid item xs={12} sm={3}>
+                    <LocalizationProvider
+                      dateAdapter={AdapterDayjs}
+                      adapterLocale={"es"}
+                    >
+                      <DesktopDatePicker
+                        sx={{ width: "100% " }}
+                        label="Hasta"
+                        inputFormat="YYYY-MM-DD"
+                        renderInput={(params) => (
+                          <TextField {...params} sx={{ width: "100%" }} />
+                        )}
+                        value={dayjs(form.fechaHasta)}
+                        disableFuture={true}
+                        onChange={(e) =>
+                          onChange(
+                            null,
+                            "fechaHasta",
+                            moment(e["$d"]).format("YYYY-MM-DD")
+                          )
+                        }
+                      />
+                    </LocalizationProvider>
                   </Grid>
                 </Grid>
               </Grid>
@@ -925,19 +1243,51 @@ const OrdenList = (props) => {
           }
           setPages={setPages}
           setRows={setRows}
+          extraButtons={
+            <List>
+              <ListItem>
+                <Button
+                  variant="contained"
+                  startIcon={<GridOn />}
+                  onClick={downloadXLS}
+                >
+                  Plantilla Excel
+                </Button>
+              </ListItem>
+              <ListItem>
+                <TextField
+                  type="file"
+                  inputProps={{
+                    accept:
+                      ".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel",
+                  }}
+                  onChange={uploadXLS}
+                  fullWidth
+                />
+                <Button
+                  variant="contained"
+                  startIcon={<GridOn />}
+                  onClick={uploadXLS}
+                >
+                  Subir ordenes
+                </Button>
+              </ListItem>
+            </List>
+          }
         />
       </Card>
       {selected.length > 0 && !download ? (
-        <Grid  sx={{width:"590px",height:"840px", margin: "0 auto"}}
+        <Grid
+          sx={{ width: "590px", height: "840px", margin: "0 auto" }}
           /* style={{
             width: 0,
             height: 0,
             overflow: "hidden",
           }} */
         >
-          {console.log("selectedObj",selectedObj)}
+          {console.log("selectedObj", selectedObj)}
           <div>
-          <PdfPage selectedObj={selectedObj} body={3} />
+            <PdfPage selectedObj={selectedObj} body={3} />
           </div>
         </Grid>
       ) : (
@@ -945,14 +1295,15 @@ const OrdenList = (props) => {
       )}
 
       {download ? (
-        <Grid  sx={{width:"590px",height:"840px", margin: "0 auto"}}
+        <Grid
+          sx={{ width: "590px", height: "840px", margin: "0 auto" }}
           /* style={{
             width: 0,
             height: 0,
             overflow: "hidden",
           }} */
         >
-          {console.log("downloadObj",downloadObj)}
+          {console.log("downloadObj", downloadObj)}
           <PdfPage selectedObj={downloadObj} body={3} />
         </Grid>
       ) : (
