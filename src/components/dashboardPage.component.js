@@ -237,7 +237,7 @@ const DashboardPage = () => {
             >
               <AttachMoney fontSize={"large"} sx={{ color: "white" }} />
               <br />
-              {dashboardData?.precioTotal?.toLocaleString("en-US", {
+              {dashboardData?.costoTotal?.toLocaleString("en-US", {
                 style: "currency",
                 currency: "USD",
               })}{" "}

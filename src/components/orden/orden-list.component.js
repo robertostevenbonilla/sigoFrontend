@@ -307,13 +307,15 @@ const OrdenList = (props) => {
   const [filtersLoaded, setFiltersLoaded] = useState(false);
   const [selected, setSelected] = useState([]);
   const [selectedObj, setSelectedObj] = useState([]);
-  const [fileForm, setFile] = useState(null);
+  const [fileXLS, setFile] = useState(null);
+  const [fileName, setFileName] = useState("");
 
   const [download, setDownload] = useState(false);
   const [downloadObj, setDownloadObj] = useState([]);
 
   const [reloadData, setReload] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
+  const [openDialogXLS, setOpenDialogXLS] = useState(false);
   const [morotizadoId, setMorotizadoId] = useState(-1);
   const [filtros, setFiltros] = useState("");
   const [pages, setPages] = useState(1);
@@ -491,7 +493,7 @@ const OrdenList = (props) => {
     citiesList = citiesList.data;
     const citiesData = [
       ["identificador", "Ciudad"],
-      ...Object.keys(citiesList).map((key) => [key, citiesList[key].nombre]),
+      ...Object.keys(citiesList).map((key) => [citiesList[key].id, citiesList[key].nombre]),
     ];
     console.log("citiesData", citiesData);
     const citiesSheet = utils.aoa_to_sheet(citiesData);
@@ -788,6 +790,7 @@ const OrdenList = (props) => {
   const handleCloseDialog = () => {
     setMorotizadoId(-1);
     setOpenDialog(false);
+    setOpenDialogXLS(false);
   };
 
   const onChange = (e, name = null, value = null) => {
@@ -797,12 +800,20 @@ const OrdenList = (props) => {
     setForm({ ...form, [inputName]: inputValue });
   };
 
-  const uploadXLS = (event) => {
+  const addOrdenes = () => {
+    setOpenDialogXLS(true);
+  };
+
+  const setXLSfile = (event) => {
     const file = event.target.files[0];
     console.log(file);
-    /*
     setFile(file);
-    */
+    setFileName(file.name);
+  };
+
+  const uploadXLS = () => {
+    const file = fileXLS;
+    console.log(file);
     let reader = new FileReader();
 
     reader.onload = async function (e) {
@@ -821,17 +832,19 @@ const OrdenList = (props) => {
         raw: false,
         dateNF: "yyyy-mm-dd",
       });
-      console.log(jsonData);
       delete jsonData[0];
       let orden = await EmpresaDataService.findGuia(
         currentUser.auth.persona.empresaId
-      )
-        .catch((error) => {
-          console.error(error);
-        });
+      ).catch((error) => {
+        console.error(error);
+      });
       orden = orden.data;
       let addGuia = 1;
       jsonData.forEach((obj, pos) => {
+        obj.ciudadOrigenId = obj.ciudadOrigenId*1;
+        obj.ciudadDestinoId = obj.ciudadDestinoId*1;
+        obj.costo = obj.costo*1;
+        obj.precio = obj.precio*1;
         obj.fechaRecepcion = moment().format("YYYY-MM-DD");
         obj.guia = orden.codigo + (orden.Guias * 1 + addGuia);
         obj.empresaId = currentUser.auth.persona.empresaId;
@@ -843,8 +856,12 @@ const OrdenList = (props) => {
         return e;
       });
       console.log(jsonData);
-      /* let bulkcreate = await OrdenDataService.bulkcreate(jsonData);
-      console.log(bulkcreate); */
+      let bulkcreate = await OrdenDataService.bulkcreate(jsonData);
+      console.log(bulkcreate);
+      retrieveOrdenes(pages, rows, filtros);
+      setOpenDialogXLS(false);
+      setFile(null);
+      setFileName("");
     };
     reader.readAsArrayBuffer(file);
   };
@@ -859,46 +876,80 @@ const OrdenList = (props) => {
         id="datosGenerales-ordenes"
         className="text-start"
       >
-        {
-          <Dialog
-            open={openDialog}
-            onClose={handleCloseDialog}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-          >
-            <DialogTitle id="alert-dialog-title">
-              {"¿Estas seguro/a de asignar el motorizado? "}
-            </DialogTitle>
-            <DialogContent sx={{ paddingTop: "10px !important" }}>
-              <Grid container spacing={2} alignItems={"center"}>
-                <Grid item xs={12} sm={12}>
-                  <SearchInput
-                    options={[
-                      { id: -1, fullname: "Seleccione un motorizado" },
-                      ...motorizadoSelect,
-                    ]}
-                    value={morotizadoId}
-                    placeholder={"Seleccione un motorizado"}
-                    id={"morotizadoId"}
-                    name={"motorizadoId"}
-                    label={"Motorizado"}
-                    getOptionLabel={"fullname"}
-                    getIndexLabel={"id"}
-                    onChange={handleInputChangeM}
-                  />
-                </Grid>
+        <Dialog
+          id="popupMotorizada"
+          open={openDialog}
+          onClose={handleCloseDialog}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"¿Estas seguro/a de asignar el motorizado? "}
+          </DialogTitle>
+          <DialogContent sx={{ paddingTop: "10px !important" }}>
+            <Grid container spacing={2} alignItems={"center"}>
+              <Grid item xs={12} sm={12}>
+                <SearchInput
+                  options={[
+                    { id: -1, fullname: "Seleccione un motorizado" },
+                    ...motorizadoSelect,
+                  ]}
+                  value={morotizadoId}
+                  placeholder={"Seleccione un motorizado"}
+                  id={"morotizadoId"}
+                  name={"motorizadoId"}
+                  label={"Motorizado"}
+                  getOptionLabel={"fullname"}
+                  getIndexLabel={"id"}
+                  onChange={handleInputChangeM}
+                />
               </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseDialog} color="error">
-                Cancelar
-              </Button>
-              <Button onClick={saveMotorizado} variant="contained">
-                Quiero asignar el motorizado
-              </Button>
-            </DialogActions>
-          </Dialog>
-        }
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog} color="error">
+              Cancelar
+            </Button>
+            <Button onClick={saveMotorizado} variant="contained">
+              Quiero asignar el motorizado
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          id="popupUploadOrder"
+          open={openDialogXLS}
+          onClose={handleCloseDialog}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"Subir ordenes por lotes."}
+          </DialogTitle>
+          <DialogContent sx={{ paddingTop: "10px !important" }}>
+            <Grid container spacing={2} alignItems={"center"}>
+              <Grid item xs={12} sm={12}>
+                <TextField
+                  type="file"
+                  inputProps={{
+                    accept:
+                      ".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel",
+                  }}
+                  onChange={setXLSfile}
+                  fullWidth
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog} color="error">
+              Cancelar
+            </Button>
+            <Button onClick={uploadXLS} variant="contained">
+              Subir archivo
+            </Button>
+          </DialogActions>
+        </Dialog>
         <EnhancedTable
           table={{
             columns: columnsOrden,
@@ -1244,7 +1295,27 @@ const OrdenList = (props) => {
           setPages={setPages}
           setRows={setRows}
           extraButtons={
-            <List>
+            <>
+              <Grid item md={3} sm={3} xs={12}>
+                <Button
+                  variant="contained"
+                  startIcon={<GridOn />}
+                  onClick={downloadXLS}
+                >
+                  Plantilla Excel
+                </Button>
+              </Grid>
+              <Grid item md={3} sm={3} xs={12}>
+                <Button
+                  variant="contained"
+                  startIcon={<GridOn />}
+                  onClick={addOrdenes}
+                >
+                  Subir ordenes
+                </Button>
+              </Grid>
+            </>
+            /* <List>
               <ListItem>
                 <Button
                   variant="contained"
@@ -1255,24 +1326,15 @@ const OrdenList = (props) => {
                 </Button>
               </ListItem>
               <ListItem>
-                <TextField
-                  type="file"
-                  inputProps={{
-                    accept:
-                      ".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel",
-                  }}
-                  onChange={uploadXLS}
-                  fullWidth
-                />
                 <Button
                   variant="contained"
                   startIcon={<GridOn />}
-                  onClick={uploadXLS}
+                  onClick={addOrdenes}
                 >
                   Subir ordenes
                 </Button>
               </ListItem>
-            </List>
+            </List> */
           }
         />
       </Card>

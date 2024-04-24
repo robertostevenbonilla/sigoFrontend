@@ -529,7 +529,7 @@ function EnhancedTableToolbar(props) {
             </Grid>
           )
         ) : (
-          <Grid item container sm={6}>
+          <Grid item container sm={5}>
             {extraFilters && (
               <Tooltip title="Filtros">
                 <IconButton
@@ -553,7 +553,7 @@ function EnhancedTableToolbar(props) {
               <StyledInputBase
                 value={search}
                 placeholder="Buscar..."
-                style={{ width: 350 }}
+                style={{ width: 300 }}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </Search>
@@ -561,9 +561,8 @@ function EnhancedTableToolbar(props) {
         )}
 
         <Grid
-          item
-          xs={6}
           container
+          xs={7}
           spacing={1}
           justifyContent={"flex-end"}
           alignItems={"center"}
@@ -583,14 +582,16 @@ function EnhancedTableToolbar(props) {
             </SearchModal>
           )}
           {showAddButton && (
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              sx={{ marginLeft: 2 }}
-              onClick={props.onAddFunction}
-            >
-              Agregar
-            </Button>
+            <Grid item md={3} sm={3} xs={12}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                /* sx={{ marginLeft: 2 }} */
+                onClick={props.onAddFunction}
+              >
+                Agregar
+              </Button>
+            </Grid>
           )}
         </Grid>
       </Toolbar>
