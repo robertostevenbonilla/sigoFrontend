@@ -60,20 +60,20 @@ const Login = (props) => {
     //form.current.validateAll();
 
     //if (checkBtn.current.context._errors.length === 0) {
-      const data = {
-        username: username,
-        password: password,
-      };
-      console.log("login", data);
-      login(data)
-        .then((res) => {
-          console.log("data", res);
-          navigate("/");
-        })
-        .catch((res) => {
-          console.log("catch",res);
-          setLoading(false);
-        });
+    const data = {
+      username: username,
+      password: password,
+    };
+    console.log("login", data);
+    login(data)
+      .then((res) => {
+        console.log("data", res);
+        navigate("/");
+      })
+      .catch((res) => {
+        console.log("catch", res);
+        setLoading(false);
+      });
     /* } else {
       setLoading(false);
     } */
@@ -91,7 +91,7 @@ const Login = (props) => {
           alt="profile-img"
           className="profile-img-card"
           width="60px"
-          style={{"margin": "0 auto"}}
+          style={{ margin: "0 auto" }}
         />
 
         <Form onSubmit={handleLogin} ref={form}>

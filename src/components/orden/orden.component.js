@@ -8,7 +8,7 @@ import ServicioDataService from "../../services/servicio.service";
 import FaseDataService from "../../services/fase.service";
 import { ordenForm } from "../../helpers/forms";
 import { Card as CardContent } from "../Card";
-import { AssignmentInd, Business, Edit, Info, Save } from "@mui/icons-material";
+import { AssignmentInd, Business, Dashboard, Edit, Info, ListAlt, Save } from "@mui/icons-material";
 import {
   Card,
   Button,
@@ -24,6 +24,9 @@ import {
   ListItemText,
   Divider,
   Typography,
+  Breadcrumbs,
+  Link,
+  Chip,
 } from "@mui/material";
 import { SearchInput } from "../form/AutoCompleteInput";
 import { SelectInput } from "../form/SelectInput";
@@ -48,6 +51,7 @@ const Orden = () => {
 
   const { auth: currentUser } = useSelector((state) => state.auth);
   const { msg } = useSelector((state) => state.message);
+  const { pages, rows } = useSelector((state) => state.ui);
 
   const getOrden = (id) => {
     OrdenDataService.get(id)
@@ -203,6 +207,38 @@ const Orden = () => {
 
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
+      <Breadcrumbs aria-label="breadcrumb" sx={{marginBottom: "10px"}}>
+        {/* <Link underline="hover" color="inherit" href="/">
+          Dashboard
+        </Link>
+        <Link
+          underline="hover"
+          color="inherit"
+          href={`#`}
+          onClick={() => {
+            navigate(`/orden?page=${pages}&rowsPerPage=${rows}`);
+          }}
+        >
+          Ordenes
+        </Link> */}
+        <Chip
+          icon={<Dashboard sx={{ color: "white !important" }} />}
+          label="Dashboard"
+          onClick={() => {
+            navigate(`/`);
+          }}
+          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+        />
+        <Chip
+          icon={<ListAlt sx={{ color: "white !important" }} />}
+          label="Ordenes"
+          onClick={() => {
+            navigate(`/orden?page=${pages+1}&rowsPerPage=${rows}`);
+          }}
+          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+        />
+        <Typography color="text.primary">{form.guia}</Typography>
+      </Breadcrumbs>
       <CardContent
         title="Orden"
         icon={<Business sx={{ color: "white", fontSize: "23px" }} />}
