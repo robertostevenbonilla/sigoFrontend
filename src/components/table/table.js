@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useDispatch } from "react-redux";
 import PropTypes from "prop-types";
 import { makeStyles, styled, alpha } from "@mui/material/styles";
 import Box from "@mui/material/Box";
@@ -463,6 +464,7 @@ EnhancedTableHead.propTypes = {
 };
 
 function EnhancedTableToolbar(props) {
+  const dispatch = useDispatch();
   const {
     numSelected,
     setSearch,
@@ -479,9 +481,16 @@ function EnhancedTableToolbar(props) {
     icon,
     subtitle,
     title,
+    showFilters,
+    setShowFilters,
   } = props;
+  
+  const [isOpenFilters, setIsOpenFilters] = React.useState(showFilters);
 
-  const [isOpenFilters, setIsOpenFilters] = React.useState(false);
+  React.useEffect(() => {
+    if(props.setShowFilters) dispatch(setShowFilters(isOpenFilters));
+  }, [isOpenFilters]);
+
   return (
     <>
       <Toolbar
@@ -659,6 +668,7 @@ EnhancedTableToolbar.propTypes = {
 };
 
 export default function EnhancedTable(props) {
+  const dispatch = useDispatch();
   const {
     table = {
       title: "",
@@ -695,6 +705,8 @@ export default function EnhancedTable(props) {
     orderASC = "desc", // asc, desc
     searchableKeys = [],
     paginationServer = false,
+    showFilters=false,
+    setShowFilters=null,
     handlePagination = null,
     refreshData=null,
     onRefreshData=null,
@@ -739,12 +751,12 @@ export default function EnhancedTable(props) {
 
   React.useEffect(() => {
     console.log(page);
-    if(props.setPages) setPages(page);
+    if(props.setPages) dispatch(setPages(page));
   }, [page]);
 
   React.useEffect(() => {
     console.log(rowsPerPage);
-    if(props.setRows) setRows(rowsPerPage);
+    if(props.setRows) dispatch(setRows(rowsPerPage));
   }, [rowsPerPage]);
 
   React.useEffect(() => {
@@ -956,7 +968,7 @@ export default function EnhancedTable(props) {
     (selected ? selected : innerSelected).indexOf(name) !== -1;
 
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - table.rows.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - (table?.rows ? table?.rows.length : 0)) : 0;
 
   const getButtons = (id, row) => {
     let arrayButtons = [];
@@ -1161,6 +1173,8 @@ export default function EnhancedTable(props) {
         icon={icon}
         subtitle={subtitle}
         title={title}
+        showFilters={showFilters}
+        setShowFilters={setShowFilters}
       />
       <Paper
         elevation={isModalTable ? 0 : 3}

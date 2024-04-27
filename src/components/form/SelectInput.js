@@ -51,7 +51,7 @@ export const SelectInput = ({
         input={input}
         className='text-start'
       >
-        <MenuItem value="" disabled sx={{ whiteSpace: 'normal' }}>
+        <MenuItem value="-1" sx={{ whiteSpace: 'normal', color: "grey" }}>
           <em>Ninguno</em>
         </MenuItem>
         {data.map((v, i) => {

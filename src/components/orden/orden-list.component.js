@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import OrdenDataService from "../../services/orden.service";
 import EmpresaDataService from "../../services/empresa.service";
@@ -12,6 +12,7 @@ import { usePersonasTable } from "../../hooks/usePersonaTable";
 import {
   AccountBox,
   Check,
+  Dashboard,
   DeliveryDining,
   FilterAltOutlined,
   GridOn,
@@ -25,20 +26,24 @@ import {
 } from "@mui/icons-material";
 import {
   Box,
+  Breadcrumbs,
   Button,
   Card,
+  Chip,
   Container,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Grid,
+  Link,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
   OutlinedInput,
   TextField,
+  Typography,
 } from "@mui/material";
 import { loadingTable } from "../../reducers/ui";
 import { SearchInput } from "../form/AutoCompleteInput";
@@ -60,6 +65,9 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import moment from "moment";
 import xlsx, { read, utils, write } from "xlsx";
+//import { setForm } from "../../reducers/filtro";
+import { setForm, setFiltros, setShowFilters } from "../../reducers/filtro";
+import { setPages, setRows } from "../../reducers/ui";
 
 var doc = new jsPDF();
 
@@ -291,12 +299,22 @@ const flexContainer = {
 const OrdenList = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const [ordenes, setOrdenes] = useState([]);
 
   const { auth: currentUser } = useSelector((state) => state.auth);
   const { isLoadingTable } = useSelector((state) => state.ui);
+  const { filter: form } = useSelector((state) => state.filtro);
+  const { filtros } = useSelector((state) => state.filtro);
+  const { showFilters } = useSelector((state) => state.filtro);
+  const { pages } = useSelector((state) => state.ui);
+  const { rows } = useSelector((state) => state.ui);
 
-  const [form, setForm] = useState(ordenFilterForm);
+  //const [formFilter, setForm] = useState(ordenFilterForm);
+  //const [filtros, setFiltros] = useState("");
+  //const [pages, setPages] = useState(1);
+  //const [rows, setRows] = useState(10);
+
   const [ciudadSelect, setCiudadSelect] = useState([]);
   const [empresaSelect, setEmpresaSelect] = useState([]);
   const [servicioSelect, setServicioSelect] = useState([]);
@@ -317,14 +335,10 @@ const OrdenList = (props) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [openDialogXLS, setOpenDialogXLS] = useState(false);
   const [morotizadoId, setMorotizadoId] = useState(-1);
-  const [filtros, setFiltros] = useState("");
-  const [pages, setPages] = useState(1);
-  const [rows, setRows] = useState(10);
 
   const loadSelects = async () => {
     CiudadDataService.getSelect()
       .then((response) => {
-        console.log("ciudad", response);
         setCiudadSelect(response.data);
       })
       .catch((error) => {
@@ -332,8 +346,21 @@ const OrdenList = (props) => {
       });
     EmpresaDataService.getSelect()
       .then((response) => {
-        console.log("empresa", response);
         setEmpresaSelect(response.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    ServicioDataService.getSelect()
+      .then((response) => {
+        setServicioSelect(response.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    FaseDataService.getSelect()
+      .then((response) => {
+        setFaseSelect(response.data);
       })
       .catch((error) => {
         console.error(error);
@@ -341,30 +368,16 @@ const OrdenList = (props) => {
   };
 
   useEffect(() => {
-    console.log(currentUser, currentUser);
+    console.log(currentUser, location);
     if (currentUser.auth?.reset_password === 1) {
       navigate("/changepassword");
     } else if (!currentUser.isLoggedIn) {
       navigate("/login");
     } else {
-      ServicioDataService.getSelect()
-        .then((response) => {
-          console.log("servicio", response);
-          setServicioSelect(response.data);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-      FaseDataService.getSelect()
-        .then((response) => {
-          console.log("fase", response);
-          setFaseSelect(response.data);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-      retrieveOrdenes();
+      console.log("paginacion", pages, rows);
+      retrieveOrdenes(pages+1,rows);
       loadMotirizados();
+      loadSelects();
     }
   }, []);
 
@@ -375,14 +388,14 @@ const OrdenList = (props) => {
   }, [downloadObj]);
 
   useEffect(() => {
+    console.log(filtros);
     if (filtros !== "") {
-      retrieveOrdenes(pages, rows, filtros);
+      retrieveOrdenes(pages+1, rows);
     }
   }, [filtros]);
 
   const getFilters = async () => {
     if (!filtersLoaded) {
-      loadSelects();
       setFiltersLoaded(true);
     }
   };
@@ -403,11 +416,12 @@ const OrdenList = (props) => {
 
   const handleSearchInputChange = async (event) => {
     let { name, value } = event.target;
-    console.log(form, event, name, value, name === "motorizadoIds");
+    console.log(form, name, value);
+    if (value.includes("-1")) value = [];
     if (name === "motorizadoIds") {
-      setForm({ ...form, ["motorizadoId"]: [...value] });
+      dispatch(setForm({ ...form, ["motorizadoId"]: [...value] }));
     } else {
-      setForm({ ...form, [name]: [...value] });
+      dispatch(setForm({ ...form, [name]: [...value] }));
     }
   };
 
@@ -417,11 +431,12 @@ const OrdenList = (props) => {
     setMorotizadoId(value);
   };
 
-  const retrieveOrdenes = (page = 0, size = 10, filtros = "") => {
+  const retrieveOrdenes = (page = 0, size = 10) => {
     dispatch(loadingTable(true));
-    OrdenDataService.getAll(page, size, filtros)
+    console.log("retrieve",page,size);    
+    console.log("retrieveOrdenes",pages,rows);
+    OrdenDataService.getAll((page), size, filtros)
       .then((response) => {
-        console.log(response.data);
         setOrdenes(response.data);
         dispatch(loadingTable(false));
       })
@@ -434,7 +449,6 @@ const OrdenList = (props) => {
   const loadMotirizados = () => {
     UsuarioDataService.motorizados()
       .then((response) => {
-        console.log("motorizado", response.data);
         setMotorizadoSelect(response.data);
       })
       .catch((err) => {
@@ -493,7 +507,10 @@ const OrdenList = (props) => {
     citiesList = citiesList.data;
     const citiesData = [
       ["identificador", "Ciudad"],
-      ...Object.keys(citiesList).map((key) => [citiesList[key].id, citiesList[key].nombre]),
+      ...Object.keys(citiesList).map((key) => [
+        citiesList[key].id,
+        citiesList[key].nombre,
+      ]),
     ];
     console.log("citiesData", citiesData);
     const citiesSheet = utils.aoa_to_sheet(citiesData);
@@ -519,57 +536,6 @@ const OrdenList = (props) => {
     // Liberar el objeto URL
     URL.revokeObjectURL(url);
   };
-
-  /* const downloadXLS1 = async () => {
-    try {
-      // Datos de ejemplo
-      const data = [
-        ["Fecha Entrega", "Entrega", "Empresa", "Origen", "Direccion Origen", "Envia", "Telefono Envia", "Ciudad Origen", "Destino", "Direccion Destino", "Recibe", "Telefono Destino", "Ciudad Destino", "Email", "Costo envio", "Producto", "Precio Producto", "Descripción"],
-        ["2024-04-11", "Entrega1", "Empresa1", "Origen1", "Direccion1", "Envia1", "123456789", "", "Destino1", "Direccion1", "Recibe1", "987654321", "", "email@example.com", "$50", "Producto1", "$10", "Descripción1"],
-        // Agrega más filas según sea necesario
-      ];
-
-      // Crear un nuevo archivo de Excel
-      const workbook = await XlsxPopulate.fromBlankAsync();
-
-      // Obtener la hoja activa
-      const sheet = workbook.sheet("Sheet1");
-
-      // Establecer los datos
-      sheet.cell("A1").value(data);
-
-      // Definir opciones para la lista desplegable de ciudades
-      const cities = ["Ciudad1", "Ciudad2", "Ciudad3"]; // Obtener estas opciones de la base de datos
-
-      // Establecer la validación de datos para las celdas de ciudad origen y ciudad destino
-      const cityRange = "H2:H100"; // Rango de celdas para aplicar la validación
-      const validationFormula = cities.map(city => `"${city}"`).join(',');
-      sheet.range(cityRange).dataValidation({
-        type: 'list',
-        formula1: validationFormula
-      });
-
-      // Guardar el archivo
-      const buffer = await workbook.outputAsync();
-
-      // Crear un blob desde el archivo binario de Excel
-      const blob = new Blob([buffer], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-
-      // Crear un objeto URL para el blob
-      const url = URL.createObjectURL(blob);
-
-      // Crear un enlace invisible y hacer clic en él para iniciar la descarga
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'plantilla.xlsx';
-      a.click();
-
-      // Liberar el objeto URL
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  }; */
 
   const downloadPdf = () => {
     const content = document.querySelector("#reportTable");
@@ -720,8 +686,8 @@ const OrdenList = (props) => {
         if (ids !== "") filtered += key + ":in:" + ids + ";";
       }
     });
-    console.log(filtered);
-    setFiltros(filtered);
+    console.log("filtros", filtered);
+    dispatch(setFiltros(filtered));
   };
 
   var header = function (data) {
@@ -796,8 +762,8 @@ const OrdenList = (props) => {
   const onChange = (e, name = null, value = null) => {
     const inputName = name !== null ? name : e.target.name;
     const inputValue = value !== null ? value : e.target.value;
-
-    setForm({ ...form, [inputName]: inputValue });
+    console.log(inputName, inputValue);
+    dispatch(setForm({ ...form, [inputName]: inputValue }));
   };
 
   const addOrdenes = () => {
@@ -841,10 +807,10 @@ const OrdenList = (props) => {
       orden = orden.data;
       let addGuia = 1;
       jsonData.forEach((obj, pos) => {
-        obj.ciudadOrigenId = obj.ciudadOrigenId*1;
-        obj.ciudadDestinoId = obj.ciudadDestinoId*1;
-        obj.costo = obj.costo*1;
-        obj.precio = obj.precio*1;
+        obj.ciudadOrigenId = obj.ciudadOrigenId * 1;
+        obj.ciudadDestinoId = obj.ciudadDestinoId * 1;
+        obj.costo = obj.costo * 1;
+        obj.precio = obj.precio * 1;
         obj.fechaRecepcion = moment().format("YYYY-MM-DD");
         obj.guia = orden.codigo + (orden.Guias * 1 + addGuia);
         obj.empresaId = currentUser.auth.persona.empresaId;
@@ -858,7 +824,7 @@ const OrdenList = (props) => {
       console.log(jsonData);
       let bulkcreate = await OrdenDataService.bulkcreate(jsonData);
       console.log(bulkcreate);
-      retrieveOrdenes(pages, rows, filtros);
+      retrieveOrdenes(pages+1, rows);
       setOpenDialogXLS(false);
       setFile(null);
       setFileName("");
@@ -868,6 +834,38 @@ const OrdenList = (props) => {
 
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
+      <Breadcrumbs aria-label="breadcrumb" sx={{marginBottom: "10px"}}>
+        {/* <Link underline="hover" color="inherit" href="/">
+          Dashboard
+        </Link> */}
+        <Chip
+          icon={<Dashboard sx={{ color: "white !important" }} />}
+          label="Dashboard"
+          onClick={() => {
+            navigate(`/`);
+          }}
+          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+        />
+        <Chip
+          icon={<ListAlt sx={{ color: "white !important" }} />}
+          label="Ordenes"
+          onClick={() => {
+            navigate(`/orden?page=${pages+1}&rowsPerPage=${rows}`);
+          }}
+          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+        />
+        {/* <Link
+          underline="hover"
+          color="inherit"
+          href={`#`}
+          onClick={() => {
+            navigate(`/orden?page=${pages}&rowsPerPage=${rows}`);
+          }}
+        >
+          Ordenes
+        </Link> */}
+        {/* <Typography color="text.primary">Breadcrumbs</Typography> */}
+      </Breadcrumbs>
       <Card
         key="Ordenes"
         title="Ordenes"
@@ -961,6 +959,7 @@ const OrdenList = (props) => {
           noDataMessage={"Por el momento no existen registros."}
           view={true}
           onViewFunction={(id, row) => {
+            //localStorage.setItem("filter", JSON.stringify({ ...form }));
             navigate(`/orden/${id}`);
           }}
           download={true}
@@ -979,14 +978,6 @@ const OrdenList = (props) => {
           }}
           onDeleteFunction={async (id) => {
             console.log(id);
-            /* OrdenDataService.deleted(id)
-              .then((response) => {
-                console.log(response.data);
-              })
-              .catch((e) => {
-                console.log(e);
-              }); */
-
             const data = {
               id: id,
               estado: 0,
@@ -1021,6 +1012,8 @@ const OrdenList = (props) => {
           handlePagination={retrieveOrdenes}
           loading={isLoadingTable}
           getFilters={getFilters}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
           orderASC="asc"
           showCheckboxes={true}
           selected={selected}
@@ -1165,7 +1158,7 @@ const OrdenList = (props) => {
                   <Grid item xs={12} sm={3}>
                     <SelectInput
                       data={[
-                        { id: -1, fullname: "Seleccione un motorizado" },
+                        /* { id: -1, fullname: "Seleccione un motorizado" }, */
                         ...motorizadoSelect,
                       ]}
                       multiple={true}
