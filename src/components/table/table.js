@@ -772,8 +772,7 @@ export default function EnhancedTable(props) {
       const innerSearch = searchParams.get("search")
         ? searchParams.get("search")
         : "";
-
-      setPage(innerPage - 1);
+      if((innerPage - 1) >= 0) setPage(innerPage - 1);
       setRowsPerPage(innerRowsPerPage);
       setSearch(innerSearch);
     }
@@ -825,6 +824,7 @@ export default function EnhancedTable(props) {
           location.pathname + `?page=${page}&rowsPerPage=${rowsPerPage}`
         );
       if (paginationServer) handlePagination(page, rowsPerPage);
+      console.log(onRefreshData);
       if (onRefreshData) {
         onRefreshData();
       }
@@ -866,6 +866,7 @@ export default function EnhancedTable(props) {
           location.pathname + `?page=${page}&rowsPerPage=${rowsPerPage}`
         );
       if (paginationServer) handlePagination(page, rowsPerPage);
+      else if(onRefreshData) onRefreshData();
     });
     handleCloseDialog();
   };

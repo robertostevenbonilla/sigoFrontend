@@ -76,6 +76,7 @@ import {
 import MuiDrawer from "@mui/material/Drawer";
 import AsignarXqr from "./components/asignarxQR/asignarXqr.component";
 import Recibo from "./components/orden/recibo.component";
+import { setPages, setRows } from "./reducers/ui";
 
 const drawerWidth = 240;
 
@@ -94,6 +95,7 @@ const closedMixin = (theme) => ({
     duration: theme.transitions.duration.leavingScreen,
   }),
   overflowX: "auto",
+  overflowY: "auto",
   width: `calc(${theme.spacing(7)} + 1px)`,
   [theme.breakpoints.up("sm")]: {
     width: `calc(${theme.spacing(8)} + 1px)`,
@@ -144,6 +146,7 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 
 function App() {
   const { logout } = UserAuth();
+  const dispatch = useDispatch();
   let navigate = useNavigate();
   const theme = useTheme();
 
@@ -158,7 +161,6 @@ function App() {
   const { isModalOpen: isModalOpen } = useSelector((state) => state.message);
   const { closeModal: closeModal } = useSelector((state) => state.message);
   const { isLoading } = useSelector((state) => state.ui);
-  const dispatch = useDispatch();
 
   let location = useLocation();
 
@@ -193,6 +195,11 @@ function App() {
       navigate("/login");
     });
   };
+
+  const setInit = () => {
+    dispatch(setPages(1));
+    dispatch(setRows(10));
+  }
 
   return (
     <div className="App">
@@ -297,6 +304,7 @@ function App() {
             <ListItem
               key={"orden"}
               onClick={() => {
+                setInit();
                 navigate("/orden");
               }}
               disablePadding
@@ -331,6 +339,7 @@ function App() {
             <ListItem
               key={"persona"}
               onClick={() => {
+                setInit();
                 navigate("/persona");
               }}
               disablePadding
@@ -364,6 +373,7 @@ function App() {
             <ListItem
               key={"usuario"}
               onClick={() => {
+                setInit();
                 navigate("/usuario");
               }}
               disablePadding
@@ -397,6 +407,7 @@ function App() {
             <ListItem
               key={"asignar"}
               onClick={() => {
+                setInit();
                 navigate("/asignarqr");
               }}
               disablePadding
@@ -433,6 +444,7 @@ function App() {
                 <ListItem
                   key={"empresa"}
                   onClick={() => {
+                    setInit();
                     navigate("/empresa");
                   }}
                   disablePadding
@@ -467,6 +479,7 @@ function App() {
                 <ListItem
                   key={"ciudad"}
                   onClick={() => {
+                    setInit();
                     navigate("/ciudad");
                   }}
                   disablePadding
@@ -501,6 +514,7 @@ function App() {
                 <ListItem
                   key={"estado"}
                   onClick={() => {
+                    setInit();
                     navigate("/estado");
                   }}
                   disablePadding
@@ -535,6 +549,7 @@ function App() {
                 <ListItem
                   key={"servicio"}
                   onClick={() => {
+                    setInit();
                     navigate("/servicio");
                   }}
                   disablePadding

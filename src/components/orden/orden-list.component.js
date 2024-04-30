@@ -835,9 +835,6 @@ const OrdenList = (props) => {
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
       <Breadcrumbs aria-label="breadcrumb" sx={{marginBottom: "10px"}}>
-        {/* <Link underline="hover" color="inherit" href="/">
-          Dashboard
-        </Link> */}
         <Chip
           icon={<Dashboard sx={{ color: "white !important" }} />}
           label="Dashboard"
@@ -854,17 +851,6 @@ const OrdenList = (props) => {
           }}
           sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
         />
-        {/* <Link
-          underline="hover"
-          color="inherit"
-          href={`#`}
-          onClick={() => {
-            navigate(`/orden?page=${pages}&rowsPerPage=${rows}`);
-          }}
-        >
-          Ordenes
-        </Link> */}
-        {/* <Typography color="text.primary">Breadcrumbs</Typography> */}
       </Breadcrumbs>
       <Card
         key="Ordenes"
@@ -984,14 +970,12 @@ const OrdenList = (props) => {
             };
             await OrdenDataService.update(data)
               .then((response) => {
-                console.log(response);
                 if (response.status === 200) {
                   const message = {
                     title: "Orden eliminada",
                     msg: "Orden eliminada correctamente.",
                     error: true,
                   };
-                  console.log(response.data.message);
                   dispatch(setMessage({ ...message }));
                   dispatch(setOpenModal(true));
                 }
@@ -1308,26 +1292,6 @@ const OrdenList = (props) => {
                 </Button>
               </Grid>
             </>
-            /* <List>
-              <ListItem>
-                <Button
-                  variant="contained"
-                  startIcon={<GridOn />}
-                  onClick={downloadXLS}
-                >
-                  Plantilla Excel
-                </Button>
-              </ListItem>
-              <ListItem>
-                <Button
-                  variant="contained"
-                  startIcon={<GridOn />}
-                  onClick={addOrdenes}
-                >
-                  Subir ordenes
-                </Button>
-              </ListItem>
-            </List> */
           }
         />
       </Card>

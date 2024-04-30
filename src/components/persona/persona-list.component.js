@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import PersonaDataService from "../../services/persona.service";
 import { Link } from "react-router-dom";
 
 import EnhancedTable from "../table/table";
 import { usePersonasTable } from "../../hooks/usePersonaTable";
-import { AccountCircle } from "@mui/icons-material";
-import { Card } from "@mui/material";
+import { AccountCircle, Dashboard } from "@mui/icons-material";
+import { Breadcrumbs, Card, Chip, Dialog, DialogContent, DialogTitle } from "@mui/material";
+import { setPages, setRows } from "../../reducers/ui";
+import { setMessage, setOpenModal } from "../../reducers/message";
 
 const columnsPersona = [
   {
@@ -48,15 +50,20 @@ const columnsPersona = [
 ];
 
 const PersonaList = (props) => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [personas, setPersonas] = useState([]);
   const [currentPersona, setCurrentPersona] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(-1);
+  const [reloadData, setReload] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
   const [searchNombres, setSearchNombres] = useState("");
 
   const { isLoadingTable } = usePersonasTable;
 
   const { auth: currentUser } = useSelector((state) => state.auth);
+  const { pages } = useSelector((state) => state.ui);
+  const { rows } = useSelector((state) => state.ui);
 
   useEffect(() => {
     console.log(currentUser, currentUser);
@@ -109,8 +116,30 @@ const PersonaList = (props) => {
     }
   };
 
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
+
   return (
     <div className="list row">
+      <Breadcrumbs aria-label="breadcrumb" sx={{marginBottom: "10px"}}>
+        <Chip
+          icon={<Dashboard sx={{ color: "white !important" }} />}
+          label="Dashboard"
+          onClick={() => {
+            navigate(`/`);
+          }}
+          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+        />
+        <Chip
+          icon={<AccountCircle sx={{ color: "white !important" }} />}
+          label="Personas"
+          onClick={() => {
+            navigate(`/persona?page=${pages+1}&rowsPerPage=${rows}`);
+          }}
+          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+        />
+      </Breadcrumbs>
       <Card
         title="Ordenes"
         icon={<AccountCircle sx={{ color: "white", fontSize: "23px" }} />}
@@ -130,12 +159,45 @@ const PersonaList = (props) => {
           onViewFunction={(id, row) => {
             navigate(`/persona/${id}`);
           }}
+          delete={true}
+          showDeleteAlert={true}
+          refreshData={reloadData}
+          onRefreshData={() => {
+            console.log('refresh data');
+            setReload(false);
+            retrievePersonas();
+          }}
+          onDeleteFunction={async (id) => {
+            const data = {
+              id: id,
+              estado: 0,
+            };
+            await PersonaDataService.update(data)
+              .then((response) => {
+                console.log(response);
+                if (response.status === 200) {
+                  const message = {
+                    title: "Persona eliminada",
+                    msg: "Persona eliminada correctamente.",
+                    error: true,
+                  };
+                  console.log(response.data.message);
+                  dispatch(setMessage({ ...message }));
+                  dispatch(setOpenModal(true));
+                }
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+          }}
           searchableKeys={["nombres", "apellidos"]}
           rowId={"id"}
           add={true}
           onAddFunction={() => {
             navigate("/persona/add");
           }}
+          setPages={setPages}
+          setRows={setRows}
         />
       </Card>
     </div>
