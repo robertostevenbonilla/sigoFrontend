@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
     isLoadingTable: false,
+    isLoading: false,
     pages: 1,
     rows: 10,
 };
@@ -12,6 +13,9 @@ export const uiSlice = createSlice({
   reducers: {
     loadingTable: (state, action) => {
       state.isLoadingTable = action.payload;
+    },
+    setLoading: (state, action) => {
+      state.isLoading = action.payload;
     },
     setPages: (state, action) => {
       state.pages = action.payload;
@@ -25,5 +29,6 @@ export const uiSlice = createSlice({
 export const {
     loadingTable,
     setPages,
-    setRows
+    setRows,
+    setLoading
 } = uiSlice.actions;

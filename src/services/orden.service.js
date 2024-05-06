@@ -3,11 +3,12 @@ import { AuthHeader } from "./auth-header";
 
 const { header } = AuthHeader();
 
-const getAll = async (page,size,filter="") => {
+const getAll = async (page,size,filter="",sort="") => {
   if( page -1 < 0 ) page = 0;
   else page = page -1;
   let url = `/orden/?page=${page}&size=${size}`
   if(filter !== "") url = `/orden/?filter=${filter}&page=${page}&size=${size}`;
+  if(sort !== "") url = `/orden/?filter=${filter}&page=${page}&size=${size}&sort=${sort}`;
   return await http.get(url, { headers: {...header()} });
 }
 
@@ -71,6 +72,16 @@ const bulkcreate = async (data) => {
   return await http.post("/orden/bulkcreate", {ordenes: data}, { headers: {...header()} });
 };
 
+const getReporteGuia = async (data) => {
+  return await http.post("/orden/reporteGuia?type=pdf", {ordenes: data}, { headers: {...header()}, responseType: 'blob' });
+};
+
+const getReporte = async (tipo, formato, filter) => {
+  let url = `/orden/reporte${tipo}?type=${formato}`;
+  if(filter !== "") url += `&filter=${filter}`;
+  return await http.get(url, { headers: {...header()}, responseType: 'blob' });
+};
+
 const OrdenDataService = {
   getAll,
   getSelect,
@@ -87,6 +98,8 @@ const OrdenDataService = {
   evidencia,
   incidencia,
   bulkcreate,
+  getReporteGuia,
+  getReporte,
 }
 
 export default OrdenDataService;

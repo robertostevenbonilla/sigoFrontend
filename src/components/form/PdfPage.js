@@ -61,8 +61,6 @@ export const PdfPage = ({ selectedObj, body }) => {
                     <p style={{ fontWeight: "bolder" }}>
                       Télefono: 0967216989
                       <br />
-                      Guayaquil - Quito - Machala - Cuenca
-                      <br />
                       Sitio web:{" "}
                       <a href="http://goyaexpressdelivery.com">
                         goyaexpressdelivery.com
@@ -104,7 +102,7 @@ export const PdfPage = ({ selectedObj, body }) => {
                       Servicio
                     </Grid>
                     <Grid item xs={4} className="pdfValue">
-                      {row.Servicio.nombre}
+                      {row.Servicio?.nombre}
                     </Grid>
                     <Grid item xs={2} className="pdfItem">
                       Origen
@@ -158,13 +156,13 @@ export const PdfPage = ({ selectedObj, body }) => {
                       Ciudad
                     </Grid>
                     <Grid item xs={4} className="pdfValue">
-                      {row.ciudadOrigen.nombre}
+                      {row.ciudadOrigen?.nombre}
                     </Grid>
                     <Grid item xs={2} className="pdfItem">
                       Ciudad
                     </Grid>
                     <Grid item xs={4} className="pdfValue">
-                      {row.ciudadDestino.nombre}
+                      {row.ciudadDestino?.nombre}
                     </Grid>
                     <Grid item xs={2} className="pdfItem">
                       Producto

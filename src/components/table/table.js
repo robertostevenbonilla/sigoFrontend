@@ -396,8 +396,7 @@ function EnhancedTableRow(props) {
         })}
 
         {!disableButtons && (
-          <TableCell align="right" sx={{ width: (150*buttons.length) }}>
-            
+          <TableCell id={`btn${rowId}`} align="right" sx={{ width: (150*buttons.length) }}>
             <div>
               {buttons.map((btn) => {
                 return btn;
@@ -712,13 +711,17 @@ export default function EnhancedTable(props) {
     onRefreshData=null,
     setPages=null,
     setRows=null,
+    pagesHandle=0,
+    rowsHandle=10,
   } = props;
   const [order, setOrder] = React.useState(orderASC);
   const [orderBy, setOrderBy] = React.useState("");
   const [innerSelected, setInnerSelected] = React.useState([]);
   const [innerSelectedObj, setInnerSelectedObj] = React.useState([]);
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+
+  const [page, setPage] = React.useState(pagesHandle);
+  const [rowsPerPage, setRowsPerPage] = React.useState(rowsHandle);
+
   const [openDialog, setOpenDialog] = React.useState(false);
   const [item, setItem] = React.useState(0);
   const [disableCheckboxes, setDisableCheckboxes] = React.useState(false);
@@ -737,10 +740,16 @@ export default function EnhancedTable(props) {
   const [searchParams] = useSearchParams();
 
   React.useEffect(() => {
+    //if (table.rows === undefined) setPage(0);
     if (disablePathParameters) {
       setPage(0);
       setRowsPerPage(10);
       setSearch("");
+    } else if (!disablePathParameters && refresh) {
+      console.log(table,disablePathParameters,refresh);
+      navigate(
+        location.pathname + `?page=${page}&rowsPerPage=${rowsPerPage}`
+        );
     }
   }, [table]);
 
@@ -750,12 +759,12 @@ export default function EnhancedTable(props) {
   }, [rowId]);
 
   React.useEffect(() => {
-    console.log(page);
+    console.log("page",page);
     if(props.setPages) dispatch(setPages(page));
   }, [page]);
 
   React.useEffect(() => {
-    console.log(rowsPerPage);
+    console.log("rowsPerPage",rowsPerPage);
     if(props.setRows) dispatch(setRows(rowsPerPage));
   }, [rowsPerPage]);
 
@@ -775,6 +784,8 @@ export default function EnhancedTable(props) {
       if((innerPage - 1) >= 0) setPage(innerPage - 1);
       setRowsPerPage(innerRowsPerPage);
       setSearch(innerSearch);
+      console.log(innerPage,innerRowsPerPage, innerSearch);
+      console.log(page,rowsPerPage, search);
     }
   }, [searchParams]);
 
@@ -830,6 +841,16 @@ export default function EnhancedTable(props) {
       }
     }
   }, [refresh]);
+
+  React.useEffect(() => {
+    //if (page !== pagesHandle)
+      setPage(pagesHandle);
+  }, [pagesHandle]);
+
+  React.useEffect(() => {
+    //if (rowsPerPage !== rowsHandle)
+      setRowsPerPage(rowsHandle);
+  }, [rowsHandle]);
 
   const handleSelected = (newSelected) => {
     if (setSelected) {
@@ -1276,20 +1297,6 @@ export default function EnhancedTable(props) {
             </Select>
           </Grid>
         </Grid>
-        {/* <Grid item>
-          <span style={{ fontSize: 14, marginRight: 10 }}>
-            {console.log(dataTable)}
-            {(dataTable?.total) ? (
-              <>
-                Número de {dataTable?.total > 1 ? "registros" : "registro" }: {dataTable?.total}
-              </>
-            ) : (
-              <>
-                Número de {dataTable?.rows.length > 1 ? "registros" : "registro" }: {dataTable?.rows.length}
-              </>
-            )}
-          </span>
-        </Grid> */}
         <Pagination
           sx={{ color: "neutral" }}
           count={

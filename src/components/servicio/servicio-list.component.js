@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import ServicioDataService from "../../services/servicio.service";
 import EnhancedTable from "../table/table";
 import { usePersonasTable } from "../../hooks/usePersonaTable";
 import {
+  Dashboard,
   DisplaySettings,
 } from "@mui/icons-material";
-import { Card } from "@mui/material";
+import { Breadcrumbs, Card, Chip } from "@mui/material";
+import { setPages, setRows } from "../../reducers/ui";
+import { setMessage, setOpenModal } from "../../reducers/message";
 
 const columnsServicio = [
   {
@@ -28,10 +31,14 @@ const columnsServicio = [
 ];
 
 const ServicioList = (props) => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [servicios, setServicios] = useState([]);
+  const [reloadData, setReload] = useState(false);
 
   const { auth: currentUser } = useSelector((state) => state.auth);
+  const { pages } = useSelector((state) => state.ui);
+  const { rows } = useSelector((state) => state.ui);
 
   useEffect(() => {
     console.log(currentUser, currentUser);
@@ -56,6 +63,24 @@ const ServicioList = (props) => {
 
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
+      <Breadcrumbs aria-label="breadcrumb" sx={{marginBottom: "10px"}}>
+        <Chip
+          icon={<Dashboard sx={{ color: "white !important" }} />}
+          label="Dashboard"
+          onClick={() => {
+            navigate(`/`);
+          }}
+          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+        />
+        <Chip
+          icon={<DisplaySettings sx={{ color: "white !important" }} />}
+          label="Empresas"
+          onClick={() => {
+            navigate(`/empresa?page=${pages+1}&rowsPerPage=${rows}`);
+          }}
+          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+        />
+      </Breadcrumbs>
       <Card
         title="Ciudad"
         icon={<DisplaySettings sx={{ color: "white", fontSize: "23px" }} />}
@@ -80,6 +105,39 @@ const ServicioList = (props) => {
           rowId={"id"}
           add={true}
           onAddFunction={() => {navigate("/servicio/add")}}
+          delete={true}
+          showDeleteAlert={true}
+          refreshData={reloadData}
+          onRefreshData={() => {
+            console.log('refresh data');
+            setReload(false);
+            retrieveServicio();
+          }}
+          onDeleteFunction={async (id) => {
+            const data = {
+              id: id,
+              estado: 0,
+            };
+            await ServicioDataService.update(data)
+              .then((response) => {
+                console.log(response);
+                if (response.status === 200) {
+                  const message = {
+                    title: "Empresa eliminada",
+                    msg: "Empresa eliminada correctamente.",
+                    error: true,
+                  };
+                  console.log(response.data.message);
+                  dispatch(setMessage({ ...message }));
+                  dispatch(setOpenModal(true));
+                }
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+          }}
+          setPages={setPages}
+          setRows={setRows}
         />
       </Card>
     </div>

@@ -222,23 +222,6 @@ function App() {
                 <Logout />
               </IconButton>
             </Grid>
-            {/* <Menu
-                id="menu-appbar"
-                anchorEl={anchorEl}
-                anchorOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
-                open={Boolean(anchorEl)}
-              >
-                <MenuItem onClick={handleClose}>Profile</MenuItem>
-                <MenuItem onClick={handleClose}>My account</MenuItem>
-              </Menu> */}
           </Grid>
         )}
       </AppBar>
@@ -264,7 +247,7 @@ function App() {
             {open ? <ChevronLeft /> : <ChevronRight />}
           </IconButton>
         </DrawerHeader>
-        <Divider />
+        <Divider sx={{color: "white"}} />
 
         {currentUser.isLoggedIn && currentUser.auth?.reset_password == 0 && (
           <List>
@@ -617,7 +600,7 @@ function App() {
           minHeight: "100vh",
         }}
       >
-        <DrawerHeader />
+        {/* <DrawerHeader /> */}
         <Box
           className="main-box"
           component="main"
@@ -627,7 +610,7 @@ function App() {
             width: { sm: `calc(100% )` },
             /* height: "calc(100vh - 100px)", */
             overflowY: "auto",
-            marginTop: "20px",
+            marginTop: "40px",
           }}
         >
           <Routes>

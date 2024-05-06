@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import OrdenDataService from "../../services/orden.service";
 import EmpresaDataService from "../../services/empresa.service";
@@ -22,6 +22,7 @@ import {
   PictureAsPdf,
   Room,
   ScheduleSend,
+  SummarizeOutlined,
   Today,
 } from "@mui/icons-material";
 import {
@@ -67,7 +68,7 @@ import moment from "moment";
 import xlsx, { read, utils, write } from "xlsx";
 //import { setForm } from "../../reducers/filtro";
 import { setForm, setFiltros, setShowFilters } from "../../reducers/filtro";
-import { setPages, setRows } from "../../reducers/ui";
+import { setPages, setRows, setLoading } from "../../reducers/ui";
 
 var doc = new jsPDF();
 
@@ -300,6 +301,8 @@ const OrdenList = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+
   const [ordenes, setOrdenes] = useState([]);
 
   const { auth: currentUser } = useSelector((state) => state.auth);
@@ -320,7 +323,7 @@ const OrdenList = (props) => {
   const [servicioSelect, setServicioSelect] = useState([]);
   const [faseSelect, setFaseSelect] = useState([]);
   const [motorizadoSelect, setMotorizadoSelect] = useState([]);
-  const [printPdf, setPrintPdf] = useState(false);
+  const [showReport, setShowReport] = useState(true);
 
   const [filtersLoaded, setFiltersLoaded] = useState(false);
   const [selected, setSelected] = useState([]);
@@ -334,6 +337,7 @@ const OrdenList = (props) => {
   const [reloadData, setReload] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [openDialogXLS, setOpenDialogXLS] = useState(false);
+  const [openDialogReport, setOpenDialogReport] = useState(false);
   const [morotizadoId, setMorotizadoId] = useState(-1);
 
   const loadSelects = async () => {
@@ -369,13 +373,27 @@ const OrdenList = (props) => {
 
   useEffect(() => {
     console.log(currentUser, location);
+    const innerPage =
+      parseInt(searchParams.get("page") ? searchParams.get("page") : 1) - 1;
+    const innerRowsPerPage = parseInt(
+      searchParams.get("rowsPerPage") ? searchParams.get("rowsPerPage") : 10
+    );
+    dispatch(setPages(innerPage));
+    dispatch(setRows(innerRowsPerPage));
     if (currentUser.auth?.reset_password === 1) {
       navigate("/changepassword");
     } else if (!currentUser.isLoggedIn) {
       navigate("/login");
     } else {
-      console.log("paginacion", pages, rows);
-      retrieveOrdenes(pages+1,rows);
+      const innerPage =
+        parseInt(searchParams.get("page") ? searchParams.get("page") : 1) - 1;
+      const innerRowsPerPage = parseInt(
+        searchParams.get("rowsPerPage") ? searchParams.get("rowsPerPage") : 10
+      );
+      dispatch(setPages(innerPage));
+      dispatch(setRows(innerRowsPerPage));
+      console.log("paginacion1", pages, rows);
+      retrieveOrdenes(innerPage + 1, innerRowsPerPage);
       loadMotirizados();
       loadSelects();
     }
@@ -388,9 +406,10 @@ const OrdenList = (props) => {
   }, [downloadObj]);
 
   useEffect(() => {
-    console.log(filtros);
+    console.log("filtros", filtros, pages, rows);
     if (filtros !== "") {
-      retrieveOrdenes(pages+1, rows);
+      setShowReport(false);
+      retrieveOrdenes(pages + 1, rows);
     }
   }, [filtros]);
 
@@ -417,9 +436,11 @@ const OrdenList = (props) => {
   const handleSearchInputChange = async (event) => {
     let { name, value } = event.target;
     console.log(form, name, value);
-    if (value.includes("-1")) value = [];
-    if (name === "motorizadoIds") {
-      dispatch(setForm({ ...form, ["motorizadoId"]: [...value] }));
+    if (value.includes("-1")) {
+      value = [];
+    }
+    if (name === "mensajeroId") {
+      dispatch(setForm({ ...form, ["mensajeroId"]: [...value] }));
     } else {
       dispatch(setForm({ ...form, [name]: [...value] }));
     }
@@ -433,9 +454,7 @@ const OrdenList = (props) => {
 
   const retrieveOrdenes = (page = 0, size = 10) => {
     dispatch(loadingTable(true));
-    console.log("retrieve",page,size);    
-    console.log("retrieveOrdenes",pages,rows);
-    OrdenDataService.getAll((page), size, filtros)
+    OrdenDataService.getAll(page, size, filtros, "fechaEntrega:desc")
       .then((response) => {
         setOrdenes(response.data);
         dispatch(loadingTable(false));
@@ -537,7 +556,29 @@ const OrdenList = (props) => {
     URL.revokeObjectURL(url);
   };
 
-  const downloadPdf = () => {
+  const downloadPdf = async () => {
+    dispatch(setLoading(true));
+    OrdenDataService.getReporteGuia(selected)
+      .then((reporte) => {
+        let fileName =
+          "reporte" + moment().format("YYYY-MM-DD-HH:mm:ss.SS") + ".pdf";
+        console.log(reporte);
+
+        const url = URL.createObjectURL(reporte.data);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        dispatch(setLoading(false));
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
+
+  const downloadPdf1 = () => {
     const content = document.querySelector("#reportTable");
     let contents = document.querySelectorAll(".qrPage");
 
@@ -668,10 +709,9 @@ const OrdenList = (props) => {
   };
 
   const getFiltered = () => {
-    console.log(form);
+    dispatch(setPages(0));
     let filtered = "";
     Object.keys(form).forEach((key) => {
-      console.log(key);
       if (key === "fechaDesde") {
         if (form[key] !== undefined) {
           filtered += "fechaRecepcion:gte:" + form[key] + ";";
@@ -682,12 +722,13 @@ const OrdenList = (props) => {
         }
       } else {
         const ids = form[key].join(",");
-        console.log(ids);
         if (ids !== "") filtered += key + ":in:" + ids + ";";
       }
     });
     console.log("filtros", filtered);
+    setOrdenes([]);
     dispatch(setFiltros(filtered));
+    //retrieveOrdenes(pages+1, rows);
   };
 
   var header = function (data) {
@@ -757,6 +798,7 @@ const OrdenList = (props) => {
     setMorotizadoId(-1);
     setOpenDialog(false);
     setOpenDialogXLS(false);
+    setOpenDialogReport(false);
   };
 
   const onChange = (e, name = null, value = null) => {
@@ -824,7 +866,7 @@ const OrdenList = (props) => {
       console.log(jsonData);
       let bulkcreate = await OrdenDataService.bulkcreate(jsonData);
       console.log(bulkcreate);
-      retrieveOrdenes(pages+1, rows);
+      retrieveOrdenes(pages + 1, rows);
       setOpenDialogXLS(false);
       setFile(null);
       setFileName("");
@@ -832,24 +874,51 @@ const OrdenList = (props) => {
     reader.readAsArrayBuffer(file);
   };
 
+  const downloadReporte = (tipo = "completo", formato = "pdf") => {
+    console.log("downloadReporte", tipo, formato);
+    dispatch(setLoading(true));
+    OrdenDataService.getReporte(tipo, formato, filtros)
+      .then((reporte) => {
+        if( formato === "excel" ) formato = "xlsx";
+        let fileName =
+          "reporte" +
+          tipo +
+          moment().format("YYYY-MM-DD HH:mm:ss SS") + "." +
+          formato;
+
+        const url = URL.createObjectURL(reporte.data);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        dispatch(setLoading(false));
+      })
+      .catch((e) => {
+        console.log(e);
+        dispatch(setLoading(false));
+      });
+  };
+
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
-      <Breadcrumbs aria-label="breadcrumb" sx={{marginBottom: "10px"}}>
+      <Breadcrumbs aria-label="breadcrumb" sx={{ marginBottom: "10px" }}>
         <Chip
           icon={<Dashboard sx={{ color: "white !important" }} />}
           label="Dashboard"
           onClick={() => {
             navigate(`/`);
           }}
-          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+          sx={{ background: "#3364FF", color: "white", padding: "2px 5px" }}
         />
         <Chip
           icon={<ListAlt sx={{ color: "white !important" }} />}
           label="Ordenes"
           onClick={() => {
-            navigate(`/orden?page=${pages+1}&rowsPerPage=${rows}`);
+            navigate(`/orden?page=${pages + 1}&rowsPerPage=${rows}`);
           }}
-          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+          sx={{ background: "#3364FF", color: "white", padding: "2px 5px" }}
         />
       </Breadcrumbs>
       <Card
@@ -917,7 +986,7 @@ const OrdenList = (props) => {
                   type="file"
                   inputProps={{
                     accept:
-                      ".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel",
+                      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel",
                   }}
                   onChange={setXLSfile}
                   fullWidth
@@ -931,6 +1000,79 @@ const OrdenList = (props) => {
             </Button>
             <Button onClick={uploadXLS} variant="contained">
               Subir archivo
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          id="popupReportOrder"
+          open={openDialogReport}
+          onClose={handleCloseDialog}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"Descargar reportes."}
+          </DialogTitle>
+          <DialogContent sx={{ paddingTop: "10px !important" }}>
+            <Grid container spacing={2} alignItems={"center"}>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  className="extraButton"
+                  variant="contained"
+                  startIcon={<PictureAsPdf />}
+                  sx={{ width: "90%", margin: "auto" }}
+                  onClick={() => {
+                    downloadReporte("Basico", "pdf");
+                  }}
+                >
+                  Reporte Basico
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  className="extraButton"
+                  variant="contained"
+                  startIcon={<PictureAsPdf />}
+                  sx={{ width: "90%", margin: "auto" }}
+                  onClick={() => {
+                    downloadReporte("Completo", "pdf");
+                  }}
+                >
+                  Reporte Completo
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  className="extraButton"
+                  variant="contained"
+                  startIcon={<GridOn />}
+                  sx={{ width: "90%", margin: "auto" }}
+                  onClick={() => {
+                    downloadReporte("Basico", "excel");
+                  }}
+                >
+                  Reporte Basico
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  className="extraButton"
+                  variant="contained"
+                  startIcon={<GridOn />}
+                  sx={{ width: "90%", margin: "auto" }}
+                  onClick={() => {
+                    downloadReporte("Completo", "excel");
+                  }}
+                >
+                  Reporte Completo
+                </Button>
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog} color="error">
+              Cancelar
             </Button>
           </DialogActions>
         </Dialog>
@@ -1008,7 +1150,7 @@ const OrdenList = (props) => {
           onAddFunction={() => {
             navigate("/orden/add");
           }}
-          extraFilters={(resetPagination) => (
+          extraFilters={() => (
             <Grid
               container
               justifyContent={"space-between"}
@@ -1146,10 +1288,10 @@ const OrdenList = (props) => {
                         ...motorizadoSelect,
                       ]}
                       multiple={true}
-                      value={form.motorizadoId}
+                      value={form.mensajeroId}
                       placeholder={"Seleccione un motorizado"}
-                      id={"morotizadoIds"}
-                      name={"motorizadoIds"}
+                      id={"mensajeroId"}
+                      name={"mensajeroId"}
                       label={"Motorizado"}
                       input={
                         <OutlinedInput
@@ -1214,17 +1356,33 @@ const OrdenList = (props) => {
                 </Grid>
               </Grid>
               <Grid item sm={2} xs={12} style={{ textAlign: "right" }}>
-                <Button
-                  variant="contained"
-                  startIcon={<FilterAltOutlined />}
-                  onClick={() => {
-                    //resetPagination();
-                    console.log(form);
-                    getFiltered();
-                  }}
-                >
-                  Filtrar
-                </Button>
+                <Grid container spacing={2} alignItems={"center"}>
+                  <Grid item xs={12} sm={12}>
+                    <Button
+                      variant="contained"
+                      startIcon={<FilterAltOutlined />}
+                      sx={{ width: "90%" }}
+                      onClick={() => {
+                        getFiltered();
+                      }}
+                    >
+                      Filtrar
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={12}>
+                    <Button
+                      variant="contained"
+                      startIcon={<SummarizeOutlined />}
+                      sx={{ width: "90%" }}
+                      disabled={showReport}
+                      onClick={() => {
+                        setOpenDialogReport(true);
+                      }}
+                    >
+                      Reportes
+                    </Button>
+                  </Grid>
+                </Grid>
               </Grid>
             </Grid>
           )}
@@ -1271,6 +1429,8 @@ const OrdenList = (props) => {
           }
           setPages={setPages}
           setRows={setRows}
+          pagesHandle={pages}
+          rowsHandle={rows}
           extraButtons={
             <>
               <Grid item md={3} sm={3} xs={12}>
@@ -1295,39 +1455,6 @@ const OrdenList = (props) => {
           }
         />
       </Card>
-      {selected.length > 0 && !download ? (
-        <Grid
-          sx={{ width: "590px", height: "840px", margin: "0 auto" }}
-          /* style={{
-            width: 0,
-            height: 0,
-            overflow: "hidden",
-          }} */
-        >
-          {console.log("selectedObj", selectedObj)}
-          <div>
-            <PdfPage selectedObj={selectedObj} body={3} />
-          </div>
-        </Grid>
-      ) : (
-        <></>
-      )}
-
-      {download ? (
-        <Grid
-          sx={{ width: "590px", height: "840px", margin: "0 auto" }}
-          /* style={{
-            width: 0,
-            height: 0,
-            overflow: "hidden",
-          }} */
-        >
-          {console.log("downloadObj", downloadObj)}
-          <PdfPage selectedObj={downloadObj} body={3} />
-        </Grid>
-      ) : (
-        <></>
-      )}
     </div>
   );
 };

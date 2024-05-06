@@ -105,3 +105,19 @@
 ::-webkit-scrollbar-thumb:hover {
   background-color: #a8bbbf;
 }
+
+.area-loading {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  z-index: 1500;
+  position: fixed;
+}
+
+.area-loading div {
+  display: flex;
+  flex-flow: column wrap;
+  width: 100vw;
+  height: 100vh;
+  background: #0000007a;
+}
