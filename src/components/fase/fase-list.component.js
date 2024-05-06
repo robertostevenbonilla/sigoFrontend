@@ -17,7 +17,7 @@ const columnsFase = [
   },
   {
     field: "nombre",
-    headerName: "Cuidad",
+    headerName: "Estado",
     flex: 2,
   },
   {
@@ -87,7 +87,7 @@ const FaseList = (props) => {
         />
         <Chip
           icon={<Approval sx={{ color: "white !important" }} />}
-          label="Empresas"
+          label="Estado"
           onClick={() => {
             navigate(`/estado?page=${pages+1}&rowsPerPage=${rows}`);
           }}

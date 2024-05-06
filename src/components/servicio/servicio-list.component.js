@@ -20,7 +20,7 @@ const columnsServicio = [
   },
   {
     field: "nombre",
-    headerName: "Cuidad",
+    headerName: "Servicio",
     flex: 2,
   },
   {
@@ -74,9 +74,9 @@ const ServicioList = (props) => {
         />
         <Chip
           icon={<DisplaySettings sx={{ color: "white !important" }} />}
-          label="Empresas"
+          label="Servicio"
           onClick={() => {
-            navigate(`/empresa?page=${pages+1}&rowsPerPage=${rows}`);
+            navigate(`/servicio?page=${pages+1}&rowsPerPage=${rows}`);
           }}
           sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
         />

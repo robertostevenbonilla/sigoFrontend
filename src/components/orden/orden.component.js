@@ -194,33 +194,9 @@ const Orden = () => {
       });
   };
 
-  /* const deletePersona = () => {
-    PersonaDataService.delete(formPersona.id)
-      .then((response) => {
-        console.log(response.data);
-        navigate("/persona");
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  }; */
-
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
       <Breadcrumbs aria-label="breadcrumb" sx={{marginBottom: "10px"}}>
-        {/* <Link underline="hover" color="inherit" href="/">
-          Dashboard
-        </Link>
-        <Link
-          underline="hover"
-          color="inherit"
-          href={`#`}
-          onClick={() => {
-            navigate(`/orden?page=${pages}&rowsPerPage=${rows}`);
-          }}
-        >
-          Ordenes
-        </Link> */}
         <Chip
           icon={<Dashboard sx={{ color: "white !important" }} />}
           label="Dashboard"

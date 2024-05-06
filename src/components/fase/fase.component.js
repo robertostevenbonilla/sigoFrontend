@@ -4,8 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import FaseDataService from "../../services/fase.service";
 import { faseForm } from "../../helpers/forms";
 import { Card } from "../Card";
-import { Approval, Edit, Save } from "@mui/icons-material";
-import { Button, Grid, TextField } from "@mui/material";
+import { Approval, Dashboard, Edit, Save } from "@mui/icons-material";
+import { Breadcrumbs, Button, Chip, Grid, TextField, Typography } from "@mui/material";
 import { setMessage, setOpenModal } from "../../reducers/message";
 
 const Fase = () => {
@@ -18,6 +18,7 @@ const Fase = () => {
 
   const { auth: currentUser } = useSelector((state) => state.auth);
   const { msg } = useSelector((state) => state.message);
+  const { pages, rows } = useSelector((state) => state.ui);
 
   const getFase = (id) => {
     FaseDataService.get(id)
@@ -103,19 +104,27 @@ const Fase = () => {
       });
   };
 
-  /* const deletePersona = () => {
-    PersonaDataService.delete(formPersona.id)
-      .then((response) => {
-        console.log(response.data);
-        navigate("/persona");
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  }; */
-
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
+      <Breadcrumbs aria-label="breadcrumb" sx={{ marginBottom: "10px" }}>
+        <Chip
+          icon={<Dashboard sx={{ color: "white !important" }} />}
+          label="Dashboard"
+          onClick={() => {
+            navigate(`/`);
+          }}
+          sx={{ background: "#3364FF", color: "white", padding: "2px 5px" }}
+        />
+        <Chip
+          icon={<Approval sx={{ color: "white !important" }} />}
+          label="Estado"
+          onClick={() => {
+            navigate(`/estado?page=${pages + 1}&rowsPerPage=${rows}`);
+          }}
+          sx={{ background: "#3364FF", color: "white", padding: "2px 5px" }}
+        />
+        <Typography color="text.primary">{form.nombre}</Typography>
+      </Breadcrumbs>
       <Card
         title="Estado"
         icon={<Approval sx={{ color: "white", fontSize: "23px" }} />}

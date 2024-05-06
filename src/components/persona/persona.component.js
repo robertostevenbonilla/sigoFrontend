@@ -8,8 +8,8 @@ import { personaForm } from "../../helpers/forms";
 import { withRouter } from "../../common/with-router";
 import Form from "react-bootstrap/Form";
 import { Card } from "../Card";
-import { AccountCircle, Edit, Save } from "@mui/icons-material";
-import { Button, Grid, TextField } from "@mui/material";
+import { AccountCircle, Dashboard, Edit, Save } from "@mui/icons-material";
+import { Breadcrumbs, Button, Chip, Grid, TextField, Typography } from "@mui/material";
 import { SearchInput } from "../form/AutoCompleteInput";
 
 const Persona = () => {
@@ -19,9 +19,10 @@ const Persona = () => {
   const [form, setForm] = useState(personaForm);
   const [loading, setLoading] = useState(false);
   const [edited, setEdited] = useState(true);
+  const [empresaSelect, setEmpresaSelect] = useState([]);
 
   const { auth: currentUser } = useSelector((state) => state.auth);
-  const [empresaSelect, setEmpresaSelect] = useState([]);
+  const { pages, rows } = useSelector((state) => state.ui);
 
   const getPersona = (id) => {
     PersonaDataService.get(id)
@@ -109,6 +110,25 @@ const Persona = () => {
 
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
+      <Breadcrumbs aria-label="breadcrumb" sx={{marginBottom: "10px"}}>
+        <Chip
+          icon={<Dashboard sx={{ color: "white !important" }} />}
+          label="Dashboard"
+          onClick={() => {
+            navigate(`/`);
+          }}
+          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+        />
+        <Chip
+          icon={<AccountCircle sx={{ color: "white !important" }} />}
+          label="Persona"
+          onClick={() => {
+            navigate(`/persona?page=${pages+1}&rowsPerPage=${rows}`);
+          }}
+          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+        />
+        <Typography color="text.primary">{form.fullName}</Typography>
+      </Breadcrumbs>
       <Card
         title="Persona"
         icon={<AccountCircle sx={{ color: "white", fontSize: "23px" }} />}

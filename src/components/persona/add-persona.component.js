@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import PersonaDataService from "../../services/persona.service";
 import EmpresaDataService from "../../services/empresa.service";
 import { personaForm } from "../../helpers/forms";
 import { Link } from "react-router-dom";
-import { AccountCircle, Save } from "@mui/icons-material";
+import { AccountCircle, Dashboard, ListAlt, Save } from "@mui/icons-material";
 import { Card } from "../Card";
-import { Box, Button, Grid, TextField } from "@mui/material";
+import { Box, Breadcrumbs, Button, Chip, Grid, TextField, Typography } from "@mui/material";
 import { SearchInput } from "../form/AutoCompleteInput";
 import { ci } from "ecuador-validator";
 import { setMessage, setOpenModal } from "../../reducers/message";
 
 const AddPersona = () => {
   const navigate = useNavigate();
-  const [form, setForm] = useState(personaForm);
   const dispatch = useDispatch();
+  const [form, setForm] = useState(personaForm);
 
   const { auth: currentUser } = useSelector((state) => state.auth);
+  const { pages, rows } = useSelector((state) => state.ui);
   const [submitted, setSubmitted] = useState(false);
   const [empresaSelect, setEmpresaSelect] = useState([]);
 
@@ -90,6 +91,25 @@ const AddPersona = () => {
 
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
+      <Breadcrumbs aria-label="breadcrumb" sx={{marginBottom: "10px"}}>
+        <Chip
+          icon={<Dashboard sx={{ color: "white !important" }} />}
+          label="Dashboard"
+          onClick={() => {
+            navigate(`/`);
+          }}
+          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+        />
+        <Chip
+          icon={<AccountCircle sx={{ color: "white !important" }} />}
+          label="Persona"
+          onClick={() => {
+            navigate(`/persona?page=${pages+1}&rowsPerPage=${rows}`);
+          }}
+          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+        />
+        <Typography color="text.primary">Nueva persona</Typography>
+      </Breadcrumbs>
       <Card
         title="Persona"
         icon={<AccountCircle sx={{ color: "white", fontSize: "23px" }} />}
