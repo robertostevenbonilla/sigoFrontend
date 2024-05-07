@@ -86,7 +86,7 @@ export const ordenFilterForm = {
     faseId: [],
     ciudadOrigenId: [],
     ciudadDestinoId: [],
-    motorizadoId: [],
+    mensajeroId: [],
     fechaDesde: moment().subtract(1, 'months').format("YYYY-MM-DD"),
     fechaHasta: moment().format("YYYY-MM-DD"),
 }

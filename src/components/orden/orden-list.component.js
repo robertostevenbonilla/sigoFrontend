@@ -14,6 +14,7 @@ import {
   Check,
   Dashboard,
   DeliveryDining,
+  FilterAltOffOutlined,
   FilterAltOutlined,
   GridOn,
   ListAlt,
@@ -22,6 +23,7 @@ import {
   PictureAsPdf,
   Room,
   ScheduleSend,
+  SearchOffOutlined,
   SummarizeOutlined,
   Today,
 } from "@mui/icons-material";
@@ -558,7 +560,11 @@ const OrdenList = (props) => {
 
   const downloadPdf = async () => {
     dispatch(setLoading(true));
-    OrdenDataService.getReporteGuia(selected)
+    await getPdfFile(selected);
+  };
+
+  const getPdfFile = async (orders) => {
+    OrdenDataService.getReporteGuia(orders)
       .then((reporte) => {
         let fileName =
           "reporte" + moment().format("YYYY-MM-DD-HH:mm:ss.SS") + ".pdf";
@@ -879,11 +885,12 @@ const OrdenList = (props) => {
     dispatch(setLoading(true));
     OrdenDataService.getReporte(tipo, formato, filtros)
       .then((reporte) => {
-        if( formato === "excel" ) formato = "xlsx";
+        if (formato === "excel") formato = "xlsx";
         let fileName =
           "reporte" +
           tipo +
-          moment().format("YYYY-MM-DD HH:mm:ss SS") + "." +
+          moment().format("YYYY-MM-DD HH:mm:ss SS") +
+          "." +
           formato;
 
         const url = URL.createObjectURL(reporte.data);
@@ -1091,12 +1098,10 @@ const OrdenList = (props) => {
             navigate(`/orden/${id}`);
           }}
           download={true}
-          onDownloadFunction={(id, row) => {
-            console.log("handleSelect ");
-            setDownload(true);
-            let data = [];
-            data = data.concat(data, row);
-            setDownloadObj(data);
+          onDownloadFunction={async (id, row) => {
+            console.log("handleSelect ", id, row);
+            dispatch(setLoading(true));
+            await getPdfFile([id]);
           }}
           delete={true}
           showDeleteAlert={true}
@@ -1317,7 +1322,9 @@ const OrdenList = (props) => {
                         renderInput={(params) => (
                           <TextField {...params} sx={{ width: "100%" }} />
                         )}
-                        value={dayjs(form.fechaDesde)}
+                        value={
+                          form.fechaDesde === "" ? "" : dayjs(form.fechaDesde)
+                        }
                         disableFuture={true}
                         onChange={(e) =>
                           onChange(
@@ -1341,7 +1348,9 @@ const OrdenList = (props) => {
                         renderInput={(params) => (
                           <TextField {...params} sx={{ width: "100%" }} />
                         )}
-                        value={dayjs(form.fechaHasta)}
+                        value={
+                          form.fechaHasta === "" ? "" : dayjs(form.fechaHasta)
+                        }
                         disableFuture={true}
                         onChange={(e) =>
                           onChange(
@@ -1367,6 +1376,26 @@ const OrdenList = (props) => {
                       }}
                     >
                       Filtrar
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={12}>
+                    <Button
+                      variant="contained"
+                      startIcon={<FilterAltOffOutlined />}
+                      sx={{ width: "90%" }}
+                      disabled={showReport}
+                      onClick={() => {
+                        const clearForm = {
+                          ...ordenFilterForm,
+                          fechaDesde: "",
+                          fechaHasta: "",
+                        };
+                        setShowReport(true);
+                        dispatch(setFiltros(""));
+                        dispatch(setForm(clearForm));
+                      }}
+                    >
+                      Limpiar filtros
                     </Button>
                   </Grid>
                   <Grid item xs={12} sm={12}>
