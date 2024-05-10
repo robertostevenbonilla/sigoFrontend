@@ -121,3 +121,7 @@
   height: 100vh;
   background: #0000007a;
 }
+
+.modal-backdrop {
+  z-index: 2499 !important;
+}

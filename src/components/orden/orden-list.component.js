@@ -6,60 +6,45 @@ import EmpresaDataService from "../../services/empresa.service";
 import CiudadDataService from "../../services/ciudad.service";
 import ServicioDataService from "../../services/servicio.service";
 import FaseDataService from "../../services/fase.service";
-import { styled } from "@mui/material/styles";
 import EnhancedTable from "../table/table";
-import { usePersonasTable } from "../../hooks/usePersonaTable";
 import {
   AccountBox,
-  Check,
   Dashboard,
   DeliveryDining,
   FilterAltOffOutlined,
   FilterAltOutlined,
   GridOn,
   ListAlt,
-  Pages,
-  Person,
   PictureAsPdf,
   Room,
   ScheduleSend,
-  SearchOffOutlined,
   SummarizeOutlined,
   Today,
 } from "@mui/icons-material";
 import {
-  Box,
   Breadcrumbs,
   Button,
   Card,
   Chip,
-  Container,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Grid,
-  Link,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
   OutlinedInput,
   TextField,
-  Typography,
 } from "@mui/material";
 import { loadingTable } from "../../reducers/ui";
 import { SearchInput } from "../form/AutoCompleteInput";
 import { ordenFilterForm } from "../../helpers/forms";
 import jsPDF from "jspdf";
 
-import { PdfPage } from "../form/PdfPage";
 import { setMessage, setOpenModal } from "../../reducers/message";
 
-import autoTable from "jspdf-autotable";
-import logo from "./../../assets/logo-goya.png";
-//import QRCode from "react-qr-code";
-import HTMLComment from "../../hooks/HTMLComment";
 import html2canvas from "html2canvas";
 import UsuarioDataService from "../../services/usuario.service";
 import { SelectInput } from "../form/SelectInput";
@@ -67,8 +52,7 @@ import { DesktopDatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import moment from "moment";
-import xlsx, { read, utils, write } from "xlsx";
-//import { setForm } from "../../reducers/filtro";
+import { read, utils, write } from "xlsx";
 import { setForm, setFiltros, setShowFilters } from "../../reducers/filtro";
 import { setPages, setRows, setLoading } from "../../reducers/ui";
 
@@ -341,6 +325,7 @@ const OrdenList = (props) => {
   const [openDialogXLS, setOpenDialogXLS] = useState(false);
   const [openDialogReport, setOpenDialogReport] = useState(false);
   const [morotizadoId, setMorotizadoId] = useState(-1);
+  const [empresaUpId, setEmpresaUpId] = useState(-1);
 
   const loadSelects = async () => {
     CiudadDataService.getSelect()
@@ -410,8 +395,13 @@ const OrdenList = (props) => {
   useEffect(() => {
     console.log("filtros", filtros, pages, rows);
     if (filtros !== "") {
-      setShowReport(false);
+      setOrdenes([]);
       retrieveOrdenes(pages + 1, rows);
+      if (filtros === "none") {
+        dispatch(setFiltros(""));
+      } else {
+        setShowReport(false);
+      }
     }
   }, [filtros]);
 
@@ -427,12 +417,6 @@ const OrdenList = (props) => {
 
   const handleSelectedObj = (items) => {
     setSelectedObj(items);
-  };
-
-  const handleInputChange = async (event) => {
-    const { id, value } = event.target;
-    console.log(form, event.target, id, value);
-    setForm({ ...form, [id]: value });
   };
 
   const handleSearchInputChange = async (event) => {
@@ -481,25 +465,18 @@ const OrdenList = (props) => {
     // Datos de ejemplo
     const data = [
       [
-        "fechaEntrega",
-        "origen",
-        "direccionOrigen",
-        "remitente",
-        "telefonoRemitente",
-        "ciudadOrigenId",
         "destino",
         "direccionDestino",
         "destinatario",
         "telefonoDestinatario",
         "ciudadDestinoId",
         "email",
-        "costo",
         "producto",
         "precio",
         "descripcion",
       ],
       [
-        'En el libro "Ciudades" puede encontrar las ciudades a donde puede realizar sus envios. En la columna Ciudad Origen y Ciudad destino ingresar el identificador de la misma.',
+        'En el libro "Ciudades" puede encontrar las ciudades a donde puede realizar sus envios. En la columna Ciudad destino ingresar el identificador de la misma.(No borrar comentario)',
       ],
       // Agrega más filas según sea necesario
     ];
@@ -719,11 +696,13 @@ const OrdenList = (props) => {
     let filtered = "";
     Object.keys(form).forEach((key) => {
       if (key === "fechaDesde") {
-        if (form[key] !== undefined) {
+        console.log("1", key, form[key]);
+        if (form[key] !== undefined && form[key] !== null) {
           filtered += "fechaRecepcion:gte:" + form[key] + ";";
         }
       } else if (key === "fechaHasta") {
-        if (form[key] !== undefined) {
+        console.log("2", key, form[key]);
+        if (form[key] !== undefined && form[key] !== null) {
           filtered += "fechaRecepcion:lte:" + form[key] + ";";
         }
       } else {
@@ -732,72 +711,8 @@ const OrdenList = (props) => {
       }
     });
     console.log("filtros", filtered);
-    setOrdenes([]);
     dispatch(setFiltros(filtered));
     //retrieveOrdenes(pages+1, rows);
-  };
-
-  var header = function (data) {
-    doc.setFontSize(5);
-    doc.addImage(
-      "/assets/logo-goya.png",
-      "JPEG",
-      data.settings.margin.left,
-      10,
-      38,
-      10
-    );
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.text(
-      "Reporte de " + "PRUEBA".toLowerCase(),
-      doc.internal.pageSize.width - 15,
-      10,
-      {
-        align: "right",
-      }
-    );
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    doc.text(
-      "2023-12-01" + " a " + "2023-12-12",
-      doc.internal.pageSize.width - 15,
-      15,
-      {
-        align: "right",
-      }
-    );
-    doc.setFontSize(8);
-    doc.text("Red Efectiva SA de CV", 55, 11, {
-      align: "left",
-    });
-    doc.text("Blvd. Antonio L. Rdz. 3058 Suite 201-A", 55, 14, {
-      align: "left",
-    });
-    doc.text("Colonia Santa Maria", 55, 17, {
-      align: "left",
-    });
-    doc.text("Monterrey, N.L. C.P. 64650", 55, 20, {
-      align: "left",
-    });
-
-    //FOOTER
-    const pageCount = doc.internal.getNumberOfPages();
-
-    for (var i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFont("helvetica");
-      doc.setFontSize(8);
-      doc.text(
-        "Página " + String(i) + " de " + String(pageCount),
-        doc.internal.pageSize.width - 10,
-        290,
-        {
-          align: "right",
-        }
-      );
-    }
   };
 
   const handleCloseDialog = () => {
@@ -808,8 +723,8 @@ const OrdenList = (props) => {
   };
 
   const onChange = (e, name = null, value = null) => {
-    const inputName = name !== null ? name : e.target.name;
-    const inputValue = value !== null ? value : e.target.value;
+    const inputName = name !== null ? name : e?.target.name;
+    const inputValue = value !== null ? value : e?.target.value;
     console.log(inputName, inputValue);
     dispatch(setForm({ ...form, [inputName]: inputValue }));
   };
@@ -828,6 +743,16 @@ const OrdenList = (props) => {
   const uploadXLS = () => {
     const file = fileXLS;
     console.log(file);
+    if (file === null) {
+      const message = {
+        title: "Subir ordenes",
+        msg: "Seleccione un archivo.",
+        error: true,
+      };
+      dispatch(setMessage({ ...message }));
+      dispatch(setOpenModal(true));
+      return false;
+    }
     let reader = new FileReader();
 
     reader.onload = async function (e) {
@@ -852,16 +777,57 @@ const OrdenList = (props) => {
       ).catch((error) => {
         console.error(error);
       });
+      let telefono,
+        direccionOrigen,
+        remitente,
+        ciudadOrigen,
+        costo,
+        empresaId,
+        empresaOrden;
+      if (currentUser.auth?.roles[0].name === "admin") {
+        empresaOrden = await EmpresaDataService.get(empresaUpId).catch(
+          (error) => {
+            console.error(error);
+          }
+        );
+        empresaOrden = empresaOrden.data;
+        console.log(empresaOrden);
+        telefono =
+          empresaOrden.telefono !== null
+            ? empresaOrden.telefono
+            : empresaOrden.celular;
+        direccionOrigen = empresaOrden.direccion;
+        remitente = empresaOrden.nombre;
+        ciudadOrigen = empresaOrden.Ciudad.id;
+        costo = empresaOrden.costo;
+        empresaId = empresaOrden.id;
+      } else {
+        telefono =
+          currentUser.auth.persona.empresa.telefono !== null
+            ? currentUser.auth.persona.empresa.telefono
+            : currentUser.auth.persona.empresa.celular;
+        direccionOrigen = currentUser.auth.persona.empresa.direccion;
+        remitente = currentUser.auth.persona.fullName;
+        ciudadOrigen = currentUser.auth.persona.empresa.Ciudad.id;
+        costo = currentUser.auth.persona.empresa.costo;
+        empresaId = currentUser.auth.persona.empresaId;
+      }
       orden = orden.data;
       let addGuia = 1;
       jsonData.forEach((obj, pos) => {
-        obj.ciudadOrigenId = obj.ciudadOrigenId * 1;
+        obj.origen = direccionOrigen;
+        obj.direccionOrigen = direccionOrigen;
+        obj.remitente = remitente;
+        obj.ciudadOrigenId = ciudadOrigen;
+        obj.costo = costo;
+        obj.empresaId = empresaId;
+
+        obj.telefonoRemitente = telefono;
         obj.ciudadDestinoId = obj.ciudadDestinoId * 1;
-        obj.costo = obj.costo * 1;
         obj.precio = obj.precio * 1;
         obj.fechaRecepcion = moment().format("YYYY-MM-DD");
+        obj.fechaEntrega = moment().add(1, "days").format("YYYY-MM-DD");
         obj.guia = orden.codigo + (orden.Guias * 1 + addGuia);
-        obj.empresaId = currentUser.auth.persona.empresaId;
         obj.servicioId = servicioSelect.filter((x) => x.codigo === "STD")[0].id;
         obj.faseId = faseSelect.filter((x) => x.codigo === "CRD")[0].id;
         addGuia++;
@@ -869,7 +835,7 @@ const OrdenList = (props) => {
       jsonData = jsonData.filter(function (e) {
         return e;
       });
-      console.log(jsonData);
+      //return false;
       let bulkcreate = await OrdenDataService.bulkcreate(jsonData);
       console.log(bulkcreate);
       retrieveOrdenes(pages + 1, rows);
@@ -988,6 +954,34 @@ const OrdenList = (props) => {
           </DialogTitle>
           <DialogContent sx={{ paddingTop: "10px !important" }}>
             <Grid container spacing={2} alignItems={"center"}>
+              { currentUser.auth?.roles[0].name === "admin" && (
+                <Grid item xs={12} sm={12}>
+                  <SelectInput
+                    data={[
+                      /* { id: -1, nombre: "Seleccione una empresa" }, */
+                      ...empresaSelect,
+                    ]}
+                    value={empresaUpId}
+                    placeholder={"Seleccione una empresa"}
+                    id={"empresaId"}
+                    name={"empresaId"}
+                    label={"Empresa"}
+                    input={
+                      <OutlinedInput
+                        id="select-multiple-empresa"
+                        placeholder="Empresa"
+                      />
+                    }
+                    onChange={(event) => {
+                      let { name, value } = event.target;
+                      console.log(name, value);
+                      setEmpresaUpId(value);
+                    }}
+                    getOptionLabel={"nombre"}
+                    getIndexLabel={"id"}
+                  />
+                </Grid>
+              )}
               <Grid item xs={12} sm={12}>
                 <TextField
                   type="file"
@@ -1103,7 +1097,7 @@ const OrdenList = (props) => {
             dispatch(setLoading(true));
             await getPdfFile([id]);
           }}
-          delete={true}
+          delete={currentUser.auth?.roles[0].name === "mensajero" ? false : true}
           showDeleteAlert={true}
           refreshData={reloadData}
           onRefreshData={() => {
@@ -1151,7 +1145,7 @@ const OrdenList = (props) => {
           selectedObj={selectedObj}
           setSelected={handleSelected}
           setSelectedObj={handleSelectedObj}
-          add={true}
+          add={currentUser.auth?.roles[0].name === "mensajero" ? false : true}
           onAddFunction={() => {
             navigate("/orden/add");
           }}
@@ -1352,13 +1346,14 @@ const OrdenList = (props) => {
                           form.fechaHasta === "" ? "" : dayjs(form.fechaHasta)
                         }
                         disableFuture={true}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          console.log("fecha", e);
                           onChange(
                             null,
                             "fechaHasta",
                             moment(e["$d"]).format("YYYY-MM-DD")
-                          )
-                        }
+                          );
+                        }}
                       />
                     </LocalizationProvider>
                   </Grid>
@@ -1382,16 +1377,18 @@ const OrdenList = (props) => {
                     <Button
                       variant="contained"
                       startIcon={<FilterAltOffOutlined />}
-                      sx={{ width: "90%" }}
+                      sx={{ width: "90%", lineHeight: 1 }}
                       disabled={showReport}
                       onClick={() => {
                         const clearForm = {
                           ...ordenFilterForm,
-                          fechaDesde: "",
-                          fechaHasta: "",
+                          fechaDesde: null,
+                          fechaHasta: null,
                         };
+                        onChange(null, "fechaDesde", undefined);
+                        onChange(null, "fechaHasta", undefined);
                         setShowReport(true);
-                        dispatch(setFiltros(""));
+                        dispatch(setFiltros("none"));
                         dispatch(setForm(clearForm));
                       }}
                     >
@@ -1461,26 +1458,32 @@ const OrdenList = (props) => {
           pagesHandle={pages}
           rowsHandle={rows}
           extraButtons={
-            <>
-              <Grid item md={3} sm={3} xs={12}>
-                <Button
-                  variant="contained"
-                  startIcon={<GridOn />}
-                  onClick={downloadXLS}
-                >
-                  Plantilla Excel
-                </Button>
-              </Grid>
-              <Grid item md={3} sm={3} xs={12}>
-                <Button
-                  variant="contained"
-                  startIcon={<GridOn />}
-                  onClick={addOrdenes}
-                >
-                  Subir ordenes
-                </Button>
-              </Grid>
-            </>
+            currentUser.auth?.roles[0].name === "mensajero" ? (
+              <></>
+            ) : (
+              <>
+                <Grid item md={3} sm={3} xs={12}>
+                  <Button
+                    variant="contained"
+                    startIcon={<GridOn />}
+                    onClick={downloadXLS}
+                    sx={{ lineHeight: 1 }}
+                  >
+                    Plantilla Excel
+                  </Button>
+                </Grid>
+                <Grid item md={3} sm={3} xs={12}>
+                  <Button
+                    variant="contained"
+                    startIcon={<GridOn />}
+                    onClick={addOrdenes}
+                    sx={{ lineHeight: 1 }}
+                  >
+                    Subir ordenes
+                  </Button>
+                </Grid>
+              </>
+            )
           }
         />
       </Card>

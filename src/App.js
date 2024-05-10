@@ -320,74 +320,6 @@ function App() {
               </ListItemButton>
             </ListItem>
             <ListItem
-              key={"persona"}
-              onClick={() => {
-                setInit();
-                navigate("/persona");
-              }}
-              disablePadding
-              sx={{ display: "block" }}
-            >
-              <ListItemButton
-                sx={{
-                  minHeight: 48,
-                  justifyContent: open ? "initial" : "center",
-                  px: 2.5,
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : "auto",
-                    justifyContent: "center",
-                    color: "white",
-                    paddingRight: "10px",
-                    width: 35,
-                  }}
-                >
-                  <AccountCircle />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Personas"
-                  sx={{ opacity: open ? 1 : 0 }}
-                />
-              </ListItemButton>
-            </ListItem>
-            <ListItem
-              key={"usuario"}
-              onClick={() => {
-                setInit();
-                navigate("/usuario");
-              }}
-              disablePadding
-              sx={{ display: "block" }}
-            >
-              <ListItemButton
-                sx={{
-                  minHeight: 48,
-                  justifyContent: open ? "initial" : "center",
-                  px: 2.5,
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : "auto",
-                    justifyContent: "center",
-                    color: "white",
-                    paddingRight: "10px",
-                    width: 35,
-                  }}
-                >
-                  <AssignmentInd />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Usuarios"
-                  sx={{ opacity: open ? 1 : 0 }}
-                />
-              </ListItemButton>
-            </ListItem>
-            <ListItem
               key={"asignar"}
               onClick={() => {
                 setInit();
@@ -421,9 +353,82 @@ function App() {
                 />
               </ListItemButton>
             </ListItem>
-            {currentUser.auth.roles.find((rol) => rol.name == "admin") !==
+            {currentUser.auth.roles.find((rol) => rol.name == "admin" || rol.name == "empresa" || rol.name == "empresaLectura") !==
               undefined && (
               <>
+                <ListItem
+                  key={"persona"}
+                  onClick={() => {
+                    setInit();
+                    navigate("/persona");
+                  }}
+                  disablePadding
+                  sx={{ display: "block" }}
+                >
+                  <ListItemButton
+                    sx={{
+                      minHeight: 48,
+                      justifyContent: open ? "initial" : "center",
+                      px: 2.5,
+                    }}
+                  >
+                    <ListItemIcon
+                      sx={{
+                        minWidth: 0,
+                        mr: open ? 3 : "auto",
+                        justifyContent: "center",
+                        color: "white",
+                        paddingRight: "10px",
+                        width: 35,
+                      }}
+                    >
+                      <AccountCircle />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Personas"
+                      sx={{ opacity: open ? 1 : 0 }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem
+                  key={"usuario"}
+                  onClick={() => {
+                    setInit();
+                    navigate("/usuario");
+                  }}
+                  disablePadding
+                  sx={{ display: "block" }}
+                >
+                  <ListItemButton
+                    sx={{
+                      minHeight: 48,
+                      justifyContent: open ? "initial" : "center",
+                      px: 2.5,
+                    }}
+                  >
+                    <ListItemIcon
+                      sx={{
+                        minWidth: 0,
+                        mr: open ? 3 : "auto",
+                        justifyContent: "center",
+                        color: "white",
+                        paddingRight: "10px",
+                        width: 35,
+                      }}
+                    >
+                      <AssignmentInd />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Usuarios"
+                      sx={{ opacity: open ? 1 : 0 }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+                </>
+              )}
+              {currentUser.auth.roles.find((rol) => rol.name == "admin") !==
+              undefined && (
+                <>
                 <ListItem
                   key={"empresa"}
                   onClick={() => {
@@ -575,6 +580,9 @@ function App() {
         onHide={handleClose}
         aria-labelledby="contained-modal-title-vcenter"
         centered
+        style={{
+          zIndex: 2500,
+        }}
       >
         <Modal.Header closeButton onClick={handleCloseModal}>
           <Modal.Title>{currentMessage.title}</Modal.Title>

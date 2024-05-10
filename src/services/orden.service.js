@@ -7,8 +7,8 @@ const getAll = async (page,size,filter="",sort="") => {
   if( page -1 < 0 ) page = 0;
   else page = page -1;
   let url = `/orden/?page=${page}&size=${size}`
-  if(filter !== "") url = `/orden/?filter=${filter}&page=${page}&size=${size}`;
-  if(sort !== "") url = `/orden/?filter=${filter}&page=${page}&size=${size}&sort=${sort}`;
+  if(filter !== "" && filter !== "none") url += `&filter=${filter}`;
+  if(sort !== "") url += `&sort=${sort}`;
   return await http.get(url, { headers: {...header()} });
 }
 
