@@ -23,7 +23,7 @@ const AddUsuario = () => {
   const handleInputChange = (event) => {
     console.log(event);
     const { name, value } = event.target;
-    setForm({ ...form, [name]: value });
+    setForm({ ...form, [name]: [...value] });
   };
 
   useEffect(() => {
@@ -51,7 +51,7 @@ const AddUsuario = () => {
       username: form.username,
       password: form.password,
       personaId: form.personaId,
-      roles: [form.roles],
+      roles: form.roles,
     };
     console.log(dataAU);
     signup(dataAU)
@@ -125,18 +125,18 @@ const AddUsuario = () => {
           </Grid>
           <Grid item md={6} sm={6} xs={12}>
             <SearchInput
-              options={
-                (currentUser.auth.roles.find((rol) => rol.name == "admin") !== undefined) ? [
-                  { id: "admin", rol: "Administrador" },
-                  { id: "empresa", rol: "Empresa" },
-                  { id: "empresaLectura", rol: "Empresa Lectura" },
-                  { id: "mensajero", rol: "Mensajero" },
-                ] : [
-                  { id: "empresa", rol: "Empresa" },
-                  { id: "empresaLectura", rol: "Empresa Lectura" },
-                  { id: "mensajero", rol: "Mensajero" },
-                ]
-              }
+              options={(currentUser.auth.roles.find((rol) => rol.name == "admin") !== undefined) ? [
+                { value: "admin", text: "Administrador" },
+                { value: "empresa", text: "Empresa" },
+                { value: "supervisor", text: "Supervisor" },
+                { value: "empresaLectura", text: "Empresa Lectura" },
+                { value: "mensajero", text: "Mensajero" },
+              ] : [
+                { value: "empresa", text: "Empresa" },
+                { value: "supervisor", text: "Supervisor" },
+                { value: "empresaLectura", text: "Empresa Lectura" },
+                { value: "mensajero", text: "Mensajero" },
+              ]}
               value={form.roles}
               id={"roles"}
               name={"roles"}

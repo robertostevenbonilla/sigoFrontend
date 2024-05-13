@@ -1294,6 +1294,9 @@ export default function EnhancedTable(props) {
               <MenuItem value={100} sx={{ whiteSpace: "normal" }}>
                 100
               </MenuItem>
+              <MenuItem value={300} sx={{ whiteSpace: "normal" }}>
+                300
+              </MenuItem>
             </Select>
           </Grid>
         </Grid>

@@ -48,13 +48,15 @@ const asignar = async (data) => {
   return await http.post(`/orden/asignar`, data, { headers: {...header()} });
 }
 
-const faseCount = async (id) => {
-  const qp = id === null ? "" : "?empresaIdFilter="+id;
+const faseCount = async (id, mensajeroId) => {
+  let qp = id === null ? "" : "?empresaIdFilter="+id;
+  qp += mensajeroId !== null ? "&mensajeroIdFilter="+mensajeroId : "";
   return await http.get(`/orden/faseCount${qp}`, { headers: {...header()} });
 }
 
-const serviceCount = async (id) => {
-  const qp = id === null ? "" : "?empresaIdFilter="+id;
+const serviceCount = async (id, mensajeroId) => {
+  let qp = id === null ? "" : "?empresaIdFilter="+id;
+  qp += mensajeroId !== null ? "&mensajeroIdFilter="+mensajeroId : "";
   return await http.get(`/orden/serviceCount${qp}`, { headers: {...header()} });
 }
 

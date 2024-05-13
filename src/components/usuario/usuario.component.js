@@ -92,7 +92,7 @@ const Usuario = () => {
   const handleSearchInputChange = async (event) => {
     const { name, value } = event.target;
     console.log(form, event, name, value);
-    setForm({ ...form, [name]: [...value] });
+    setForm({ ...form, [name]: [value] });
   };
 
   const handleSwitchChange = (event) => {
@@ -209,13 +209,18 @@ const Usuario = () => {
           </Grid>
           <Grid item md={6} sm={6} xs={12}>
             <SelectInput
-              data={[
+              data={(currentUser.auth.roles.find((rol) => rol.name == "admin") !== undefined) ? [
                 { value: "admin", text: "Administrador" },
                 { value: "empresa", text: "Empresa" },
+                { value: "supervisor", text: "Supervisor" },
+                { value: "empresaLectura", text: "Empresa Lectura" },
+                { value: "mensajero", text: "Mensajero" },
+              ] : [
+                { value: "empresa", text: "Empresa" },
+                { value: "supervisor", text: "Supervisor" },
                 { value: "empresaLectura", text: "Empresa Lectura" },
                 { value: "mensajero", text: "Mensajero" },
               ]}
-              multiple={true}
               value={form.roles}
               id={"roles"}
               name={"roles"}

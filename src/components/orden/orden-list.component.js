@@ -395,6 +395,8 @@ const OrdenList = (props) => {
   useEffect(() => {
     console.log("filtros", filtros, pages, rows);
     if (filtros !== "") {
+      setSelected([]);
+      setSelectedObj([]);
       setOrdenes([]);
       retrieveOrdenes(pages + 1, rows);
       if (filtros === "none") {
@@ -465,6 +467,7 @@ const OrdenList = (props) => {
     // Datos de ejemplo
     const data = [
       [
+        "codigo",
         "destino",
         "direccionDestino",
         "destinatario",
@@ -772,8 +775,13 @@ const OrdenList = (props) => {
         dateNF: "yyyy-mm-dd",
       });
       delete jsonData[0];
+      let empresaGuiaId = empresaUpId;
+      if (currentUser.auth.roles.find((rol) => rol.name == "admin" || rol.name == "mensajero") === undefined){
+        empresaGuiaId = currentUser.auth.persona.empresaId; 
+        //console.log("otro empresaId",empresaUpId,empresaGuiaId,currentUser.auth.roles.find((rol) => rol.name == "admin" || rol.name == "mensajero"));
+      }
       let orden = await EmpresaDataService.findGuia(
-        currentUser.auth.persona.empresaId
+        empresaGuiaId,
       ).catch((error) => {
         console.error(error);
       });
@@ -814,6 +822,7 @@ const OrdenList = (props) => {
       }
       orden = orden.data;
       let addGuia = 1;
+      let bulkcreate = null;
       jsonData.forEach((obj, pos) => {
         obj.origen = direccionOrigen;
         obj.direccionOrigen = direccionOrigen;
@@ -836,7 +845,7 @@ const OrdenList = (props) => {
         return e;
       });
       //return false;
-      let bulkcreate = await OrdenDataService.bulkcreate(jsonData);
+      bulkcreate = await OrdenDataService.bulkcreate(jsonData);
       console.log(bulkcreate);
       retrieveOrdenes(pages + 1, rows);
       setOpenDialogXLS(false);
@@ -954,7 +963,8 @@ const OrdenList = (props) => {
           </DialogTitle>
           <DialogContent sx={{ paddingTop: "10px !important" }}>
             <Grid container spacing={2} alignItems={"center"}>
-              { currentUser.auth?.roles[0].name === "admin" && (
+              {(currentUser.auth?.roles[0].name === "admin" ||
+                currentUser.auth?.roles[0].name === "supervisor") && (
                 <Grid item xs={12} sm={12}>
                   <SelectInput
                     data={[
@@ -1097,7 +1107,10 @@ const OrdenList = (props) => {
             dispatch(setLoading(true));
             await getPdfFile([id]);
           }}
-          delete={currentUser.auth?.roles[0].name === "mensajero" ? false : true}
+          delete={
+            currentUser?.auth?.roles.find((rol) => rol.name == "mensajero" || rol.name == "supervisor") !== undefined
+            ? false : true
+          }
           showDeleteAlert={true}
           refreshData={reloadData}
           onRefreshData={() => {

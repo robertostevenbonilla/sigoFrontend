@@ -18,6 +18,7 @@ import "dayjs/locale/es";
 import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider, DesktopDatePicker } from "@mui/x-date-pickers";
+import UsuarioDataService from "../../services/usuario.service";
 
 const AddOrden = () => {
   const { id } = useParams();
@@ -26,7 +27,7 @@ const AddOrden = () => {
   const [form, setForm] = useState({
     ...ordenForm,
     fechaRecepcion: moment(),
-    fechaEntrega: moment(),
+    fechaEntrega: moment().add(1, "days").format("YYYY-MM-DD"),
   });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -34,6 +35,7 @@ const AddOrden = () => {
   const [empresaSelect, setEmpresaSelect] = useState([]);
   const [servicioSelect, setServicioSelect] = useState([]);
   const [faseSelect, setFaseSelect] = useState([]);
+  const [motorizadoSelect, setMotorizadoSelect] = useState([]);
 
   const { auth: currentUser } = useSelector((state) => state.auth);
   const { msg } = useSelector((state) => state.message);
@@ -82,6 +84,13 @@ const AddOrden = () => {
       })
       .catch((error) => {
         console.error(error);
+      });
+    UsuarioDataService.motorizados()
+      .then((response) => {
+        setMotorizadoSelect(response.data);
+      })
+      .catch((err) => {
+        console.log(err);
       });
   };
 
@@ -167,16 +176,18 @@ const AddOrden = () => {
       costo: form.costo,
       precio: form.precio,
       producto: form.producto,
-      empresaId: form.empresaId,
-      servicioId: form.servicioId,
-      faseId: form.faseId,
-      ciudadOrigenId: form.ciudadOrigenId,
-      ciudadDestinoId: form.ciudadDestinoId,
+      codigo: form.codigo,
+      empresaId: form.empresaId === -1 ? null : form.empresaId,
+      servicioId: form.servicioId === -1 ? null : form.servicioId,
+      faseId: form.faseId === -1 ? null : form.faseId,
+      ciudadOrigenId: form.ciudadOrigenId === -1 ? null : form.ciudadOrigenId,
+      ciudadDestinoId: form.ciudadDestinoId === -1 ? null : form.ciudadDestinoId,
+      mensajeroId: form.mensajeroId === -1 ? null : form.mensajeroId,
     };
     OrdenDataService.create(data)
       .then((response) => {
         console.log(response);
-        if (response.status === 200) {
+        if (response.status === 201) {
           const message = {
             title: "Creación Orden",
             msg: "",
@@ -465,6 +476,41 @@ const AddOrden = () => {
                 fullWidth
               />
             </Grid>
+            
+            <Grid item md={6} sm={6} xs={12}>
+              <TextField
+                id="producto"
+                name="producto"
+                label="Producto"
+                value={form.producto}
+                onChange={handleInputChange}
+                variant="outlined"
+                fullWidth
+              />
+            </Grid>
+            <Grid item md={6} sm={6} xs={12}>
+              <TextField
+                id="precio"
+                name="precio"
+                label="Precio producto"
+                value={form.precio}
+                onChange={handleInputChange}
+                variant="outlined"
+                fullWidth
+              />
+            </Grid>
+            <Grid item md={6} sm={6} xs={12}>
+              <TextField
+                id="codigo"
+                name="codigo"
+                label="Codigo"
+                value={form.codigo}
+                onChange={handleInputChange}
+                variant="outlined"
+                fullWidth
+              />
+            </Grid>
+            
             <Grid item md={6} sm={6} xs={12}>
               <SearchInput
                 options={[
@@ -497,26 +543,21 @@ const AddOrden = () => {
                 onChange={handleInputChange}
               />
             </Grid>
+            
             <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="producto"
-                name="producto"
-                label="Producto"
-                value={form.producto}
+              <SearchInput
+                options={[
+                  { id: -1, fullname: "Seleccione un mensajero" },
+                  ...motorizadoSelect,
+                ]}
+                value={form.mensajeroId}
+                placeholder={"Seleccione un mensajero"}
+                id={"mensajeroId"}
+                name={"mensajeroId"}
+                label={"Mensajero"}
+                getOptionLabel={"fullname"}
+                getIndexLabel={"id"}
                 onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="precio"
-                name="precio"
-                label="Precio producto"
-                value={form.precio}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
               />
             </Grid>
             <Grid item md={12} sm={12} xs={12}>

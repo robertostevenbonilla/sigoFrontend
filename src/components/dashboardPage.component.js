@@ -86,19 +86,32 @@ const DashboardPage = () => {
     } else {
       let idR = null;
       if (
-        currentUser.auth.roles.find((rol) => rol.name == "admin") === undefined
+        currentUser.auth.roles.find((rol) => rol.name == "admin" || rol.name == "supervisor") === undefined
       ) {
         idR = currentUser.auth.persona.empresaId;
       }
-      EmpresaDataService.resumen(idR)
-        .then((response) => {
-          console.log("dashboard", response);
-          setDashboard(response.data);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-      OrdenDataService.faseCount(idR)
+      let mensajeroId = null;
+      if ( currentUser.auth.roles.find((rol) => rol.name !== "mensajero") ) {
+        EmpresaDataService.resumen(idR)
+          .then((response) => {
+            console.log("dashboard", response);
+            setDashboard(response.data);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      } else {
+        mensajeroId = currentUser.auth.id;
+        EmpresaDataService.resumenM(currentUser.auth.id)
+          .then((response) => {
+            console.log("dashboard", response);
+            setDashboard(response.data);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      }
+      OrdenDataService.faseCount(idR, mensajeroId)
         .then((response) => {
           console.log("ordenesEstatus", response.data, response.data.length);
           setOrdenesEstatus(response.data);
@@ -106,7 +119,7 @@ const DashboardPage = () => {
         .catch((error) => {
           console.error(error);
         });
-      OrdenDataService.serviceCount(idR)
+      OrdenDataService.serviceCount(idR, mensajeroId)
         .then((response) => {
           console.log("ordenesEstatus", response.data, response.data.length);
           setOrdenesService(response.data);
@@ -144,54 +157,58 @@ const DashboardPage = () => {
         className="text-start"
       >
         <Grid container spacing={1}>
-          <Grid item xs={12} md={3} sd={3} sx={{}}>
-            <Box
-              xs={12}
-              md={3}
-              sd={3}
-              sx={{
-                textAlign: "left",
-                padding: "30px 20px",
-                fontSize: "large",
-                color: "white",
-                fontWeight: "600",
-                height: 140,
-                borderRadius: 1,
-                bgcolor: "#3699FF",
-                "&:hover": {
-                  bgcolor: "#0073e9",
-                },
-              }}
-            >
-              <Home fontSize={"large"} sx={{ color: "white" }} />
-              <br />
-              {dashboardData.clientesTotal} clientes
-            </Box>
-          </Grid>
-          <Grid item xs={12} md={3} sd={3} sx={{}}>
-            <Box
-              xs={12}
-              md={3}
-              sd={3}
-              sx={{
-                textAlign: "left",
-                padding: "30px 20px",
-                fontSize: "large",
-                color: "white",
-                fontWeight: "600",
-                height: 140,
-                borderRadius: 1,
-                bgcolor: "#1BC5BD",
-                "&:hover": {
-                  bgcolor: "#159892",
-                },
-              }}
-            >
-              <AssignmentInd fontSize={"large"} sx={{ color: "white" }} />
-              <br />
-              {dashboardData.usuariosTotal} usuarios
-            </Box>
-          </Grid>
+          {currentUser.auth?.roles[0].name !== "mensajero" && (
+            <>
+              <Grid item xs={12} md={3} sd={3} sx={{}}>
+                <Box
+                  xs={12}
+                  md={3}
+                  sd={3}
+                  sx={{
+                    textAlign: "left",
+                    padding: "30px 20px",
+                    fontSize: "large",
+                    color: "white",
+                    fontWeight: "600",
+                    height: 140,
+                    borderRadius: 1,
+                    bgcolor: "#3699FF",
+                    "&:hover": {
+                      bgcolor: "#0073e9",
+                    },
+                  }}
+                >
+                  <Home fontSize={"large"} sx={{ color: "white" }} />
+                  <br />
+                  {dashboardData.clientesTotal} clientes
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={3} sd={3} sx={{}}>
+                <Box
+                  xs={12}
+                  md={3}
+                  sd={3}
+                  sx={{
+                    textAlign: "left",
+                    padding: "30px 20px",
+                    fontSize: "large",
+                    color: "white",
+                    fontWeight: "600",
+                    height: 140,
+                    borderRadius: 1,
+                    bgcolor: "#1BC5BD",
+                    "&:hover": {
+                      bgcolor: "#159892",
+                    },
+                  }}
+                >
+                  <AssignmentInd fontSize={"large"} sx={{ color: "white" }} />
+                  <br />
+                  {dashboardData.usuariosTotal} usuarios
+                </Box>
+              </Grid>
+            </>
+          )}
           <Grid item xs={12} md={3} sd={3} sx={{}}>
             <Box
               xs={12}
@@ -216,34 +233,38 @@ const DashboardPage = () => {
               {dashboardData.ordenesTotal} ordenes
             </Box>
           </Grid>
-          <Grid item xs={12} md={3} sd={3} sx={{}}>
-            <Box
-              xs={12}
-              md={3}
-              sd={3}
-              sx={{
-                textAlign: "left",
-                padding: "30px 20px",
-                fontSize: "large",
-                color: "white",
-                fontWeight: "600",
-                height: 140,
-                borderRadius: 1,
-                bgcolor: "#8950FC",
-                "&:hover": {
-                  bgcolor: "#671efb",
-                },
-              }}
-            >
-              <AttachMoney fontSize={"large"} sx={{ color: "white" }} />
-              <br />
-              {dashboardData?.costoTotal?.toLocaleString("en-US", {
-                style: "currency",
-                currency: "USD",
-              })}{" "}
-              facturado
-            </Box>
-          </Grid>
+          {currentUser.auth?.roles[0].name !== "mensajero" && (
+            <>
+              <Grid item xs={12} md={3} sd={3} sx={{}}>
+                <Box
+                  xs={12}
+                  md={3}
+                  sd={3}
+                  sx={{
+                    textAlign: "left",
+                    padding: "30px 20px",
+                    fontSize: "large",
+                    color: "white",
+                    fontWeight: "600",
+                    height: 140,
+                    borderRadius: 1,
+                    bgcolor: "#8950FC",
+                    "&:hover": {
+                      bgcolor: "#671efb",
+                    },
+                  }}
+                >
+                  <AttachMoney fontSize={"large"} sx={{ color: "white" }} />
+                  <br />
+                  {dashboardData?.costoTotal?.toLocaleString("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                  })}{" "}
+                  facturado
+                </Box>
+              </Grid>
+            </>
+          )}
         </Grid>
         <Grid container spacing={2}>
           <Grid item xs={12} md={8} sd={8}>
@@ -271,7 +292,7 @@ const DashboardPage = () => {
               <PieCenterLabel>Ordenes</PieCenterLabel>
             </PieChart>
           </Grid>
-          <Grid item xs={12} md={4} sd={4} sx={{margin: "auto 0"}}>
+          <Grid item xs={12} md={4} sd={4} sx={{ margin: "auto 0" }}>
             {ordenesEstatus.map((estado, index) => {
               return (
                 <Grid
@@ -279,7 +300,7 @@ const DashboardPage = () => {
                   xs={12}
                   md={12}
                   sd={12}
-                  sx={{ 
+                  sx={{
                     background: `${estado.color}`,
                     margin: "5px",
                   }}

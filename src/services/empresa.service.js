@@ -44,6 +44,11 @@ const resumen = async (id) => {
   return await http.get(`/empresa/resumen${qp}`, { headers: {...header()} });
 }
 
+const resumenM = async (id) => {
+  const qp = id === null ? "" : "?id="+id;
+  return await http.get(`/empresa/resumenM${qp}`, { headers: {...header()} });
+}
+
 const EmpresaDataService = {
   getAll,
   getSelect,
@@ -55,6 +60,7 @@ const EmpresaDataService = {
   findByNombre,
   findGuia,
   resumen,
+  resumenM,
 }
 
 export default EmpresaDataService;

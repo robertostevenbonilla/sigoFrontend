@@ -71,12 +71,14 @@ import {
   ListAlt,
   Logout,
   Menu,
+  QrCode2,
   QrCodeScanner,
 } from "@mui/icons-material";
 import MuiDrawer from "@mui/material/Drawer";
 import AsignarXqr from "./components/asignarxQR/asignarXqr.component";
 import Recibo from "./components/orden/recibo.component";
 import { setPages, setRows } from "./reducers/ui";
+import QrReader from "./components/asignarxQR/leerQr";
 
 const drawerWidth = 240;
 
@@ -345,10 +347,44 @@ function App() {
                     width: 35,
                   }}
                 >
-                  <QrCodeScanner />
+                  <QrCode2 />
                 </ListItemIcon>
                 <ListItemText
                   primary="Asignar"
+                  sx={{ opacity: open ? 1 : 0 }}
+                />
+              </ListItemButton>
+            </ListItem>
+            <ListItem
+              key={"asignar"}
+              onClick={() => {
+                setInit();
+                navigate("/scanqr");
+              }}
+              disablePadding
+              sx={{ display: "block" }}
+            >
+              <ListItemButton
+                sx={{
+                  minHeight: 48,
+                  justifyContent: open ? "initial" : "center",
+                  px: 2.5,
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: open ? 3 : "auto",
+                    justifyContent: "center",
+                    color: "white",
+                    paddingRight: "10px",
+                    width: 35,
+                  }}
+                >
+                  <QrCodeScanner />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Escanear QR"
                   sx={{ opacity: open ? 1 : 0 }}
                 />
               </ListItemButton>
@@ -647,6 +683,7 @@ function App() {
             <Route path="/orden/add" element={<AddOrden />} />
             <Route path="/orden/:id" element={<Orden />} />
             <Route path="/asignarqr" element={<AsignarXqr />} />
+            <Route path="/scanqr" element={<QrReader />} />
             <Route path="/recibo/:guia" element={<Recibo />} />
           </Routes>
         </Box>

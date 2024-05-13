@@ -36,6 +36,7 @@ import "dayjs/locale/es";
 import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider, DesktopDatePicker } from "@mui/x-date-pickers";
+import UsuarioDataService from "../../services/usuario.service";
 
 const Orden = () => {
   const { id } = useParams();
@@ -47,7 +48,9 @@ const Orden = () => {
   const [ciudadSelect, setCiudadSelect] = useState([]);
   const [empresaSelect, setEmpresaSelect] = useState([]);
   const [servicioSelect, setServicioSelect] = useState([]);
+  const [motorizadoSelect, setMotorizadoSelect] = useState([]);
   const [faseSelect, setFaseSelect] = useState([]);
+  const [editedSup, setEditedSup] = useState(true);
 
   const { auth: currentUser } = useSelector((state) => state.auth);
   const { msg } = useSelector((state) => state.message);
@@ -92,6 +95,13 @@ const Orden = () => {
       })
       .catch((error) => {
         console.error(error);
+      });
+    UsuarioDataService.motorizados()
+      .then((response) => {
+        setMotorizadoSelect(response.data);
+      })
+      .catch((err) => {
+        console.log(err);
       });
   };
 
@@ -143,12 +153,16 @@ const Orden = () => {
   };
 
   const handleEdited = () => {
-    console.log(form);
-    setEdited(!edited);
+    console.log('Edited',!edited,editedSup);
+    if (currentUser.auth.roles.find((rol) => rol.name == "supervisor") !== undefined){
+      setEditedSup(false);
+      setEdited(true);
+    }else 
+      setEditedSup(false);
+      setEdited(!edited);
   };
 
   const handleSave = () => {
-    console.log(form);
     const data = {
       id: form.id,
       fechaRecepcion: form.fechaRecepcion,
@@ -167,11 +181,14 @@ const Orden = () => {
       guia: form.guia,
       costo: form.costo,
       precio: form.precio,
+      producto: form.producto,
+      codigo: form.codigo,
       empresaId: form.empresaId,
       servicioId: form.servicioId,
       faseId: form.faseId,
       ciudadOrigenId: form.ciudadOrigenId,
       ciudadDestinoId: form.ciudadDestinoId,
+      mensajeroId: form.mensajeroId,
     };
     OrdenDataService.update(data)
       .then((response) => {
@@ -187,6 +204,7 @@ const Orden = () => {
           dispatch(setOpenModal(true));
           setLoading(false);
           setEdited(true);
+          setEditedSup(!editedSup);
         }
       })
       .catch((error) => {
@@ -436,7 +454,6 @@ const Orden = () => {
               />
             </Grid>
           </Grid>
-
           <Grid item md={6} sm={6} xs={12}>
             <TextField
               id="email"
@@ -455,6 +472,42 @@ const Orden = () => {
               name="costo"
               label="Costo envio"
               value={form.costo}
+              onChange={handleInputChange}
+              variant="outlined"
+              fullWidth
+              disabled={edited}
+            />
+          </Grid>
+          <Grid item md={6} sm={6} xs={12}>
+            <TextField
+              id="producto"
+              name="producto"
+              label="Producto"
+              value={form.producto}
+              onChange={handleInputChange}
+              variant="outlined"
+              fullWidth
+              disabled={edited}
+            />
+          </Grid>
+          <Grid item md={6} sm={6} xs={12}>
+            <TextField
+              id="precio"
+              name="precio"
+              label="Precio producto"
+              value={form.precio}
+              onChange={handleInputChange}
+              variant="outlined"
+              fullWidth
+              disabled={edited}
+            />
+          </Grid>
+          <Grid item md={6} sm={6} xs={12}>
+            <TextField
+              id="codigo"
+              name="codigo"
+              label="Codigo"
+              value={form.codigo}
               onChange={handleInputChange}
               variant="outlined"
               fullWidth
@@ -492,31 +545,24 @@ const Orden = () => {
               getOptionLabel={"nombre"}
               getIndexLabel={"id"}
               onChange={handleInputChange}
-              disabled={edited}
+              disabled={editedSup}
             />
           </Grid>
           <Grid item md={6} sm={6} xs={12}>
-            <TextField
-              id="producto"
-              name="producto"
-              label="Producto"
-              value={form.producto}
+            <SearchInput
+              options={[
+                { id: -1, fullname: "Seleccione un mensajero" },
+                ...motorizadoSelect,
+              ]}
+              value={form.mensajeroId}
+              placeholder={"Seleccione un mensajero"}
+              id={"mensajeroId"}
+              name={"mensajeroId"}
+              label={"Mensajero"}
+              getOptionLabel={"fullname"}
+              getIndexLabel={"id"}
               onChange={handleInputChange}
-              variant="outlined"
-              fullWidth
-              disabled={edited}
-            />
-          </Grid>
-          <Grid item md={6} sm={6} xs={12}>
-            <TextField
-              id="precio"
-              name="precio"
-              label="Precio producto"
-              value={form.precio}
-              onChange={handleInputChange}
-              variant="outlined"
-              fullWidth
-              disabled={edited}
+              disabled={editedSup}
             />
           </Grid>
           <Grid item md={12} sm={12} xs={12}>
@@ -534,7 +580,7 @@ const Orden = () => {
             />
           </Grid>
           <Grid item md={12} sm={12} xs={12} className="text-start">
-            {edited ? (
+            {edited && editedSup ? (
               <Button
                 onClick={handleEdited}
                 endIcon={<Edit />}

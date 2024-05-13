@@ -72,11 +72,13 @@ export const ordenForm = {
     costo: 0,
     precio: 0,
     producto: '',
+    codigo: '',
     empresaId: null,
     servicioId: null,
     faseId: null,
     ciudadOrigenId: null,
     ciudadDestinoId: null,
+    mensajeroId: null,
     Evidencias: [],
 }
 
