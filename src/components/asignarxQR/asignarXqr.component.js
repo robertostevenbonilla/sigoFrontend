@@ -3,11 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import OrdenDataService from "../../services/orden.service";
 import FaseDataService from "../../services/fase.service";
-import { Close, QrCodeScanner, Save } from "@mui/icons-material";
+import { Close, GridOn, PictureAsPdf, QrCodeScanner, Save, SummarizeOutlined } from "@mui/icons-material";
 import { Card } from "../Card";
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Grid,
   Paper,
   TextField,
@@ -16,6 +20,8 @@ import { SearchInput } from "../form/AutoCompleteInput";
 import { setMessage, setOpenModal } from "../../reducers/message";
 
 import UsuarioDataService from "../../services/usuario.service";
+import moment from "moment";
+import { setLoading } from "../../reducers/ui";
 
 const AsignarXqr = (props) => {
   const dispatch = useDispatch();
@@ -28,6 +34,8 @@ const AsignarXqr = (props) => {
   const [faseId, setFaseId] = useState(-1);
   const [guia, setGuia] = useState("");
   const [ordenes, setOrdenes] = useState({});
+  const [openDialogReport, setOpenDialogReport] = useState(false);
+  const [showReport, setShowReport] = useState(true);
 
   useEffect(() => {
     if (currentUser.auth?.reset_password === 1) {
@@ -39,6 +47,11 @@ const AsignarXqr = (props) => {
       loadFase();
     }
   }, []);
+
+  useEffect(()=> {
+    console.log("length", ordenes, ordenes.length);
+    if(Object.keys(ordenes).length === 0) setShowReport(true);
+  }, [ordenes])
 
   const getOrdenByGuia = (guiaR) => {
     OrdenDataService.getByGuia(guiaR)
@@ -111,14 +124,15 @@ const AsignarXqr = (props) => {
       guiaR = guiaR.replace("http://sigo.goyaexpressdelivery.com/recibo/", "");
       getOrdenByGuia(guiaR);
       setGuia("");
+      setShowReport(false);
     }
   };
 
   const handleCloseOrd = (ge) => {
-    const { id, value } = ge.target;
-    console.log("close", id, value);
+    //const { id, value } = ge?.target;
+    console.log("close", ge);
     let ord = ordenes;
-    delete ord[value];
+    delete ord[ge];
     setOrdenes({ ...ord });
     console.log(ge, ordenes);
   };
@@ -151,7 +165,7 @@ const AsignarXqr = (props) => {
                 value={row.guia}
                 aria-label="Close"
                 ariaGuia={row.guia}
-                onClick={handleCloseOrd}
+                onClick={() => {handleCloseOrd(row.guia)}}
                 startIcon={<Close />}
                 size="small"
                 color="error"
@@ -206,6 +220,42 @@ const AsignarXqr = (props) => {
       });
   };
 
+  const handleCloseDialog = () => {
+    setOpenDialogReport(false);
+  };
+
+  const downloadReporte = (tipo = "completo", formato = "pdf") => {
+    console.log("downloadReporte", tipo, formato);
+    let guias = Object.keys(ordenes);
+    guias = guias.join(",");
+    console.log("guias", `guia:in:${guias}`);
+    //return false;
+    dispatch(setLoading(true));
+    OrdenDataService.getReporte(tipo, formato, `guia:in:${guias}`)
+      .then((reporte) => {
+        if (formato === "excel") formato = "xlsx";
+        let fileName =
+          "reporte" +
+          tipo +
+          moment().format("YYYY-MM-DD HH:mm:ss SS") +
+          "." +
+          formato;
+
+        const url = URL.createObjectURL(reporte.data);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        dispatch(setLoading(false));
+      })
+      .catch((e) => {
+        console.log(e);
+        dispatch(setLoading(false));
+      });
+  };
+
   return (
     <div idElement="asignar" style={{ width: "100%", margin: "0px auto" }}>
       <Card
@@ -216,6 +266,78 @@ const AsignarXqr = (props) => {
         idElement="datosGenerales-asignar"
         className="text-start"
       >
+        <Dialog
+          id="popupReportOrder"
+          open={openDialogReport}
+          onClose={handleCloseDialog}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"Descargar reportes."}
+          </DialogTitle>
+          <DialogContent sx={{ paddingTop: "10px !important" }}>
+            <Grid container spacing={2} alignItems={"center"}>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  className="extraButton"
+                  variant="contained"
+                  startIcon={<PictureAsPdf />}
+                  sx={{ width: "90%", margin: "auto" }}
+                  onClick={() => {
+                    downloadReporte("Basico", "pdf");
+                  }}
+                >
+                  Reporte Basico
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  className="extraButton"
+                  variant="contained"
+                  startIcon={<PictureAsPdf />}
+                  sx={{ width: "90%", margin: "auto" }}
+                  onClick={() => {
+                    downloadReporte("Completo", "pdf");
+                  }}
+                >
+                  Reporte Completo
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  className="extraButton"
+                  variant="contained"
+                  startIcon={<GridOn />}
+                  sx={{ width: "90%", margin: "auto" }}
+                  onClick={() => {
+                    downloadReporte("Basico", "excel");
+                  }}
+                >
+                  Reporte Basico
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  className="extraButton"
+                  variant="contained"
+                  startIcon={<GridOn />}
+                  sx={{ width: "90%", margin: "auto" }}
+                  onClick={() => {
+                    downloadReporte("Completo", "excel");
+                  }}
+                >
+                  Reporte Completo
+                </Button>
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog} color="error">
+              Cancelar
+            </Button>
+          </DialogActions>
+        </Dialog>
         <Grid container spacing={1}>
           <Grid item xs={12} sm={6} md={6}>
             <SearchInput
@@ -261,7 +383,7 @@ const AsignarXqr = (props) => {
               fullWidth
             />
           </Grid>
-          <Grid item md={6} sm={6} xs={12} sx={{margin: "auto 0"}}>
+          <Grid item md={3} sm={3} xs={12} sx={{margin: "auto 0"}}>
             <Button
               onClick={saveAsignar}
               endIcon={<Save />}
@@ -270,6 +392,20 @@ const AsignarXqr = (props) => {
               sx={{margin: "auto 0"}}
             >
               Asignar
+            </Button>
+          </Grid>
+          
+          <Grid item xs={12} sm={3} md={3} sx={{margin: "auto 0"}}>
+            <Button
+              variant="contained"
+              startIcon={<SummarizeOutlined />}
+              disabled={showReport}
+              sx={{margin: "auto 0"}}
+              onClick={() => {
+                setOpenDialogReport(true);
+              }}
+            >
+              Reportes
             </Button>
           </Grid>
           <Grid item xs={12} sm={12}>

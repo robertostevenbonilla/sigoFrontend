@@ -9,8 +9,11 @@ import FaseDataService from "../../services/fase.service";
 import EnhancedTable from "../table/table";
 import {
   AccountBox,
+  Approval,
+  ContentCopy,
   Dashboard,
   DeliveryDining,
+  ErrorOutline,
   FilterAltOffOutlined,
   FilterAltOutlined,
   GridOn,
@@ -20,6 +23,7 @@ import {
   ScheduleSend,
   SummarizeOutlined,
   Today,
+  WhatsApp,
 } from "@mui/icons-material";
 import {
   Breadcrumbs,
@@ -31,12 +35,14 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
+  IconButton,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
   OutlinedInput,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import { loadingTable } from "../../reducers/ui";
 import { SearchInput } from "../form/AutoCompleteInput";
@@ -55,15 +61,11 @@ import moment from "moment";
 import { read, utils, write } from "xlsx";
 import { setForm, setFiltros, setShowFilters } from "../../reducers/filtro";
 import { setPages, setRows, setLoading } from "../../reducers/ui";
+import AuthDataService from "../../services/auth.service";
 
 var doc = new jsPDF();
 
 const columnsOrden = [
-  /* {
-    field: "id",
-    headerName: "Id",
-    flex: 1,
-  }, */
   {
     field: "guia",
     headerName: "Guia",
@@ -144,52 +146,6 @@ const columnsOrden = [
       );
     },
   },
-  /* 
-  {
-    field: "direccionOrigen",
-    headerName: "Dirección Remitente",
-    flex: 2,
-  },
-  {
-    field: "direccionDestino",
-    headerName: "Dirección Destinario",
-    flex: 2,
-  },
-  {
-    field: "remitente",
-    headerName: "Remitente",
-    flex: 2,
-  },
-  {
-    field: "destinatario",
-    headerName: "Destinatario",
-    flex: 2,
-  },
-  {
-    field: "telefonoRemitente",
-    headerName: "Telefono Remitente",
-    flex: 2,
-  },
-  {
-    field: "telefonoDestinatario",
-    headerName: "Telefono Destinatario",
-    flex: 2,
-  },
-  {
-    field: "email",
-    headerName: "Email",
-    flex: 2,
-  }, */
-  /* {
-    field: "descripcion",
-    headerName: "Descripción",
-    flex: 1,
-  },
-  {
-    field: "novedades",
-    headerName: "Novedades",
-    flex: 1,
-  }, */
   {
     field: "empresa",
     headerName: "Empresa",
@@ -257,24 +213,23 @@ const columnsOrden = [
     flex: 1,
     format: "datetime",
   },
-  /* {
-    field: "ciudadOrigen",
-    headerName: "Ciudad Origen",
-    flex: 2,
+  {
+    field: "novedad",
+    headerName: "Novedad",
     type: "render",
     renderFunction: (row) => {
-      return row.ciudadOrigen.nombre;
+      return (
+        row.Incidencias.length > 0 ?
+        <List>
+          <ListItem>
+            <ListItemIcon style={{ minWidth: 30 }}>
+              <ErrorOutline sx={{color: '#ffdd29'}} />
+            </ListItemIcon>
+          </ListItem>
+        </List> : <></>
+      );
     },
   },
-  {
-    field: "ciudadDestino",
-    headerName: "Ciudad Destino",
-    flex: 2,
-    type: "render",
-    renderFunction: (row) => {
-      return row.ciudadDestino.nombre;
-    },
-  }, */
 ];
 
 const flexContainer = {
@@ -324,8 +279,10 @@ const OrdenList = (props) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [openDialogXLS, setOpenDialogXLS] = useState(false);
   const [openDialogReport, setOpenDialogReport] = useState(false);
+  const [openDialogFase, setOpenDialogFase] = useState(false);
   const [morotizadoId, setMorotizadoId] = useState(-1);
   const [empresaUpId, setEmpresaUpId] = useState(-1);
+  const [faseUpId, setFaseUpId] = useState(-1);
 
   const loadSelects = async () => {
     CiudadDataService.getSelect()
@@ -437,7 +394,14 @@ const OrdenList = (props) => {
   const handleInputChangeM = async (event) => {
     const { id, value } = event.target;
     console.log(form, event.target, id, value);
-    setMorotizadoId(value);
+    switch (id) {
+      case 'motorizadoId':
+        setMorotizadoId(value);
+        break;
+      case 'fasePId':
+        setFaseUpId(value);
+        break;
+    }
   };
 
   const retrieveOrdenes = (page = 0, size = 10) => {
@@ -449,6 +413,7 @@ const OrdenList = (props) => {
       })
       .catch((e) => {
         console.log(e);
+        //AuthDataService.refreshToken()
         dispatch(loadingTable(false));
       });
   };
@@ -646,6 +611,10 @@ const OrdenList = (props) => {
     setOpenDialog(true);
   };
 
+  const addFase = () => {
+    setOpenDialogFase(true);
+  };
+
   const removeMensajero = () => {
     let guias = selectedObj.map((registro) => registro.guia);
     const dataM = {
@@ -694,6 +663,33 @@ const OrdenList = (props) => {
       });
   };
 
+  const saveFase = () => {
+    let guias = selectedObj.map((registro) => registro.guia);
+    const dataM = {
+      guias: guias,
+      estadoId: faseUpId,
+      mensajeroId: null,
+    };
+    console.log(dataM);
+    OrdenDataService.asignar(dataM)
+      .then((response) => {
+        setOpenDialogFase(false);
+        const message = {
+          title: "Estado",
+          msg: "Estado asignado correctamente.",
+          error: true,
+        };
+        dispatch(setMessage({ ...message }));
+        dispatch(setOpenModal(true));
+        setReload(true);
+        setFaseUpId(-1);
+      })
+      .catch((err) => {
+        console.log(err);
+        setOpenDialogFase(false);
+      });
+  };
+
   const getFiltered = () => {
     dispatch(setPages(0));
     let filtered = "";
@@ -720,9 +716,11 @@ const OrdenList = (props) => {
 
   const handleCloseDialog = () => {
     setMorotizadoId(-1);
+    setFaseUpId(-1);
     setOpenDialog(false);
     setOpenDialogXLS(false);
     setOpenDialogReport(false);
+    setOpenDialogFase(false);
   };
 
   const onChange = (e, name = null, value = null) => {
@@ -776,15 +774,19 @@ const OrdenList = (props) => {
       });
       delete jsonData[0];
       let empresaGuiaId = empresaUpId;
-      if (currentUser.auth.roles.find((rol) => rol.name == "admin" || rol.name == "mensajero") === undefined){
-        empresaGuiaId = currentUser.auth.persona.empresaId; 
+      if (
+        currentUser.auth.roles.find(
+          (rol) => rol.name == "admin" || rol.name == "mensajero"
+        ) === undefined
+      ) {
+        empresaGuiaId = currentUser.auth.persona.empresaId;
         //console.log("otro empresaId",empresaUpId,empresaGuiaId,currentUser.auth.roles.find((rol) => rol.name == "admin" || rol.name == "mensajero"));
       }
-      let orden = await EmpresaDataService.findGuia(
-        empresaGuiaId,
-      ).catch((error) => {
-        console.error(error);
-      });
+      let orden = await EmpresaDataService.findGuia(empresaGuiaId).catch(
+        (error) => {
+          console.error(error);
+        }
+      );
       let telefono,
         direccionOrigen,
         remitente,
@@ -883,6 +885,69 @@ const OrdenList = (props) => {
       });
   };
 
+  const showRowButtons = (id, row) => {
+    return (<>
+      <Tooltip title="Copiar" placement="top">
+        <IconButton
+          size="small"
+          onClick={ async () => {
+            let text = `******\nGuía: ${row.guia}\n`;
+            //if(row.codigo !== null)
+              text += `Codigo: ${row.codigo}\n`;
+            text += `Fecha orden: ${row.fechaRecepcion}\n`;
+            text += `Origen: ${row.origen}\n`;
+            text += `Ciudad Origen: ${row.ciudadOrigen.nombre}\n`;
+            text += `Direccion:  ${row.direccionOrigen}\n`;
+            text += `Envia: ${row.remitente}\n`;
+            text += `Telefono: ${row.telefonoRemitente}\n`;
+            text += `----\n`;
+            text += `Producto: ${row.producto}\n`;
+            text += `Costo: ${row.precio}\n`;
+            text += `----\n`;
+            text += `Destino: ${row.destino}\n`;
+            text += `Ciudad Destino: ${row.ciudadDestino.nombre}\n`;
+            text += `Direccion: ${row.direccionDestino}\n`;
+            text += `Destinatario: ${row.destinatario}\n`;
+            text += `Telefono: ${row.telefonoDestinatario}\n`;
+            try {
+              const permissions = await navigator.permissions.query({name: "clipboard-write"})
+              if (permissions.state === "granted" || permissions.state === "prompt") {
+                  await navigator.clipboard.writeText(text);
+                  //alert('Text copied to clipboard!');
+              } else {
+                  throw new Error("Can't access the clipboard. Check your browser permissions.")
+              }
+            } catch (error) {
+                alert('Error al tratar de copiar:', error);
+            }
+          }}
+        >
+          <ContentCopy fontSize={"small"} sx={{color: '#FFB74D' }} />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="WhatsApp" placement="top">
+        <IconButton
+          size="small"
+          onClick={() => {
+            console.log(id, row);
+            let link = `https://api.whatsapp.com/send?phone=${row.telefonoDestinatario}`;
+            link += `&text=Buen+día,+servicio+de+mensajería+le+saluda,+para+informarle+que+tenemos+una+entrega+para+usted+de+*${row.producto}*.%0A`;
+            link += `Por+el+valor+de+*%24${row.precio}*%0ARealizado+por+la+tienda+*${row.remitente}*.%0AMe+confirma+su+recepción+el+día+de+hoy`;
+            link += `,+y+me+ayuda+con+su+ubicación+*GPS*+para+coordinar+la+entrega.`;
+            window.open(link, "_blank");
+            /* props.showDeleteAlert
+              ? triggerDeleteDialog(id, row)
+              : deleteItem(id, row);
+              https://api.whatsapp.com/send?phone=$WHATSAPP&text=Buen+día,+servicio+de+mensajería+le+saluda,+para+informarle+que+tenemos+una+entrega+para+su+persona+de+$PRODUCTO.+Por+el+valor+de+$PRECIO....+Realizado+por+la+tienda+$CLIENTE.+Me+confirma+su+recepción+el+día+de+hoy
+            */
+          }}
+        >
+          <WhatsApp fontSize={"small"} sx={{color: '#25d366' }} />
+        </IconButton>
+      </Tooltip>
+    </>)
+  };
+
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
       <Breadcrumbs aria-label="breadcrumb" sx={{ marginBottom: "10px" }}>
@@ -947,6 +1012,46 @@ const OrdenList = (props) => {
             </Button>
             <Button onClick={saveMotorizado} variant="contained">
               Quiero asignar el motorizado
+            </Button>
+          </DialogActions>
+        </Dialog>
+        
+        <Dialog
+          id="popupFase"
+          open={openDialogFase}
+          onClose={handleCloseDialog}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"¿Estas seguro/a de el estado? "}
+          </DialogTitle>
+          <DialogContent sx={{ paddingTop: "10px !important" }}>
+            <Grid container spacing={2} alignItems={"center"}>
+              <Grid item xs={12} sm={12}>
+                <SearchInput
+                  options={[
+                    { id: -1, nombre: "Seleccione un estado" },
+                    ...faseSelect,
+                  ]}
+                  value={faseUpId}
+                  placeholder={"Seleccione un estado"}
+                  id={"fasePId"}
+                  name={"fasePId"}
+                  label={"Estado"}
+                  getOptionLabel={"nombre"}
+                  getIndexLabel={"id"}
+                  onChange={handleInputChangeM}
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog} color="error">
+              Cancelar
+            </Button>
+            <Button onClick={saveFase} variant="contained">
+              Quiero asignar el estado
             </Button>
           </DialogActions>
         </Dialog>
@@ -1108,8 +1213,11 @@ const OrdenList = (props) => {
             await getPdfFile([id]);
           }}
           delete={
-            currentUser?.auth?.roles.find((rol) => rol.name == "mensajero" || rol.name == "supervisor") !== undefined
-            ? false : true
+            currentUser?.auth?.roles.find(
+              (rol) => rol.name == "mensajero" || rol.name == "supervisor"
+            ) !== undefined
+              ? false
+              : true
           }
           showDeleteAlert={true}
           refreshData={reloadData}
@@ -1431,6 +1539,18 @@ const OrdenList = (props) => {
                 <Button
                   className="extraButton"
                   variant="contained"
+                  startIcon={<Approval />}
+                  onClick={() => {
+                    addFase();
+                  }}
+                >
+                  Asignar Estado
+                </Button>
+              </ListItem>
+              <ListItem>
+                <Button
+                  className="extraButton"
+                  variant="contained"
                   startIcon={<DeliveryDining />}
                   onClick={() => {
                     addMensajero();
@@ -1498,6 +1618,9 @@ const OrdenList = (props) => {
               </>
             )
           }
+          extraRowButtons={currentUser?.auth?.roles.find(
+            (rol) => rol.name == "admin" || rol.name == "supervisor"
+          ) !== undefined ? showRowButtons : null}
         />
       </Card>
     </div>

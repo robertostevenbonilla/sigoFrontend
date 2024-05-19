@@ -713,6 +713,7 @@ export default function EnhancedTable(props) {
     setRows=null,
     pagesHandle=0,
     rowsHandle=10,
+
   } = props;
   const [order, setOrder] = React.useState(orderASC);
   const [orderBy, setOrderBy] = React.useState("");
@@ -1001,7 +1002,7 @@ export default function EnhancedTable(props) {
             size="small"
             onClick={() => props.onViewFunction(id, row)}
           >
-            <VisibilityIcon fontSize={"small"} />
+            <VisibilityIcon fontSize={"small"} sx={{color: '#3364FF' }} />
           </IconButton>
         </Tooltip>
       );
@@ -1016,50 +1017,6 @@ export default function EnhancedTable(props) {
           </IconButton>
         </Tooltip>
       );
-    if (props.productos)
-      arrayButtons.push(
-        <Tooltip title="Productos" placement="top">
-          <IconButton
-            size="small"
-            onClick={() => props.onProductosFunction(id, row)}
-          >
-            <WorkspacesIcon fontSize={"small"} />
-          </IconButton>
-        </Tooltip>
-      );
-    if (props.rutas)
-      arrayButtons.push(
-        <Tooltip title="Rutas" placement="top">
-          <IconButton
-            size="small"
-            onClick={() => props.onRutasFunction(id, row)}
-          >
-            <RouteIcon fontSize={"small"} />
-          </IconButton>
-        </Tooltip>
-      );
-    if (props.permisos)
-      arrayButtons.push(
-        <Tooltip title="Permisos" placement="top">
-          <IconButton
-            size="small"
-            onClick={() => props.onPermissionFunction(id, row)}
-          >
-            <FactCheckIcon fontSize={"small"} />
-          </IconButton>
-        </Tooltip>
-      );
-    if (props.conciliacion)
-      arrayButtons.push(
-        <Tooltip title="Conciliacion" placement="top">
-          <IconButton
-            size="small"
-            onClick={() => props.onConciliacionFunction(id, row)}
-          >
-            <CompareArrowsIcon fontSize={"small"} />
-          </IconButton>
-        </Tooltip>
-      );
     if (props.download)
       arrayButtons.push(
         <Tooltip title="Descargar" placement="top">
@@ -1067,7 +1024,7 @@ export default function EnhancedTable(props) {
             size="small"
             onClick={() => props.onDownloadFunction(id, row)}
           >
-            <PictureAsPdf fontSize={"small"} />
+            <PictureAsPdf fontSize={"small"} sx={{color: '#F40F02' }} />
           </IconButton>
         </Tooltip>
       );
@@ -1084,7 +1041,7 @@ export default function EnhancedTable(props) {
                 : deleteItem(id, row)
             }}
           >
-            <DeleteIcon fontSize={"small"} />
+            <DeleteIcon fontSize={"small"} color="error" />
           </IconButton>
         </Tooltip>
       );
@@ -1108,7 +1065,7 @@ export default function EnhancedTable(props) {
       numButtons++;
     if (props.download)
       numButtons++;
-    /* if (extraRowButtons !== null) arrayButtons.push(extraRowButtons(id, row)); */
+    if (extraRowButtons !== null) numButtons += extraRowButtons.length;
     if (props.delete)
       numButtons++;
     return numButtons;
