@@ -78,10 +78,10 @@ const DashboardPage = () => {
   const { auth: currentUser } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    console.log(currentUser.isLoggedIn, currentUser);
+    console.log(currentUser.isLoggedIn, currentUser, currentUser.auth?.reset_password);
     if (!currentUser.isLoggedIn) {
       navigate("/login");
-    } else if (currentUser.user?.reset_password === 1) {
+    } else if (currentUser.auth?.reset_password === 1) {
       navigate("/changepassword");
     } else {
       let idR = null;

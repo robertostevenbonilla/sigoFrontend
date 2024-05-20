@@ -20,6 +20,7 @@ const required = (value) => {
 };
 
 const ChangePassword = (props) => {
+  const { logout } = UserAuth();
   let navigate = useNavigate();
   const checkBtn = useRef();
   const [formUsuario, setForm] = useState(usuarioForm);
@@ -46,7 +47,9 @@ const ChangePassword = (props) => {
     resetPassword({...formUsuario})
       .then((res) => {
         console.log("data", res);
-        navigate("/login");
+        logout().then((respose) => {
+          navigate("/login");
+        });
       })
       .catch((res) => {
         console.log("catch",res);

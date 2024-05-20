@@ -74,7 +74,7 @@ const AddUsuario = () => {
     EmpresaDataService.create(dataAU)
       .then((response) => {
         console.log(response);
-        if (response.status === 200) {
+        if (response.status === 201) {
           const message = {
             title: "Creación Empresa",
             msg: "",
