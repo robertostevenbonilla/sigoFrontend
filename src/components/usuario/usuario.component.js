@@ -209,7 +209,7 @@ const Usuario = () => {
           </Grid>
           <Grid item md={6} sm={6} xs={12}>
             <SelectInput
-              data={(currentUser.auth.roles.find((rol) => rol.name == "admin") !== undefined) ? [
+              data={(currentUser.auth?.roles.find((rol) => rol.name == "admin") !== undefined) ? [
                 { value: "admin", text: "Administrador" },
                 { value: "empresa", text: "Empresa" },
                 { value: "supervisor", text: "Supervisor" },

@@ -154,7 +154,7 @@ const Orden = () => {
 
   const handleEdited = () => {
     console.log('Edited',!edited,editedSup);
-    if (currentUser.auth.roles.find((rol) => rol.name == "supervisor") !== undefined){
+    if (currentUser.auth?.roles.find((rol) => rol.name == "supervisor") !== undefined){
       setEditedSup(false);
       setEdited(true);
     }else 

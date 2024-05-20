@@ -782,7 +782,7 @@ const OrdenList = (props) => {
       delete jsonData[0];
       let empresaGuiaId = empresaUpId;
       if (
-        currentUser.auth.roles.find(
+        currentUser.auth?.roles.find(
           (rol) => rol.name == "admin" || rol.name == "mensajero"
         ) === undefined
       ) {

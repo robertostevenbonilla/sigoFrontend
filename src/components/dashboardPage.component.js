@@ -86,12 +86,12 @@ const DashboardPage = () => {
     } else {
       let idR = null;
       if (
-        currentUser.auth.roles.find((rol) => rol.name == "admin" || rol.name == "supervisor") === undefined
+        currentUser.auth?.roles.find((rol) => rol.name == "admin" || rol.name == "supervisor") === undefined
       ) {
         idR = currentUser.auth.persona.empresaId;
       }
       let mensajeroId = null;
-      if ( currentUser.auth.roles.find((rol) => rol.name !== "mensajero") ) {
+      if ( currentUser.auth?.roles.find((rol) => rol.name !== "mensajero") ) {
         EmpresaDataService.resumen(idR)
           .then((response) => {
             console.log("dashboard", response);

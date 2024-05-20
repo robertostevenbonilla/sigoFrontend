@@ -89,7 +89,7 @@ const AsignarXqr = (props) => {
     UsuarioDataService.motorizados()
       .then((response) => {
         setMotorizadoSelect(response.data);
-        if(currentUser.auth.roles[0].name === 'mensajero') {
+        if(currentUser.auth?.roles[0].name === 'mensajero') {
           setMorotizadoId(currentUser.auth.id);
         }
       })

@@ -389,7 +389,7 @@ function App() {
                 />
               </ListItemButton>
             </ListItem>
-            {currentUser.auth.roles.find((rol) => rol.name == "admin" || rol.name == "empresa" || rol.name == "empresaLectura") !==
+            {currentUser.auth?.roles.find((rol) => rol.name == "admin" || rol.name == "empresa" || rol.name == "empresaLectura") !==
               undefined && (
               <>
                 <ListItem
@@ -462,7 +462,7 @@ function App() {
                 </ListItem>
                 </>
               )}
-              {currentUser.auth.roles.find((rol) => rol.name == "admin") !==
+              {currentUser.auth?.roles.find((rol) => rol.name == "admin") !==
               undefined && (
                 <>
                 <ListItem
