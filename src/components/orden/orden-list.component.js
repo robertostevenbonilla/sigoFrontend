@@ -22,6 +22,7 @@ import {
   Room,
   ScheduleSend,
   SummarizeOutlined,
+  TaskAlt,
   Today,
   WhatsApp,
 } from "@mui/icons-material";
@@ -219,14 +220,20 @@ const columnsOrden = [
     type: "render",
     renderFunction: (row) => {
       return (
-        row.Incidencias.length > 0 ?
+        row.Incidencias.length > 0 ?  
         <List>
           <ListItem>
             <ListItemIcon style={{ minWidth: 30 }}>
               <ErrorOutline sx={{color: '#ffdd29'}} />
             </ListItemIcon>
           </ListItem>
-        </List> : <></>
+        </List> : <List>
+          <ListItem>
+            <ListItemIcon style={{ minWidth: 30 }}>
+              <TaskAlt color="success" />
+            </ListItemIcon>
+          </ListItem>
+        </List>
       );
     },
   },

@@ -21,9 +21,13 @@ const AddUsuario = () => {
   const [loading, setLoading] = useState(false);
 
   const handleInputChange = (event) => {
-    console.log(event);
     const { name, value } = event.target;
-    setForm({ ...form, [name]: [...value] });
+    setForm({ ...form, [name]: value });
+  };
+
+  const handleSearchInputChange = async (event) => {
+    const { name, value } = event.target;
+    setForm({ ...form, [name]: [value] });
   };
 
   useEffect(() => {
@@ -143,7 +147,7 @@ const AddUsuario = () => {
               label={"Roles"}
               getOptionLabel={"rol"}
               getIndexLabel={"id"}
-              onChange={handleInputChange}
+              onChange={handleSearchInputChange}
             />
           </Grid>
           <Grid item md={6} sm={6} xs={12} className="text-start">
