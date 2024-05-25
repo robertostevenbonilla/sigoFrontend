@@ -201,7 +201,7 @@ function App() {
   const setInit = () => {
     dispatch(setPages(1));
     dispatch(setRows(10));
-  }
+  };
 
   return (
     <div className="App">
@@ -249,7 +249,7 @@ function App() {
             {open ? <ChevronLeft /> : <ChevronRight />}
           </IconButton>
         </DrawerHeader>
-        <Divider sx={{color: "white"}} />
+        <Divider sx={{ color: "white" }} />
 
         {currentUser.isLoggedIn && currentUser.auth?.reset_password == 0 && (
           <List>
@@ -321,76 +321,88 @@ function App() {
                 />
               </ListItemButton>
             </ListItem>
-            <ListItem
-              key={"asignar"}
-              onClick={() => {
-                setInit();
-                navigate("/asignarqr");
-              }}
-              disablePadding
-              sx={{ display: "block" }}
-            >
-              <ListItemButton
-                sx={{
-                  minHeight: 48,
-                  justifyContent: open ? "initial" : "center",
-                  px: 2.5,
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : "auto",
-                    justifyContent: "center",
-                    color: "white",
-                    paddingRight: "10px",
-                    width: 35,
+            {currentUser.auth?.roles.find(
+              (rol) =>
+                rol.name == "admin" ||
+                rol.name == "mensajero" ||
+                rol.name == "supervisor"
+            ) !== undefined && (
+              <>
+                <ListItem
+                  key={"asignar"}
+                  onClick={() => {
+                    setInit();
+                    navigate("/asignarqr");
                   }}
+                  disablePadding
+                  sx={{ display: "block" }}
                 >
-                  <QrCode2 />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Asignar"
-                  sx={{ opacity: open ? 1 : 0 }}
-                />
-              </ListItemButton>
-            </ListItem>
-            <ListItem
-              key={"asignar"}
-              onClick={() => {
-                setInit();
-                navigate("/scanqr");
-              }}
-              disablePadding
-              sx={{ display: "block" }}
-            >
-              <ListItemButton
-                sx={{
-                  minHeight: 48,
-                  justifyContent: open ? "initial" : "center",
-                  px: 2.5,
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : "auto",
-                    justifyContent: "center",
-                    color: "white",
-                    paddingRight: "10px",
-                    width: 35,
+                  <ListItemButton
+                    sx={{
+                      minHeight: 48,
+                      justifyContent: open ? "initial" : "center",
+                      px: 2.5,
+                    }}
+                  >
+                    <ListItemIcon
+                      sx={{
+                        minWidth: 0,
+                        mr: open ? 3 : "auto",
+                        justifyContent: "center",
+                        color: "white",
+                        paddingRight: "10px",
+                        width: 35,
+                      }}
+                    >
+                      <QrCode2 />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Asignar"
+                      sx={{ opacity: open ? 1 : 0 }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem
+                  key={"scanqr"}
+                  onClick={() => {
+                    setInit();
+                    navigate("/scanqr");
                   }}
+                  disablePadding
+                  sx={{ display: "block" }}
                 >
-                  <QrCodeScanner />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Escanear QR"
-                  sx={{ opacity: open ? 1 : 0 }}
-                />
-              </ListItemButton>
-            </ListItem>
-            {currentUser.auth?.roles.find((rol) => rol.name == "admin" || rol.name == "empresa" || rol.name == "empresaLectura") !==
-              undefined && (
+                  <ListItemButton
+                    sx={{
+                      minHeight: 48,
+                      justifyContent: open ? "initial" : "center",
+                      px: 2.5,
+                    }}
+                  >
+                    <ListItemIcon
+                      sx={{
+                        minWidth: 0,
+                        mr: open ? 3 : "auto",
+                        justifyContent: "center",
+                        color: "white",
+                        paddingRight: "10px",
+                        width: 35,
+                      }}
+                    >
+                      <QrCodeScanner />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Escanear QR"
+                      sx={{ opacity: open ? 1 : 0 }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+              </>
+            )}
+            {currentUser.auth?.roles.find(
+              (rol) =>
+                rol.name ==
+                "admin" /* || rol.name == "empresa" || rol.name == "empresaLectura" */
+            ) !== undefined && (
               <>
                 <ListItem
                   key={"persona"}
@@ -460,11 +472,11 @@ function App() {
                     />
                   </ListItemButton>
                 </ListItem>
-                </>
-              )}
-              {currentUser.auth?.roles.find((rol) => rol.name == "admin") !==
+              </>
+            )}
+            {currentUser.auth?.roles.find((rol) => rol.name == "admin") !==
               undefined && (
-                <>
+              <>
                 <ListItem
                   key={"empresa"}
                   onClick={() => {

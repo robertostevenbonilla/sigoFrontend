@@ -8,7 +8,15 @@ import ServicioDataService from "../../services/servicio.service";
 import FaseDataService from "../../services/fase.service";
 import { ordenForm } from "../../helpers/forms";
 import { Card as CardContent } from "../Card";
-import { AssignmentInd, Business, Dashboard, Edit, Info, ListAlt, Save } from "@mui/icons-material";
+import {
+  AssignmentInd,
+  Business,
+  Dashboard,
+  Edit,
+  Info,
+  ListAlt,
+  Save,
+} from "@mui/icons-material";
 import {
   Card,
   Button,
@@ -153,13 +161,15 @@ const Orden = () => {
   };
 
   const handleEdited = () => {
-    console.log('Edited',!edited,editedSup);
-    if (currentUser.auth?.roles.find((rol) => rol.name == "supervisor") !== undefined){
+    console.log("Edited", !edited, editedSup);
+    if (
+      currentUser.auth?.roles.find((rol) => rol.name == "supervisor") !==
+      undefined
+    ) {
       setEditedSup(false);
       setEdited(true);
-    }else 
-      setEditedSup(false);
-      setEdited(!edited);
+    } else setEditedSup(false);
+    setEdited(!edited);
   };
 
   const handleSave = () => {
@@ -214,22 +224,22 @@ const Orden = () => {
 
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
-      <Breadcrumbs aria-label="breadcrumb" sx={{marginBottom: "10px"}}>
+      <Breadcrumbs aria-label="breadcrumb" sx={{ marginBottom: "10px" }}>
         <Chip
           icon={<Dashboard sx={{ color: "white !important" }} />}
           label="Dashboard"
           onClick={() => {
             navigate(`/`);
           }}
-          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+          sx={{ background: "#3364FF", color: "white", padding: "2px 5px" }}
         />
         <Chip
           icon={<ListAlt sx={{ color: "white !important" }} />}
           label="Ordenes"
           onClick={() => {
-            navigate(`/orden?page=${pages+1}&rowsPerPage=${rows}`);
+            navigate(`/orden?page=${pages + 1}&rowsPerPage=${rows}`);
           }}
-          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+          sx={{ background: "#3364FF", color: "white", padding: "2px 5px" }}
         />
         <Typography color="text.primary">{form.guia}</Typography>
       </Breadcrumbs>
@@ -579,29 +589,34 @@ const Orden = () => {
               disabled={edited}
             />
           </Grid>
-          <Grid item md={12} sm={12} xs={12} className="text-start">
-            {edited && editedSup ? (
-              <Button
-                onClick={handleEdited}
-                endIcon={<Edit />}
-                variant="contained"
-                color="success"
-                className="align-middle"
-              >
-                Editar
-              </Button>
-            ) : (
-              <Button
-                onClick={handleSave}
-                endIcon={<Save />}
-                variant="contained"
-                color="success"
-                className="align-middle"
-              >
-                Guardar
-              </Button>
-            )}
-          </Grid>
+          {currentUser.auth?.roles.find((rol) => rol.name == "admin") !==
+            undefined && (
+            <>
+              <Grid item md={12} sm={12} xs={12} className="text-start">
+                {edited && editedSup ? (
+                  <Button
+                    onClick={handleEdited}
+                    endIcon={<Edit />}
+                    variant="contained"
+                    color="success"
+                    className="align-middle"
+                  >
+                    Editar
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleSave}
+                    endIcon={<Save />}
+                    variant="contained"
+                    color="success"
+                    className="align-middle"
+                  >
+                    Guardar
+                  </Button>
+                )}
+              </Grid>
+            </>
+          )}
           <Grid item md={8} sm={8} sx={12}>
             <ImageList
               sx={{ width: "100%", maxHeight: 450 }}
@@ -653,10 +668,12 @@ const Orden = () => {
                             variant="body2"
                             color="text.primary"
                           >
-                            {item.usuario.persona.fullName}: 
+                            {item.usuario.persona.fullName}:
                           </Typography>
-                          {moment( item.createdAt[item.fecha.length - 1] === "Z"
-                          ? item.fecha.slice(0, -1) : item.fecha
+                          {moment(
+                            item.createdAt[item.fecha.length - 1] === "Z"
+                              ? item.fecha.slice(0, -1)
+                              : item.fecha
                           ).format("YYYY-MM-DD hh:mm:ss")}
                         </>
                       }

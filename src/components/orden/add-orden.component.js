@@ -8,8 +8,23 @@ import ServicioDataService from "../../services/servicio.service";
 import FaseDataService from "../../services/fase.service";
 import { ordenForm } from "../../helpers/forms";
 import { Card } from "../Card";
-import { AssignmentInd, Business, Dashboard, Edit, ListAlt, Save } from "@mui/icons-material";
-import { Breadcrumbs, Button, Chip, Grid, Link, TextField, Typography } from "@mui/material";
+import {
+  AssignmentInd,
+  Business,
+  Dashboard,
+  Edit,
+  ListAlt,
+  Save,
+} from "@mui/icons-material";
+import {
+  Breadcrumbs,
+  Button,
+  Chip,
+  Grid,
+  Link,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { SearchInput } from "../form/AutoCompleteInput";
 import { SelectInput } from "../form/SelectInput";
 import { setMessage, setOpenModal } from "../../reducers/message";
@@ -181,7 +196,8 @@ const AddOrden = () => {
       servicioId: form.servicioId === -1 ? null : form.servicioId,
       faseId: form.faseId === -1 ? null : form.faseId,
       ciudadOrigenId: form.ciudadOrigenId === -1 ? null : form.ciudadOrigenId,
-      ciudadDestinoId: form.ciudadDestinoId === -1 ? null : form.ciudadDestinoId,
+      ciudadDestinoId:
+        form.ciudadDestinoId === -1 ? null : form.ciudadDestinoId,
       mensajeroId: form.mensajeroId === -1 ? null : form.mensajeroId,
     };
     OrdenDataService.create(data)
@@ -213,22 +229,22 @@ const AddOrden = () => {
 
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
-      <Breadcrumbs aria-label="breadcrumb" sx={{marginBottom: "10px"}}>
+      <Breadcrumbs aria-label="breadcrumb" sx={{ marginBottom: "10px" }}>
         <Chip
           icon={<Dashboard sx={{ color: "white !important" }} />}
           label="Dashboard"
           onClick={() => {
             navigate(`/`);
           }}
-          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+          sx={{ background: "#3364FF", color: "white", padding: "2px 5px" }}
         />
         <Chip
           icon={<ListAlt sx={{ color: "white !important" }} />}
           label="Ordenes"
           onClick={() => {
-            navigate(`/orden?page=${pages+1}&rowsPerPage=${rows}`);
+            navigate(`/orden?page=${pages + 1}&rowsPerPage=${rows}`);
           }}
-          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+          sx={{ background: "#3364FF", color: "white", padding: "2px 5px" }}
         />
         <Typography color="text.primary">Nueva orden</Typography>
       </Breadcrumbs>
@@ -271,6 +287,7 @@ const AddOrden = () => {
                     )
                   }
                   disablePast={true}
+                  disabled={true}
                 />
               </LocalizationProvider>
             </Grid>
@@ -454,29 +471,45 @@ const AddOrden = () => {
                 />
               </Grid>
             </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="email"
-                name="email"
-                label="Email"
-                value={form.email}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="costo"
-                name="costo"
-                label="Costo envio"
-                value={form.costo}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            
+            {currentUser.auth?.roles.find((rol) => rol.name == "admin") !==
+            undefined ? (
+              <>
+                <Grid item md={6} sm={6} xs={12}>
+                  <TextField
+                    id="email"
+                    name="email"
+                    label="Email"
+                    value={form.email}
+                    onChange={handleInputChange}
+                    variant="outlined"
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item md={6} sm={6} xs={12}>
+                  <TextField
+                    id="costo"
+                    name="costo"
+                    label="Costo envio"
+                    value={form.costo}
+                    onChange={handleInputChange}
+                    variant="outlined"
+                    fullWidth
+                  />
+                </Grid>
+              </>
+            ) : (
+              <Grid item md={12} sm={12} xs={12}>
+                <TextField
+                  id="email"
+                  name="email"
+                  label="Email"
+                  value={form.email}
+                  onChange={handleInputChange}
+                  variant="outlined"
+                  fullWidth
+                />
+              </Grid>
+            )}
             <Grid item md={6} sm={6} xs={12}>
               <TextField
                 id="producto"
@@ -510,7 +543,7 @@ const AddOrden = () => {
                 fullWidth
               />
             </Grid>
-            
+
             <Grid item md={6} sm={6} xs={12}>
               <SearchInput
                 options={[
@@ -527,39 +560,43 @@ const AddOrden = () => {
                 onChange={handleInputChange}
               />
             </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <SearchInput
-                options={[
-                  { id: -1, nombre: "Seleccione un estado" },
-                  ...faseSelect,
-                ]}
-                value={form.faseId}
-                placeholder={"Seleccione un estado"}
-                id={"faseId"}
-                name={"faseId"}
-                label={"Estado"}
-                getOptionLabel={"nombre"}
-                getIndexLabel={"id"}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            
-            <Grid item md={6} sm={6} xs={12}>
-              <SearchInput
-                options={[
-                  { id: -1, fullname: "Seleccione un mensajero" },
-                  ...motorizadoSelect,
-                ]}
-                value={form.mensajeroId}
-                placeholder={"Seleccione un mensajero"}
-                id={"mensajeroId"}
-                name={"mensajeroId"}
-                label={"Mensajero"}
-                getOptionLabel={"fullname"}
-                getIndexLabel={"id"}
-                onChange={handleInputChange}
-              />
-            </Grid>
+            {currentUser.auth?.roles.find((rol) => rol.name == "admin") !==
+              undefined && (
+              <>
+                <Grid item md={6} sm={6} xs={12}>
+                  <SearchInput
+                    options={[
+                      { id: -1, nombre: "Seleccione un estado" },
+                      ...faseSelect,
+                    ]}
+                    value={form.faseId}
+                    placeholder={"Seleccione un estado"}
+                    id={"faseId"}
+                    name={"faseId"}
+                    label={"Estado"}
+                    getOptionLabel={"nombre"}
+                    getIndexLabel={"id"}
+                    onChange={handleInputChange}
+                  />
+                </Grid>
+                <Grid item md={6} sm={6} xs={12}>
+                  <SearchInput
+                    options={[
+                      { id: -1, fullname: "Seleccione un mensajero" },
+                      ...motorizadoSelect,
+                    ]}
+                    value={form.mensajeroId}
+                    placeholder={"Seleccione un mensajero"}
+                    id={"mensajeroId"}
+                    name={"mensajeroId"}
+                    label={"Mensajero"}
+                    getOptionLabel={"fullname"}
+                    getIndexLabel={"id"}
+                    onChange={handleInputChange}
+                  />
+                </Grid>
+              </>
+            )}
             <Grid item md={12} sm={12} xs={12}>
               <TextField
                 id="descripcion"
