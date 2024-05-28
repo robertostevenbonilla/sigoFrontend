@@ -4,7 +4,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { faseForm } from "../../helpers/forms";
 import { UserAuth } from "../../actions/auth";
 import FaseDataService from "../../services/fase.service";
-import { Breadcrumbs, Button, Chip, Container, Grid, TextField, Typography } from "@mui/material";
+import {
+  Breadcrumbs,
+  Button,
+  Chip,
+  FormControlLabel,
+  Grid,
+  Switch,
+  TextField,
+  Typography,
+} from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import { Card } from "../Card";
 import { Approval, Dashboard } from "@mui/icons-material";
@@ -45,6 +54,7 @@ const AddFase = () => {
       codigo: form.codigo,
       nombre: form.nombre,
       color: form.color,
+      showMensajero: form.showMensajero,
     };
     console.log(dataAU);
     FaseDataService.create(dataAU)
@@ -73,6 +83,12 @@ const AddFase = () => {
     console.log(form);
     setForm(faseForm);
     setSubmitted(false);
+  };
+
+  const handleSwitchChange = (event) => {
+    const { id, checked } = event.target;
+    console.log(form, event.target, id, checked);
+    setForm({ ...form, [id]: checked });
   };
 
   return (
@@ -145,6 +161,22 @@ const AddFase = () => {
                 variant="outlined"
                 fullWidth
                 type="color"
+              />
+            </Grid>
+            <Grid item md={6} sm={6} xs={12}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    id="showMensajero"
+                    name="showMensajero"
+                    checked={form.showMensajero}
+                    onChange={handleSwitchChange}
+                    inputProps={{ "aria-label": "controlled" }}
+                  />
+                }
+                label="Mensajero"
+                labelPlacement="start"
+                sx={{ margin: "auto" }}
               />
             </Grid>
             <Grid item md={6} sm={6} xs={12} className="text-start">

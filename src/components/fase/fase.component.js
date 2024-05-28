@@ -5,7 +5,16 @@ import FaseDataService from "../../services/fase.service";
 import { faseForm } from "../../helpers/forms";
 import { Card } from "../Card";
 import { Approval, Dashboard, Edit, Save } from "@mui/icons-material";
-import { Breadcrumbs, Button, Chip, Grid, TextField, Typography } from "@mui/material";
+import {
+  Breadcrumbs,
+  Button,
+  Chip,
+  FormControlLabel,
+  Grid,
+  Switch,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { setMessage, setOpenModal } from "../../reducers/message";
 
 const Fase = () => {
@@ -82,6 +91,7 @@ const Fase = () => {
       codigo: form.codigo,
       nombre: form.nombre,
       color: form.color,
+      showMensajero: form.showMensajero,
     };
     FaseDataService.update(data)
       .then((response) => {
@@ -168,6 +178,23 @@ const Fase = () => {
               fullWidth
               disabled={edited}
               type="color"
+            />
+          </Grid>
+          <Grid item md={6} sm={6} xs={12}>
+            <FormControlLabel
+              control={
+                <Switch
+                  id="showMensajero"
+                  name="showMensajero"
+                  checked={form.showMensajero}
+                  onChange={handleSwitchChange}
+                  inputProps={{ "aria-label": "controlled" }}
+                />
+              }
+              label="Mensajero"
+              labelPlacement="start"
+              disabled={edited}
+              sx={{margin: 'auto'}}
             />
           </Grid>
           <Grid item md={12} sm={12} xs={12} className="text-start">

@@ -7,8 +7,9 @@ const getAll = async () => {
   return await http.get("/fase/", { headers: {...header()} });
 }
 
-const getSelect = async () => {
-  return await http.get("/fase/select", { headers: {...header()} });
+const getSelect = async (mensajero = false) => {
+  const url = "/fase/select" + (mensajero ? "?mensajero=1" : ""); 
+  return await http.get(url, { headers: {...header()} });
 }
 
 const get = async (id) => {

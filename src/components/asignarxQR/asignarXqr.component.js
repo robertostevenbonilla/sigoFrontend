@@ -76,7 +76,12 @@ const AsignarXqr = (props) => {
   };
 
   const loadFase = () => {
-    FaseDataService.getSelect()
+    const mensajero = currentUser?.auth?.roles.find(
+        (rol) => rol.name == "mensajero"
+      ) !== undefined
+        ? true
+        : false;
+    FaseDataService.getSelect(mensajero)
       .then((response) => {
         setFaseSelect(response.data);
       })

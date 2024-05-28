@@ -4,8 +4,16 @@ import { useDispatch, useSelector } from "react-redux";
 import FaseDataService from "../../services/fase.service";
 import EnhancedTable from "../table/table";
 import { usePersonasTable } from "../../hooks/usePersonaTable";
-import { Approval, Dashboard, HolidayVillage } from "@mui/icons-material";
-import { Breadcrumbs, Card, Chip, TextField } from "@mui/material";
+import { Approval, Dashboard, ErrorOutline, TaskAlt } from "@mui/icons-material";
+import {
+  Breadcrumbs,
+  Card,
+  Chip,
+  List,
+  ListItem,
+  ListItemIcon,
+  TextField,
+} from "@mui/material";
 import { setPages, setRows } from "../../reducers/ui";
 import { setMessage, setOpenModal } from "../../reducers/message";
 
@@ -35,9 +43,33 @@ const columnsFase = [
           type="color"
           disabled="true"
           sx={{
-            width: '40px',
+            width: "40px",
           }}
         />
+      );
+    },
+  },
+  {
+    field: "showMensajero",
+    headerName: "Mensajero",
+    type: "render",
+    renderFunction: (row) => {
+      return row.showMensajero === 0 ? (
+        <List>
+          <ListItem>
+            <ListItemIcon style={{ minWidth: 30 }}>
+              <ErrorOutline sx={{ color: "#ffdd29" }} />
+            </ListItemIcon>
+          </ListItem>
+        </List>
+      ) : (
+        <List>
+          <ListItem>
+            <ListItemIcon style={{ minWidth: 30 }}>
+              <TaskAlt color="success" />
+            </ListItemIcon>
+          </ListItem>
+        </List>
       );
     },
   },
@@ -76,22 +108,22 @@ const FaseList = (props) => {
 
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
-      <Breadcrumbs aria-label="breadcrumb" sx={{marginBottom: "10px"}}>
+      <Breadcrumbs aria-label="breadcrumb" sx={{ marginBottom: "10px" }}>
         <Chip
           icon={<Dashboard sx={{ color: "white !important" }} />}
           label="Dashboard"
           onClick={() => {
             navigate(`/`);
           }}
-          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+          sx={{ background: "#3364FF", color: "white", padding: "2px 5px" }}
         />
         <Chip
           icon={<Approval sx={{ color: "white !important" }} />}
           label="Estado"
           onClick={() => {
-            navigate(`/estado?page=${pages+1}&rowsPerPage=${rows}`);
+            navigate(`/estado?page=${pages + 1}&rowsPerPage=${rows}`);
           }}
-          sx={{background: "#3364FF", color: "white", padding: "2px 5px"}}
+          sx={{ background: "#3364FF", color: "white", padding: "2px 5px" }}
         />
       </Breadcrumbs>
       <Card
@@ -124,7 +156,7 @@ const FaseList = (props) => {
           showDeleteAlert={true}
           refreshData={reloadData}
           onRefreshData={() => {
-            console.log('refresh data');
+            console.log("refresh data");
             setReload(false);
             retrieveFase();
           }}

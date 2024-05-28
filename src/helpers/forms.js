@@ -44,6 +44,7 @@ export const faseForm = {
     codigo: '',
     nombre: '',
     color: '',
+    showMensajero: false,
 }
 
 export const servicioForm = {
