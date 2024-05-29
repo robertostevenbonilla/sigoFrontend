@@ -24,6 +24,7 @@ import {
   SummarizeOutlined,
   TaskAlt,
   Today,
+  TrackChanges,
   WhatsApp,
 } from "@mui/icons-material";
 import {
@@ -219,15 +220,16 @@ const columnsOrden = [
     headerName: "Novedad",
     type: "render",
     renderFunction: (row) => {
-      return (
-        row.Incidencias.length > 0 ?  
+      return row.Incidencias.length > 0 ? (
         <List>
           <ListItem>
             <ListItemIcon style={{ minWidth: 30 }}>
-              <ErrorOutline sx={{color: '#ffdd29'}} />
+              <ErrorOutline sx={{ color: "#ffdd29" }} />
             </ListItemIcon>
           </ListItem>
-        </List> : <List>
+        </List>
+      ) : (
+        <List>
           <ListItem>
             <ListItemIcon style={{ minWidth: 30 }}>
               <TaskAlt color="success" />
@@ -284,12 +286,14 @@ const OrdenList = (props) => {
 
   const [reloadData, setReload] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
+  const [openDialogA, setOpenDialogA] = useState(false);
   const [openDialogXLS, setOpenDialogXLS] = useState(false);
   const [openDialogReport, setOpenDialogReport] = useState(false);
   const [openDialogFase, setOpenDialogFase] = useState(false);
   const [morotizadoId, setMorotizadoId] = useState(-1);
   const [empresaUpId, setEmpresaUpId] = useState(-1);
   const [faseUpId, setFaseUpId] = useState(-1);
+  const [audits, setAudit] = useState([]);
 
   const loadSelects = async () => {
     CiudadDataService.getSelect()
@@ -313,9 +317,9 @@ const OrdenList = (props) => {
       .catch((error) => {
         console.error(error);
       });
-    const mensajero = currentUser?.auth?.roles.find(
-        (rol) => rol.name == "mensajero"
-      ) !== undefined
+    const mensajero =
+      currentUser?.auth?.roles.find((rol) => rol.name == "mensajero") !==
+      undefined
         ? true
         : false;
     FaseDataService.getSelect(mensajero)
@@ -407,10 +411,10 @@ const OrdenList = (props) => {
     const { id, value } = event.target;
     console.log(form, event.target, id, value);
     switch (id) {
-      case 'motorizadoId':
+      case "motorizadoId":
         setMorotizadoId(value);
         break;
-      case 'fasePId':
+      case "fasePId":
         setFaseUpId(value);
         break;
     }
@@ -729,10 +733,12 @@ const OrdenList = (props) => {
   const handleCloseDialog = () => {
     setMorotizadoId(-1);
     setFaseUpId(-1);
+    setAudit([]);
     setOpenDialog(false);
     setOpenDialogXLS(false);
     setOpenDialogReport(false);
     setOpenDialogFase(false);
+    setOpenDialogA(false);
   };
 
   const onChange = (e, name = null, value = null) => {
@@ -898,66 +904,75 @@ const OrdenList = (props) => {
   };
 
   const showRowButtons = (id, row) => {
-    return (<>
-      <Tooltip title="Copiar" placement="top">
-        <IconButton
-          size="small"
-          onClick={ async () => {
-            let text = `******\nGuía: ${row.guia}\n`;
-            //if(row.codigo !== null)
+    return (
+      <>
+        <Tooltip title="Copiar" placement="top">
+          <IconButton
+            size="small"
+            onClick={async () => {
+              let text = `******\nGuía: ${row.guia}\n`;
+              //if(row.codigo !== null)
               text += `Codigo: ${row.codigo}\n`;
-            text += `Fecha orden: ${row.fechaRecepcion}\n`;
-            text += `Origen: ${row.origen}\n`;
-            text += `Ciudad Origen: ${row.ciudadOrigen.nombre}\n`;
-            text += `Direccion:  ${row.direccionOrigen}\n`;
-            text += `Envia: ${row.remitente}\n`;
-            text += `Telefono: ${row.telefonoRemitente}\n`;
-            text += `----\n`;
-            text += `Producto: ${row.producto}\n`;
-            text += `Costo: ${row.precio}\n`;
-            text += `----\n`;
-            text += `Destino: ${row.destino}\n`;
-            text += `Ciudad Destino: ${row.ciudadDestino.nombre}\n`;
-            text += `Direccion: ${row.direccionDestino}\n`;
-            text += `Destinatario: ${row.destinatario}\n`;
-            text += `Telefono: ${row.telefonoDestinatario}\n`;
-            try {
-              const permissions = await navigator.permissions.query({name: "clipboard-write"})
-              if (permissions.state === "granted" || permissions.state === "prompt") {
+              text += `Fecha orden: ${row.fechaRecepcion}\n`;
+              text += `Origen: ${row.origen}\n`;
+              text += `Ciudad Origen: ${row.ciudadOrigen.nombre}\n`;
+              text += `Direccion:  ${row.direccionOrigen}\n`;
+              text += `Envia: ${row.remitente}\n`;
+              text += `Telefono: ${row.telefonoRemitente}\n`;
+              text += `----\n`;
+              text += `Producto: ${row.producto}\n`;
+              text += `Costo: ${row.precio}\n`;
+              text += `----\n`;
+              text += `Destino: ${row.destino}\n`;
+              text += `Ciudad Destino: ${row.ciudadDestino.nombre}\n`;
+              text += `Direccion: ${row.direccionDestino}\n`;
+              text += `Destinatario: ${row.destinatario}\n`;
+              text += `Telefono: ${row.telefonoDestinatario}\n`;
+              try {
+                const permissions = await navigator.permissions.query({
+                  name: "clipboard-write",
+                });
+                if (
+                  permissions.state === "granted" ||
+                  permissions.state === "prompt"
+                ) {
                   await navigator.clipboard.writeText(text);
                   //alert('Text copied to clipboard!');
-              } else {
-                  throw new Error("Can't access the clipboard. Check your browser permissions.")
+                } else {
+                  throw new Error(
+                    "Can't access the clipboard. Check your browser permissions."
+                  );
+                }
+              } catch (error) {
+                alert("Error al tratar de copiar:", error);
               }
-            } catch (error) {
-                alert('Error al tratar de copiar:', error);
-            }
-          }}
-        >
-          <ContentCopy fontSize={"small"} sx={{color: '#FFB74D' }} />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="WhatsApp" placement="top">
-        <IconButton
-          size="small"
-          onClick={() => {
-            console.log(id, row);
-            let link = `https://api.whatsapp.com/send?phone=${row.telefonoDestinatario}`;
-            link += `&text=Buen+día,+servicio+de+mensajería+le+saluda,+para+informarle+que+tenemos+una+entrega+para+usted+de+*${row.producto}*.%0A`;
-            link += `Por+el+valor+de+*%24${row.precio}*%0ARealizado+por+la+tienda+*${row.remitente}*.%0AMe+confirma+su+recepción+el+día+de+hoy`;
-            link += `,+y+me+ayuda+con+su+ubicación+*GPS*+para+coordinar+la+entrega.`;
-            window.open(link, "_blank");
-            /* props.showDeleteAlert
+            }}
+          >
+            <ContentCopy fontSize={"small"} sx={{ color: "#FFB74D" }} />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="WhatsApp" placement="top">
+          <IconButton
+            size="small"
+            onClick={() => {
+              console.log(id, row);
+              let link = `https://api.whatsapp.com/send?phone=${row.telefonoDestinatario}`;
+              link += `&text=Buen+día,+servicio+de+mensajería+le+saluda,+para+informarle+que+tenemos+una+entrega+para+usted+de+*${row.producto}*.%0A`;
+              link += `Por+el+valor+de+*%24${row.precio}*%0ARealizado+por+la+tienda+*${row.remitente}*.%0AMe+confirma+su+recepción+el+día+de+hoy`;
+              link += `,+y+me+ayuda+con+su+ubicación+*GPS*+para+coordinar+la+entrega.`;
+              window.open(link, "_blank");
+              /* props.showDeleteAlert
               ? triggerDeleteDialog(id, row)
               : deleteItem(id, row);
               https://api.whatsapp.com/send?phone=$WHATSAPP&text=Buen+día,+servicio+de+mensajería+le+saluda,+para+informarle+que+tenemos+una+entrega+para+su+persona+de+$PRODUCTO.+Por+el+valor+de+$PRECIO....+Realizado+por+la+tienda+$CLIENTE.+Me+confirma+su+recepción+el+día+de+hoy
             */
-          }}
-        >
-          <WhatsApp fontSize={"small"} sx={{color: '#25d366' }} />
-        </IconButton>
-      </Tooltip>
-    </>)
+            }}
+          >
+            <WhatsApp fontSize={"small"} sx={{ color: "#25d366" }} />
+          </IconButton>
+        </Tooltip>
+      </>
+    );
   };
 
   return (
@@ -988,6 +1003,42 @@ const OrdenList = (props) => {
         id="datosGenerales-ordenes"
         className="text-start"
       >
+        <Dialog
+          id="popupMotorizada"
+          open={openDialogA}
+          onClose={handleCloseDialog}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"Historial de cambios"}
+          </DialogTitle>
+          <DialogContent sx={{ paddingTop: "10px !important" }}>
+            <Grid container spacing={2} alignItems={"center"}>
+              {audits.length > 0 && (
+                <List>
+                  {audits.map((auditRow) => {
+                    const cambio = JSON.parse(auditRow.cambio);
+                    console.log(cambio);
+                    return (
+                      <ListItem>
+                        <strong>{auditRow.usuario.persona.fullName} </strong>
+                        {cambio?.faseId !== null ? " - "+faseSelect.find(x => x.id = cambio.faseId).nombre : " - Quito estado"}
+                        {cambio?.mensajeroId !== null ? " - "+motorizadoSelect.find(x => { console.log(x); return x.id = cambio.mensajeroId})?.fullname : " - Quito mensajero"}
+                      </ListItem>
+                    );
+                  })}
+                </List>
+              )}
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog} color="error">
+              Cancelar
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         <Dialog
           id="popupMotorizada"
           open={openDialog}
@@ -1027,7 +1078,7 @@ const OrdenList = (props) => {
             </Button>
           </DialogActions>
         </Dialog>
-        
+
         <Dialog
           id="popupFase"
           open={openDialogFase}
@@ -1223,6 +1274,10 @@ const OrdenList = (props) => {
             console.log("handleSelect ", id, row);
             dispatch(setLoading(true));
             await getPdfFile([id]);
+          }}
+          getAudit={async (row) => {
+            setAudit(row.Audits);
+            setOpenDialogA(true);
           }}
           delete={
             currentUser?.auth?.roles.find(
@@ -1630,9 +1685,14 @@ const OrdenList = (props) => {
               </>
             )
           }
-          extraRowButtons={currentUser?.auth?.roles.find(
-            (rol) => rol.name == "admin" || rol.name == "supervisor"
-          ) !== undefined ? showRowButtons : null}
+          extraRowButtons={
+            currentUser?.auth?.roles.find(
+              (rol) => rol.name == "admin" || rol.name == "supervisor"
+            ) !== undefined
+              ? showRowButtons
+              : null
+          }
+          audit={true}
         />
       </Card>
     </div>
