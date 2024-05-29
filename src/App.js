@@ -203,505 +203,512 @@ function App() {
     dispatch(setRows(10));
   };
 
-  return (
-    <div className="App">
-      {isLoading && <Loading />}
-      <AppBar position="fixed" sx={{ background: "white" }}>
-        {currentUser.isLoggedIn /* && currentUser.auth?.reset_password == 0 */ && (
-          <Grid container justify="flex-end" alignItems="center">
-            <Grid item sm={8}></Grid>
-            <Grid item sm={3} sx={{ textAlign: "right" }}>
-              <Typography
-                variant="subtitle2"
-                component="div"
-                sx={{ flexGrow: 1, color: "black" }}
-              >
-                {currentUser.auth.persona.fullName}
-              </Typography>
+  if (!currentUser?.isLoggedIn) {
+    return (
+      <div className="login-container">
+        <Login />
+      </div>
+    );
+  } else {
+    return (
+      <div className="App">
+        {isLoading && <Loading />}
+        <AppBar position="fixed" sx={{ background: "white" }}>
+          {currentUser.isLoggedIn /* && currentUser.auth?.reset_password == 0 */ && (
+            <Grid container justify="flex-end" alignItems="center">
+              <Grid item sm={8}></Grid>
+              <Grid item sm={3} sx={{ textAlign: "right" }}>
+                <Typography
+                  variant="subtitle2"
+                  component="div"
+                  sx={{ flexGrow: 1, color: "black" }}
+                >
+                  {currentUser.auth.persona.fullName}
+                </Typography>
+              </Grid>
+              <Grid item sm={1}>
+                <IconButton size="large" onClick={cerrarSesion} color="black">
+                  <Logout />
+                </IconButton>
+              </Grid>
             </Grid>
-            <Grid item sm={1}>
-              <IconButton size="large" onClick={cerrarSesion} color="black">
-                <Logout />
-              </IconButton>
-            </Grid>
-          </Grid>
-        )}
-      </AppBar>
-      <Drawer className="navSide" variant="permanent" open={open}>
-        <DrawerHeader>
-          <Link to={"/"} className="nav-link">
-            <img
-              src={logo}
-              alt="Goya Express Delivery"
-              loading="lazy"
-              width={150}
-              style={{
-                opacity: open ? 1 : 0,
-                filter:
-                  "drop-shadow(0.5px 0 0 white) drop-shadow(0 0.5px 0 white) drop-shadow(-0.5px 0 0 white) drop-shadow(0 -0.5px 0 white)",
-              }}
-            />
-          </Link>
-          <IconButton
-            onClick={open ? handleDrawerClose : handleDrawerOpen}
-            sx={{ color: "white" }}
-          >
-            {open ? <ChevronLeft /> : <ChevronRight />}
-          </IconButton>
-        </DrawerHeader>
-        <Divider sx={{ color: "white" }} />
-
-        {currentUser.isLoggedIn && currentUser.auth?.reset_password == 0 && (
-          <List>
-            <ListItem
-              key={"dashboard"}
-              onClick={() => {
-                navigate("/");
-              }}
-              disablePadding
-              sx={{ display: "block" }}
-            >
-              <ListItemButton
-                sx={{
-                  minHeight: 48,
-                  justifyContent: open ? "initial" : "center",
-                  px: 2.5,
+          )}
+        </AppBar>
+        <Drawer className="navSide" variant="permanent" open={open}>
+          <DrawerHeader>
+            <Link to={"/"} className="nav-link">
+              <img
+                src={logo}
+                alt="Goya Express Delivery"
+                loading="lazy"
+                width={150}
+                style={{
+                  opacity: open ? 1 : 0,
+                  filter:
+                    "drop-shadow(0.5px 0 0 white) drop-shadow(0 0.5px 0 white) drop-shadow(-0.5px 0 0 white) drop-shadow(0 -0.5px 0 white)",
                 }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : "auto",
-                    justifyContent: "center",
-                    color: "white",
-                    paddingRight: "10px",
-                    width: 35,
-                  }}
-                >
-                  <Dashboard />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Dashboard"
-                  sx={{ opacity: open ? 1 : 0 }}
-                />
-              </ListItemButton>
-            </ListItem>
-            <ListItem
-              key={"orden"}
-              onClick={() => {
-                setInit();
-                navigate("/orden");
-              }}
-              disablePadding
-              sx={{ display: "block" }}
+              />
+            </Link>
+            <IconButton
+              onClick={open ? handleDrawerClose : handleDrawerOpen}
+              sx={{ color: "white" }}
             >
-              <ListItemButton
-                sx={{
-                  minHeight: 48,
-                  justifyContent: open ? "initial" : "center",
-                  px: 2.5,
+              {open ? <ChevronLeft /> : <ChevronRight />}
+            </IconButton>
+          </DrawerHeader>
+          <Divider sx={{ color: "white" }} />
+
+          {currentUser.isLoggedIn && currentUser.auth?.reset_password == 0 && (
+            <List>
+              <ListItem
+                key={"dashboard"}
+                onClick={() => {
+                  navigate("/");
                 }}
+                disablePadding
+                sx={{ display: "block" }}
               >
-                <ListItemIcon
+                <ListItemButton
                   sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : "auto",
-                    justifyContent: "center",
-                    paddingRight: "10px",
-                    width: 35,
+                    minHeight: 48,
+                    justifyContent: open ? "initial" : "center",
+                    px: 2.5,
                   }}
                 >
-                  <ListAlt />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Ordenes"
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: open ? 3 : "auto",
+                      justifyContent: "center",
+                      color: "white",
+                      paddingRight: "10px",
+                      width: 35,
+                    }}
+                  >
+                    <Dashboard />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Dashboard"
+                    sx={{ opacity: open ? 1 : 0 }}
+                  />
+                </ListItemButton>
+              </ListItem>
+              <ListItem
+                key={"orden"}
+                onClick={() => {
+                  setInit();
+                  navigate("/orden");
+                }}
+                disablePadding
+                sx={{ display: "block" }}
+              >
+                <ListItemButton
                   sx={{
-                    opacity: open ? 1 : 0,
+                    minHeight: 48,
+                    justifyContent: open ? "initial" : "center",
+                    px: 2.5,
                   }}
-                />
-              </ListItemButton>
-            </ListItem>
-            {currentUser.auth?.roles.find(
-              (rol) =>
-                rol.name == "admin" ||
-                rol.name == "mensajero" ||
-                rol.name == "supervisor"
-            ) !== undefined && (
-              <>
-                <ListItem
-                  key={"asignar"}
-                  onClick={() => {
-                    setInit();
-                    navigate("/asignarqr");
-                  }}
-                  disablePadding
-                  sx={{ display: "block" }}
                 >
-                  <ListItemButton
+                  <ListItemIcon
                     sx={{
-                      minHeight: 48,
-                      justifyContent: open ? "initial" : "center",
-                      px: 2.5,
+                      minWidth: 0,
+                      mr: open ? 3 : "auto",
+                      justifyContent: "center",
+                      paddingRight: "10px",
+                      width: 35,
                     }}
                   >
-                    <ListItemIcon
-                      sx={{
-                        minWidth: 0,
-                        mr: open ? 3 : "auto",
-                        justifyContent: "center",
-                        color: "white",
-                        paddingRight: "10px",
-                        width: 35,
-                      }}
-                    >
-                      <QrCode2 />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Asignar"
-                      sx={{ opacity: open ? 1 : 0 }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-                <ListItem
-                  key={"scanqr"}
-                  onClick={() => {
-                    setInit();
-                    navigate("/scanqr");
-                  }}
-                  disablePadding
-                  sx={{ display: "block" }}
-                >
-                  <ListItemButton
+                    <ListAlt />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Ordenes"
                     sx={{
-                      minHeight: 48,
-                      justifyContent: open ? "initial" : "center",
-                      px: 2.5,
+                      opacity: open ? 1 : 0,
                     }}
+                  />
+                </ListItemButton>
+              </ListItem>
+              {currentUser.auth?.roles.find(
+                (rol) =>
+                  rol.name == "admin" ||
+                  rol.name == "mensajero" ||
+                  rol.name == "supervisor"
+              ) !== undefined && (
+                <>
+                  <ListItem
+                    key={"asignar"}
+                    onClick={() => {
+                      setInit();
+                      navigate("/asignarqr");
+                    }}
+                    disablePadding
+                    sx={{ display: "block" }}
                   >
-                    <ListItemIcon
+                    <ListItemButton
                       sx={{
-                        minWidth: 0,
-                        mr: open ? 3 : "auto",
-                        justifyContent: "center",
-                        color: "white",
-                        paddingRight: "10px",
-                        width: 35,
+                        minHeight: 48,
+                        justifyContent: open ? "initial" : "center",
+                        px: 2.5,
                       }}
                     >
-                      <QrCodeScanner />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Escanear QR"
-                      sx={{ opacity: open ? 1 : 0 }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              </>
-            )}
-            {currentUser.auth?.roles.find(
-              (rol) =>
-                rol.name ==
-                "admin" /* || rol.name == "empresa" || rol.name == "empresaLectura" */
-            ) !== undefined && (
-              <>
-                <ListItem
-                  key={"persona"}
-                  onClick={() => {
-                    setInit();
-                    navigate("/persona");
-                  }}
-                  disablePadding
-                  sx={{ display: "block" }}
-                >
-                  <ListItemButton
-                    sx={{
-                      minHeight: 48,
-                      justifyContent: open ? "initial" : "center",
-                      px: 2.5,
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : "auto",
+                          justifyContent: "center",
+                          color: "white",
+                          paddingRight: "10px",
+                          width: 35,
+                        }}
+                      >
+                        <QrCode2 />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Asignar"
+                        sx={{ opacity: open ? 1 : 0 }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem
+                    key={"scanqr"}
+                    onClick={() => {
+                      setInit();
+                      navigate("/scanqr");
                     }}
+                    disablePadding
+                    sx={{ display: "block" }}
                   >
-                    <ListItemIcon
+                    <ListItemButton
                       sx={{
-                        minWidth: 0,
-                        mr: open ? 3 : "auto",
-                        justifyContent: "center",
-                        color: "white",
-                        paddingRight: "10px",
-                        width: 35,
+                        minHeight: 48,
+                        justifyContent: open ? "initial" : "center",
+                        px: 2.5,
                       }}
                     >
-                      <AccountCircle />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Personas"
-                      sx={{ opacity: open ? 1 : 0 }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-                <ListItem
-                  key={"usuario"}
-                  onClick={() => {
-                    setInit();
-                    navigate("/usuario");
-                  }}
-                  disablePadding
-                  sx={{ display: "block" }}
-                >
-                  <ListItemButton
-                    sx={{
-                      minHeight: 48,
-                      justifyContent: open ? "initial" : "center",
-                      px: 2.5,
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : "auto",
+                          justifyContent: "center",
+                          color: "white",
+                          paddingRight: "10px",
+                          width: 35,
+                        }}
+                      >
+                        <QrCodeScanner />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Escanear QR"
+                        sx={{ opacity: open ? 1 : 0 }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                </>
+              )}
+              {currentUser.auth?.roles.find(
+                (rol) =>
+                  rol.name ==
+                  "admin" /* || rol.name == "empresa" || rol.name == "empresaLectura" */
+              ) !== undefined && (
+                <>
+                  <ListItem
+                    key={"persona"}
+                    onClick={() => {
+                      setInit();
+                      navigate("/persona");
                     }}
+                    disablePadding
+                    sx={{ display: "block" }}
                   >
-                    <ListItemIcon
+                    <ListItemButton
                       sx={{
-                        minWidth: 0,
-                        mr: open ? 3 : "auto",
-                        justifyContent: "center",
-                        color: "white",
-                        paddingRight: "10px",
-                        width: 35,
+                        minHeight: 48,
+                        justifyContent: open ? "initial" : "center",
+                        px: 2.5,
                       }}
                     >
-                      <AssignmentInd />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Usuarios"
-                      sx={{ opacity: open ? 1 : 0 }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              </>
-            )}
-            {currentUser.auth?.roles.find((rol) => rol.name == "admin") !==
-              undefined && (
-              <>
-                <ListItem
-                  key={"empresa"}
-                  onClick={() => {
-                    setInit();
-                    navigate("/empresa");
-                  }}
-                  disablePadding
-                  sx={{ display: "block" }}
-                >
-                  <ListItemButton
-                    sx={{
-                      minHeight: 48,
-                      justifyContent: open ? "initial" : "center",
-                      px: 2.5,
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : "auto",
+                          justifyContent: "center",
+                          color: "white",
+                          paddingRight: "10px",
+                          width: 35,
+                        }}
+                      >
+                        <AccountCircle />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Personas"
+                        sx={{ opacity: open ? 1 : 0 }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem
+                    key={"usuario"}
+                    onClick={() => {
+                      setInit();
+                      navigate("/usuario");
                     }}
+                    disablePadding
+                    sx={{ display: "block" }}
                   >
-                    <ListItemIcon
+                    <ListItemButton
                       sx={{
-                        minWidth: 0,
-                        mr: open ? 3 : "auto",
-                        justifyContent: "center",
-                        paddingRight: "10px",
-                        width: 35,
+                        minHeight: 48,
+                        justifyContent: open ? "initial" : "center",
+                        px: 2.5,
                       }}
                     >
-                      <Business />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Empresas"
-                      sx={{
-                        opacity: open ? 1 : 0,
-                      }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-                <ListItem
-                  key={"ciudad"}
-                  onClick={() => {
-                    setInit();
-                    navigate("/ciudad");
-                  }}
-                  disablePadding
-                  sx={{ display: "block" }}
-                >
-                  <ListItemButton
-                    sx={{
-                      minHeight: 48,
-                      justifyContent: open ? "initial" : "center",
-                      px: 2.5,
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : "auto",
+                          justifyContent: "center",
+                          color: "white",
+                          paddingRight: "10px",
+                          width: 35,
+                        }}
+                      >
+                        <AssignmentInd />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Usuarios"
+                        sx={{ opacity: open ? 1 : 0 }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                </>
+              )}
+              {currentUser.auth?.roles.find((rol) => rol.name == "admin") !==
+                undefined && (
+                <>
+                  <ListItem
+                    key={"empresa"}
+                    onClick={() => {
+                      setInit();
+                      navigate("/empresa");
                     }}
+                    disablePadding
+                    sx={{ display: "block" }}
                   >
-                    <ListItemIcon
+                    <ListItemButton
                       sx={{
-                        minWidth: 0,
-                        mr: open ? 3 : "auto",
-                        justifyContent: "center",
-                        paddingRight: "10px",
-                        width: 35,
+                        minHeight: 48,
+                        justifyContent: open ? "initial" : "center",
+                        px: 2.5,
                       }}
                     >
-                      <HolidayVillage />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Ciudades"
-                      sx={{
-                        opacity: open ? 1 : 0,
-                      }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-                <ListItem
-                  key={"estado"}
-                  onClick={() => {
-                    setInit();
-                    navigate("/estado");
-                  }}
-                  disablePadding
-                  sx={{ display: "block" }}
-                >
-                  <ListItemButton
-                    sx={{
-                      minHeight: 48,
-                      justifyContent: open ? "initial" : "center",
-                      px: 2.5,
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : "auto",
+                          justifyContent: "center",
+                          paddingRight: "10px",
+                          width: 35,
+                        }}
+                      >
+                        <Business />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Empresas"
+                        sx={{
+                          opacity: open ? 1 : 0,
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem
+                    key={"ciudad"}
+                    onClick={() => {
+                      setInit();
+                      navigate("/ciudad");
                     }}
+                    disablePadding
+                    sx={{ display: "block" }}
                   >
-                    <ListItemIcon
+                    <ListItemButton
                       sx={{
-                        minWidth: 0,
-                        mr: open ? 3 : "auto",
-                        justifyContent: "center",
-                        paddingRight: "10px",
-                        width: 35,
+                        minHeight: 48,
+                        justifyContent: open ? "initial" : "center",
+                        px: 2.5,
                       }}
                     >
-                      <Approval />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Estados"
-                      sx={{
-                        opacity: open ? 1 : 0,
-                      }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-                <ListItem
-                  key={"servicio"}
-                  onClick={() => {
-                    setInit();
-                    navigate("/servicio");
-                  }}
-                  disablePadding
-                  sx={{ display: "block" }}
-                >
-                  <ListItemButton
-                    sx={{
-                      minHeight: 48,
-                      justifyContent: open ? "initial" : "center",
-                      px: 2.5,
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : "auto",
+                          justifyContent: "center",
+                          paddingRight: "10px",
+                          width: 35,
+                        }}
+                      >
+                        <HolidayVillage />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Ciudades"
+                        sx={{
+                          opacity: open ? 1 : 0,
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem
+                    key={"estado"}
+                    onClick={() => {
+                      setInit();
+                      navigate("/estado");
                     }}
+                    disablePadding
+                    sx={{ display: "block" }}
                   >
-                    <ListItemIcon
+                    <ListItemButton
                       sx={{
-                        minWidth: 0,
-                        mr: open ? 3 : "auto",
-                        justifyContent: "center",
-                        paddingRight: "10px",
-                        width: 35,
+                        minHeight: 48,
+                        justifyContent: open ? "initial" : "center",
+                        px: 2.5,
                       }}
                     >
-                      <DisplaySettings />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Servicios"
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : "auto",
+                          justifyContent: "center",
+                          paddingRight: "10px",
+                          width: 35,
+                        }}
+                      >
+                        <Approval />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Estados"
+                        sx={{
+                          opacity: open ? 1 : 0,
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem
+                    key={"servicio"}
+                    onClick={() => {
+                      setInit();
+                      navigate("/servicio");
+                    }}
+                    disablePadding
+                    sx={{ display: "block" }}
+                  >
+                    <ListItemButton
                       sx={{
-                        opacity: open ? 1 : 0,
+                        minHeight: 48,
+                        justifyContent: open ? "initial" : "center",
+                        px: 2.5,
                       }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              </>
-            )}
-          </List>
-        )}
-      </Drawer>
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : "auto",
+                          justifyContent: "center",
+                          paddingRight: "10px",
+                          width: 35,
+                        }}
+                      >
+                        <DisplaySettings />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Servicios"
+                        sx={{
+                          opacity: open ? 1 : 0,
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                </>
+              )}
+            </List>
+          )}
+        </Drawer>
 
-      <Modal
-        show={isModalOpen}
-        onHide={handleClose}
-        aria-labelledby="contained-modal-title-vcenter"
-        centered
-        style={{
-          zIndex: 2500,
-        }}
-      >
-        <Modal.Header closeButton onClick={handleCloseModal}>
-          <Modal.Title>{currentMessage.title}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>{currentMessage.msg}</Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={handleCloseModal}
-            color={currentMessage.error ? "error" : "inherit"}
-          >
-            Cerrar
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      <div
-        className="mt-2"
-        style={{
-          marginLeft: open ? drawerWidth : 65,
-          marginTop: "0px !important",
-          background: "#efefef",
-          minHeight: "100vh",
-        }}
-      >
-        {/* <DrawerHeader /> */}
-        <Box
-          className="main-box"
-          component="main"
-          sx={{
-            flexGrow: 1,
-            p: 3,
-            width: { sm: `calc(100% )` },
-            /* height: "calc(100vh - 100px)", */
-            overflowY: "auto",
-            marginTop: "40px",
+        <Modal
+          show={isModalOpen}
+          onHide={handleClose}
+          aria-labelledby="contained-modal-title-vcenter"
+          centered
+          style={{
+            zIndex: 2500,
           }}
         >
-          <Routes>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/changepassword" element={<ChangePassword />} />
-            <Route path="/persona" element={<PersonaList />} />
-            <Route path="/persona/add" element={<AddPersona />} />
-            <Route path="/persona/:id" element={<Persona />} />
-            <Route path="/usuario" element={<UsuarioList />} />
-            <Route path="/usuario/add" element={<AddUsuario />} />
-            <Route path="/usuario/:id" element={<Usuario />} />
-            <Route path="/empresa" element={<EmpresaList />} />
-            <Route path="/empresa/add" element={<AddEmpresa />} />
-            <Route path="/empresa/:id" element={<Empresa />} />
-            <Route path="/ciudad" element={<CiudadList />} />
-            <Route path="/ciudad/add" element={<AddCiudad />} />
-            <Route path="/ciudad/:id" element={<Ciudad />} />
-            <Route path="/estado" element={<FaseList />} />
-            <Route path="/estado/add" element={<AddFase />} />
-            <Route path="/estado/:id" element={<Fase />} />
-            <Route path="/servicio" element={<ServicioList />} />
-            <Route path="/servicio/add" element={<AddServicio />} />
-            <Route path="/servicio/:id" element={<Servicio />} />
-            <Route path="/orden" element={<OrdenList />} />
-            <Route path="/orden/add" element={<AddOrden />} />
-            <Route path="/orden/:id" element={<Orden />} />
-            <Route path="/asignarqr" element={<AsignarXqr />} />
-            <Route path="/scanqr" element={<QrReader />} />
-            <Route path="/recibo/:guia" element={<Recibo />} />
-          </Routes>
-        </Box>
+          <Modal.Header closeButton onClick={handleCloseModal}>
+            <Modal.Title>{currentMessage.title}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{currentMessage.msg}</Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="secondary"
+              onClick={handleCloseModal}
+              color={currentMessage.error ? "error" : "inherit"}
+            >
+              Cerrar
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        <div
+          className="mt-2"
+          style={{
+            marginLeft: open ? drawerWidth : 65,
+            marginTop: "0px !important",
+            background: "#efefef",
+            minHeight: "100vh",
+          }}
+        >
+          {/* <DrawerHeader /> */}
+          <Box
+            className="main-box"
+            component="main"
+            sx={{
+              flexGrow: 1,
+              p: 3,
+              width: { sm: `calc(100% )` },
+              /* height: "calc(100vh - 100px)", */
+              overflowY: "auto",
+              marginTop: "40px",
+            }}
+          >
+            <Routes>
+              <Route path="/" element={<DashboardPage />} />
+              <Route path="/changepassword" element={<ChangePassword />} />
+              <Route path="/persona" element={<PersonaList />} />
+              <Route path="/persona/add" element={<AddPersona />} />
+              <Route path="/persona/:id" element={<Persona />} />
+              <Route path="/usuario" element={<UsuarioList />} />
+              <Route path="/usuario/add" element={<AddUsuario />} />
+              <Route path="/usuario/:id" element={<Usuario />} />
+              <Route path="/empresa" element={<EmpresaList />} />
+              <Route path="/empresa/add" element={<AddEmpresa />} />
+              <Route path="/empresa/:id" element={<Empresa />} />
+              <Route path="/ciudad" element={<CiudadList />} />
+              <Route path="/ciudad/add" element={<AddCiudad />} />
+              <Route path="/ciudad/:id" element={<Ciudad />} />
+              <Route path="/estado" element={<FaseList />} />
+              <Route path="/estado/add" element={<AddFase />} />
+              <Route path="/estado/:id" element={<Fase />} />
+              <Route path="/servicio" element={<ServicioList />} />
+              <Route path="/servicio/add" element={<AddServicio />} />
+              <Route path="/servicio/:id" element={<Servicio />} />
+              <Route path="/orden" element={<OrdenList />} />
+              <Route path="/orden/add" element={<AddOrden />} />
+              <Route path="/orden/:id" element={<Orden />} />
+              <Route path="/asignarqr" element={<AsignarXqr />} />
+              <Route path="/scanqr" element={<QrReader />} />
+              <Route path="/recibo/:guia" element={<Recibo />} />
+            </Routes>
+          </Box>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
 
 export default App;
