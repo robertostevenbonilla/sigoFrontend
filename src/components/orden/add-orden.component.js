@@ -138,7 +138,17 @@ const AddOrden = () => {
       var guia = response.codigo + (response.Guias * 1 + 1);
       console.log("guia", response, guia);
       //setForm({ ...form, [id]: value });
-      setForm({ ...form, [id]: value, guia: guia, costo: response.costo });
+      setForm({
+        ...form,
+        [id]: value,
+        guia: guia,
+        costo: response.costo,
+        origen: response.nombre,
+        direccionOrigen: response.direccion,
+        remitente: response.nombre,
+        telefonoRemitente: response.telefono,
+        ciudadOrigenId: response.ciudadId,
+      });
     } else if (id === "empresaId" && value <= 0) {
       setForm({ ...form, [id]: value, guia: "" });
     } else {
