@@ -1019,11 +1019,11 @@ const OrdenList = (props) => {
                 <List>
                   {audits.map((auditRow) => {
                     const cambio = JSON.parse(auditRow.cambio);
-                    console.log(cambio);
+                    console.log("Audit",cambio,faseSelect,motorizadoSelect);
                     return (
                       <ListItem>
                         <strong>{auditRow.usuario.persona.fullName} </strong>
-                        {cambio?.faseId !== null ? " - "+faseSelect.find(x => x.id = cambio.faseId).nombre : " - Quito estado"}
+                        {cambio?.faseId !== null ? " - "+faseSelect.find(x => x.id = cambio.faseId)?.nombre : " - Quito estado"}
                         {cambio?.mensajeroId !== null ? " - "+motorizadoSelect.find(x => { console.log(x); return x.id = cambio.mensajeroId})?.fullname : " - Quito mensajero"}
                       </ListItem>
                     );
