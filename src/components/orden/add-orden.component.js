@@ -146,7 +146,7 @@ const AddOrden = () => {
         origen: response.nombre,
         direccionOrigen: response.direccion,
         remitente: response.nombre,
-        telefonoRemitente: response.telefono,
+        telefonoRemitente: response.telefono === null ? ' ' : response.telefono,
         ciudadOrigenId: response.ciudadId,
       });
     } else if (id === "empresaId" && value <= 0) {
