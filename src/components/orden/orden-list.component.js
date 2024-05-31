@@ -290,7 +290,7 @@ const OrdenList = (props) => {
   const [openDialogXLS, setOpenDialogXLS] = useState(false);
   const [openDialogReport, setOpenDialogReport] = useState(false);
   const [openDialogFase, setOpenDialogFase] = useState(false);
-  const [morotizadoId, setMorotizadoId] = useState(-1);
+  const [motorizadoId, setMotorizadoId] = useState(-1);
   const [empresaUpId, setEmpresaUpId] = useState(-1);
   const [faseUpId, setFaseUpId] = useState(-1);
   const [audits, setAudit] = useState([]);
@@ -409,10 +409,10 @@ const OrdenList = (props) => {
 
   const handleInputChangeM = async (event) => {
     const { id, value } = event.target;
-    console.log(form, event.target, id, value);
+  console.log('handleInputChangeM',form, event.target, id, value);
     switch (id) {
       case "motorizadoId":
-        setMorotizadoId(value);
+        setMotorizadoId(value);
         break;
       case "fasePId":
         setFaseUpId(value);
@@ -658,7 +658,7 @@ const OrdenList = (props) => {
     let guias = selectedObj.map((registro) => registro.guia);
     const dataM = {
       guias: guias,
-      mensajeroId: morotizadoId,
+      mensajeroId: motorizadoId,
     };
     console.log(dataM);
     OrdenDataService.asignar(dataM)
@@ -731,7 +731,7 @@ const OrdenList = (props) => {
   };
 
   const handleCloseDialog = () => {
-    setMorotizadoId(-1);
+    setMotorizadoId(-1);
     setFaseUpId(-1);
     setAudit([]);
     setOpenDialog(false);
@@ -1004,7 +1004,7 @@ const OrdenList = (props) => {
         className="text-start"
       >
         <Dialog
-          id="popupMotorizada"
+          id="popupHistorial"
           open={openDialogA}
           onClose={handleCloseDialog}
           aria-labelledby="alert-dialog-title"
@@ -1019,12 +1019,14 @@ const OrdenList = (props) => {
                 <List>
                   {audits.map((auditRow) => {
                     const cambio = JSON.parse(auditRow.cambio);
-                    console.log("Audit",cambio,faseSelect,motorizadoSelect);
+                    const faseList = faseSelect;
+                    const mensajeroList = motorizadoSelect;
+                    console.log("Audit",cambio,faseList,mensajeroList);
                     return (
                       <ListItem>
                         <strong>{auditRow.usuario.persona.fullName} </strong>
-                        {cambio?.faseId !== null ? " - "+faseSelect.find(x => x.id = cambio.faseId)?.nombre : " - Quito estado"}
-                        {cambio?.mensajeroId !== null ? " - "+motorizadoSelect.find(x => { console.log(x); return x.id = cambio.mensajeroId})?.fullname : " - Quito mensajero"}
+                        {cambio?.faseId !== undefined && (cambio?.faseId !== null ? " - "+faseList.find(x => x.id === cambio.faseId)?.nombre : " - Quito estado")}
+                        {cambio?.mensajeroId !== undefined && (cambio?.mensajeroId !== null ? " - "+mensajeroList.find(x => x.id === cambio.mensajeroId)?.fullname : " - Quito mensajero")}
                       </ListItem>
                     );
                   })}
@@ -1057,9 +1059,9 @@ const OrdenList = (props) => {
                     { id: -1, fullname: "Seleccione un motorizado" },
                     ...motorizadoSelect,
                   ]}
-                  value={morotizadoId}
+                  value={motorizadoId}
                   placeholder={"Seleccione un motorizado"}
-                  id={"morotizadoId"}
+                  id={"motorizadoId"}
                   name={"motorizadoId"}
                   label={"Motorizado"}
                   getOptionLabel={"fullname"}

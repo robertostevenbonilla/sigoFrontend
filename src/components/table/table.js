@@ -325,7 +325,7 @@ function EnhancedTableRow(props) {
           return value
             ? moment(
                 value[value.length - 1] === "Z" ? value.slice(0, -1) : value
-              ).format("YYYY-MM-DD hh:mm:ss")
+              ).format("YYYY-MM-DD HH:mm:ss")
             : "--";
         case "price":
           return value?.toLocaleString("en-US", {

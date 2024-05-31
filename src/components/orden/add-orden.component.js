@@ -269,7 +269,7 @@ const AddOrden = () => {
           <div>
             <h4>Se ha enviado correctamente!</h4>
             <button className="btn btn-success" onClick={newUsuario}>
-              Add
+              Agregar otra
             </button>
           </div>
         ) : (

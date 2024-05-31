@@ -124,7 +124,7 @@ const AddFase = () => {
             <h4>Se ha enviado correctamente!</h4>
             <p>{form.nombre}</p>
             <button className="btn btn-success" onClick={newUsuario}>
-              Add
+              Agregar otro
             </button>
           </div>
         ) : (

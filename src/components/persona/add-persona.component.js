@@ -122,7 +122,7 @@ const AddPersona = () => {
             <h4>Se ha enviado correctamente!</h4>
             <p>{form.fullName}</p>
             <button className="btn btn-success" onClick={newPersona}>
-              Add
+              Agregar otra
             </button>
           </div>
         ) : (
