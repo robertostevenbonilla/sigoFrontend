@@ -5,7 +5,7 @@ import { usuarioForm } from "../../helpers/forms";
 import { UserAuth } from "../../actions/auth";
 import PersonaDataService from "../../services/persona.service";
 import { SearchInput } from "../form/AutoCompleteInput";
-import { Button, Container, Grid, OutlinedInput, TextField } from "@mui/material";
+import { Button, Grid, OutlinedInput, TextField } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import { Card } from "../Card";
 import { AssignmentInd } from "@mui/icons-material";
@@ -89,7 +89,7 @@ const AddUsuario = () => {
           <h4>Se ha enviado correctamente!</h4>
           <p>{form.fullName}</p>
           <button className="btn btn-success" onClick={newUsuario}>
-            Add
+            Agregar otro
           </button>
         </div>
       ) : (
@@ -130,7 +130,7 @@ const AddUsuario = () => {
           </Grid>
           <Grid item md={6} sm={6} xs={12}>
             <SelectInput
-              data={(currentUser.auth?.roles.find((rol) => rol.name == "admin") !== undefined) ? [
+              data={(currentUser.auth?.roles.find((rol) => rol.name === "admin") !== undefined) ? [
                 { value: "admin", text: "Administrador" },
                 { value: "empresa", text: "Empresa" },
                 { value: "supervisor", text: "Supervisor" },

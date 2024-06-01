@@ -66,6 +66,12 @@ const evidencia = async (file, id) => {
   return await http.post(`/evidencia/orden/${id}`, formData, { headers: {...header(), 'Content-type': 'multipart/form-data'} });
 }
 
+const evidenciaInc = async (file, id) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return await http.post(`/evidencia/incidencia/${id}`, formData, { headers: {...header(), 'Content-type': 'multipart/form-data'} });
+}
+
 const incidencia = async (data) => {
   return await http.post("/incidencia/create", data, { headers: {...header()} });
 };
@@ -98,6 +104,7 @@ const OrdenDataService = {
   serviceCount,
   getByGuia,
   evidencia,
+  evidenciaInc,
   incidencia,
   bulkcreate,
   getReporteGuia,

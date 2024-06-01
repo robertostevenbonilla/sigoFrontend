@@ -2,22 +2,16 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import OrdenDataService from "../../services/orden.service";
-import FaseDataService from "../../services/fase.service";
 import {
-  Close,
   CloudUpload,
   EventNote,
   Info,
   ListAlt,
-  QrCodeScanner,
-  Save,
 } from "@mui/icons-material";
 import { Card } from "../Card";
 import {
-  Box,
   Button,
   Divider,
-  FormControlLabel,
   Grid,
   IconButton,
   ImageList,
@@ -26,29 +20,14 @@ import {
   List,
   ListItem,
   ListItemText,
-  Paper,
-  Switch,
   TextField,
   Typography,
   styled,
 } from "@mui/material";
-import { SearchInput } from "../form/AutoCompleteInput";
 import { setMessage, setOpenModal } from "../../reducers/message";
 
-import UsuarioDataService from "../../services/usuario.service";
 import moment from "moment";
-
-const VisuallyHiddenInput = styled("input")({
-  clip: "rect(0 0 0 0)",
-  clipPath: "inset(50%)",
-  height: 1,
-  overflow: "hidden",
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  whiteSpace: "nowrap",
-  width: 1,
-});
+import { setLoading } from "../../reducers/ui";
 
 const Recibo = (props) => {
   const { guia } = useParams();
@@ -61,8 +40,6 @@ const Recibo = (props) => {
   const [isLoad, setIsLoad] = useState(false);
   const [form, setForm] = useState({ incidencia: "", evidencias: [] });
   const [fileForm, setFile] = useState(null);
-  const [imgID, setImageID] = useState([]);
-  const [imgURL, setImageURL] = useState([]);
   const [checked, setChecked] = useState(false);
   const [incidenciasList, setIncidenciasList] = useState([]);
 
@@ -88,12 +65,6 @@ const Recibo = (props) => {
       .then((response) => {
         if (Object.keys(response.data).length > 0) {
           setOrden({ ...response.data });
-          setImageID(
-            response.data.Evidencias.map((i, v) => {
-              return i.id;
-            })
-          );
-          setImageURL(response.data.Evidencias);
           setIsLoad(true);
           setIncidenciasList(response.data.Incidencias);
         } else {
@@ -118,40 +89,45 @@ const Recibo = (props) => {
   };
 
   const handleEvidencia = (event) => {
-    const file = event.target.files[0];
+    const file = event.target.files;
     console.log(file);
     setFile(file);
   };
 
-  const saveEvidencia = (event) => {
-    console.log(fileForm, orden.id);
-    OrdenDataService.evidencia(fileForm, orden.id)
-      .then((response) => {
-        console.log(response.data);
-        setImageID([response.data.id, ...imgID]);
-        setImageURL([response.data, ...imgURL]);
-      })
-      .catch((e) => {
-        console.log(e);
-      });
+  const saveEvidencia = async (incidenciaList) => {
+    let ite = 0;
+    Array.from(fileForm).forEach(async (file) => {
+      const response = await OrdenDataService.evidenciaInc(
+        file,
+        incidenciaList.id
+      );
+      incidenciaList["evidencias"] = [
+        response.data,
+        ...incidenciaList["evidencias"],
+      ];
+      ite++;
+      if(ite === fileForm.length) {
+        setIncidenciasList((incidenciasList) => [
+          incidenciaList,
+          ...incidenciasList,
+        ]);
+        dispatch(setLoading(false));
+      }
+    });
   };
 
-  const saveIncidencia = (event) => {
+  const saveIncidencia = async (event) => {
     console.log(fileForm, orden.id);
+    dispatch(setLoading(true));
     const data = {
       ordenId: orden.id,
       userId: currentUser.auth.id,
       descripcion: form.incidencia,
       fecha: moment().format("YYYY-MM-DD hh:mm:ss"),
     };
-    OrdenDataService.incidencia(data)
-      .then((response) => {
-        console.log(response.data);
-        setIncidenciasList([response.data, ...incidenciasList]);
-      })
-      .catch((e) => {
-        console.log(e);
-      });
+    const response = await OrdenDataService.incidencia(data);
+    console.log(response.data);
+    saveEvidencia(response.data);
   };
 
   const handleChange = (event) => {
@@ -293,15 +269,9 @@ const Recibo = (props) => {
           className="text-start"
         >
           <Grid container spacing={1}>
-            <Grid item md={2} sm={2} xs={12} sx={{ margin: "auto 0" }}>
-              <FormControlLabel
-                control={<Switch checked={checked} onChange={handleChange} />}
-                label="Hay incidencia"
-              />
-            </Grid>
-            {checked && (
+            {
               <>
-                <Grid item md={6} sm={6} xs={12}>
+                <Grid item md={12} sm={12} xs={12}>
                   <TextField
                     id="incidencia"
                     name="incidencia"
@@ -310,11 +280,12 @@ const Recibo = (props) => {
                     onChange={handleInputChange}
                     variant="outlined"
                     multiline
-                    rows={4}
+                    rows={3}
                     fullWidth
+                    inputProps={{ step: 255, maxLength: 255 }}
                   />
                 </Grid>
-                <Grid item md={4} sm={4} xs={12} sx={{ margin: "auto 0" }}>
+                {/* <Grid item md={4} sm={4} xs={12} sx={{ margin: "auto 0" }}>
                   <Button
                     component="label"
                     role={undefined}
@@ -325,9 +296,9 @@ const Recibo = (props) => {
                   >
                     Guardar incidencia
                   </Button>
-                </Grid>
+                </Grid> */}
               </>
-            )}
+            }
           </Grid>
           <br />
           <Grid container spacing={1}>
@@ -335,7 +306,7 @@ const Recibo = (props) => {
               <TextField
                 type="file"
                 inputProps={{
-                  /* multiple: true, */
+                  multiple: true,
                   accept: "image/png, image/gif, image/jpeg",
                 }}
                 onChange={handleEvidencia}
@@ -349,71 +320,81 @@ const Recibo = (props) => {
                 variant="contained"
                 tabIndex={-1}
                 startIcon={<CloudUpload />}
-                onClick={saveEvidencia}
+                onClick={saveIncidencia /* saveEvidencia */}
               >
                 Guardar incidencia
               </Button>
             </Grid>
-            <Grid item md={8} sm={8} sx={12}>
-              <ImageList
-                sx={{ width: "100%", maxHeight: 450 }}
-                variant="quilted"
-                cols={3}
-                rowHeight={200}
-              >
-                {console.log(imgURL)}
-                {imgURL.map((item, key) => (
-                  <ImageListItem key={key} sx={{ objectFit: "contain" }}>
-                    <img
-                      srcSet={`${process.env.REACT_APP_IMG_URL}${item.codigo}`}
-                      src={`${process.env.REACT_APP_IMG_URL}${item.codigo}`}
-                      /* alt={item.title} */
-                      loading="lazy"
-                      style={{ objectFit: "contain" }}
-                    />
-                    <ImageListItemBar
-                      title={item.nombre}
-                      subtitle={moment(
-                        item.createdAt[item.createdAt.length - 1] === "Z"
-                          ? item.createdAt.slice(0, -1)
-                          : item.createdAt
-                      ).format("YYYY-MM-DD hh:mm:ss")}
-                      actionIcon={
-                        <IconButton
-                          sx={{ color: "rgba(255, 255, 255, 0.54)" }}
-                          aria-label={`info about ${item.title}`}
-                        >
-                          <Info />
-                        </IconButton>
-                      }
-                    />
-                  </ImageListItem>
-                ))}
-              </ImageList>
-            </Grid>
-            <Grid item md={4} sm={4} sx={12}>
+
+            <Grid item md={12} sm={12} sx={12}>
               <List dense={true}>
-                {incidenciasList.map((item, key) => (
+                {incidenciasList.length > 0 && incidenciasList.map((item, key) => (
                   <>
                     <ListItem>
                       <ListItemText
                         primary={item.descripcion}
                         secondary={
-                            <>
-                              <Typography
-                                sx={{ display: "inline" }}
-                                component="span"
-                                variant="body2"
-                                color="text.primary"
-                              >
-                                {item.usuario.persona.fullName}: 
-                              </Typography>
-                               {moment( item.createdAt[item.fecha.length - 1] === "Z"
-                              ? item.fecha.slice(0, -1) : item.fecha
-                              ).format("YYYY-MM-DD hh:mm:ss")}
-                            </>
-                          }
+                          <>
+                            <Typography
+                              sx={{ display: "inline", fontWeight: "600" }}
+                              component="span"
+                              variant="body2"
+                              color="text.primary"
+                            >
+                              {item.usuario?.persona.fullName}:{" "}
+                            </Typography>
+                            {moment(
+                              item.createdAt[item.fecha.length - 1] === "Z"
+                                ? item.fecha.slice(0, -1)
+                                : item.fecha
+                            ).format("YYYY-MM-DD HH:mm:ss")}
+                          </>
+                        }
                       />
+                    </ListItem>
+                    <ListItem>
+                      <Grid item md={12} sm={12} sx={12}>
+                        <ImageList
+                          sx={{ width: "100%", maxHeight: 450 }}
+                          variant="quilted"
+                          cols={3}
+                          rowHeight={200}
+                        >
+                          {/* {imgURL.map((item, key) => ( */}
+                          {item.evidencias.map((itemImg, keyImg) => (
+                            <ImageListItem
+                              key={`${key}-${itemImg.id}`}
+                              sx={{ objectFit: "contain" }}
+                            >
+                              <img
+                                srcSet={`${process.env.REACT_APP_IMG_URL}${itemImg.codigo}`}
+                                src={`${process.env.REACT_APP_IMG_URL}${itemImg.codigo}`}
+                                /* alt={item.title} */
+                                loading="lazy"
+                                style={{ objectFit: "contain" }}
+                              />
+                              <ImageListItemBar
+                                title={itemImg.nombre}
+                                subtitle={moment(
+                                  itemImg.createdAt[
+                                    itemImg.createdAt.length - 1
+                                  ] === "Z"
+                                    ? itemImg.createdAt.slice(0, -1)
+                                    : itemImg.createdAt
+                                ).format("YYYY-MM-DD hh:mm:ss")}
+                                actionIcon={
+                                  <IconButton
+                                    sx={{ color: "rgba(255, 255, 255, 0.54)" }}
+                                    aria-label={`info about ${itemImg.title}`}
+                                  >
+                                    <Info />
+                                  </IconButton>
+                                }
+                              />
+                            </ImageListItem>
+                          ))}
+                        </ImageList>
+                      </Grid>
                     </ListItem>
                     <Divider variant="middle" component="li" />
                   </>

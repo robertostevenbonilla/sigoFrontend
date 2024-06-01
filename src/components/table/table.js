@@ -28,6 +28,9 @@ import {
   DialogTitle,
   Grid,
   InputBase,
+  List,
+  ListItem,
+  ListItemIcon,
   MenuItem,
   Pagination,
   Select,
@@ -49,7 +52,7 @@ import moment from "moment";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 import { Stack } from "@mui/system";
-import { PictureAsPdf } from "@mui/icons-material";
+import { PictureAsPdf, TaskAlt, TrackChanges } from "@mui/icons-material";
 
 export const EllipsisTable = (props) => {
   const ref = React.useRef();
@@ -191,6 +194,7 @@ function EnhancedTableHead(props) {
     loading,
     expandibleButtonPosition,
     buttons,
+    audit,
   } = props;
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
@@ -254,6 +258,9 @@ function EnhancedTableHead(props) {
               </TableSortLabel>
             </TableCell>
           ))}
+          {audit && (
+            <TableCell>Cambios</TableCell>
+          )}
           {!disableButtons && (
             <>
               <TableCell align={"right"} sx={{ width: (150*buttons) }}></TableCell>
@@ -285,6 +292,8 @@ function EnhancedTableRow(props) {
     expandedItems,
     disableCheckboxes,
     expandibleButtonPosition,
+    audit,
+    getAudit
   } = props;
 
   const [formattedRow, setFormattedRow] = React.useState({});
@@ -316,7 +325,7 @@ function EnhancedTableRow(props) {
           return value
             ? moment(
                 value[value.length - 1] === "Z" ? value.slice(0, -1) : value
-              ).format("YYYY-MM-DD hh:mm:ss")
+              ).format("YYYY-MM-DD HH:mm:ss")
             : "--";
         case "price":
           return value?.toLocaleString("en-US", {
@@ -394,7 +403,29 @@ function EnhancedTableRow(props) {
             </TableCell>
           );
         })}
-
+        {audit && (
+            <TableCell style={{
+              padding: "3px 8px",
+            }}>
+              <Grid>
+                { row.Audits.length > 0 ?  
+                  <List>
+                    <ListItem>
+                      <ListItemIcon style={{ minWidth: 30 }} onClick={props.getAudit ? () => props.getAudit(row) : () => {return true;}}>
+                        <TrackChanges sx={{color: '#ffdd29'}} />
+                      </ListItemIcon>
+                    </ListItem>
+                  </List> : <List>
+                    <ListItem>
+                      <ListItemIcon style={{ minWidth: 30 }}>
+                        <TaskAlt color="success" />
+                      </ListItemIcon>
+                    </ListItem>
+                  </List>
+                }
+              </Grid>
+            </TableCell>
+          )}
         {!disableButtons && (
           <TableCell id={`btn${rowId}`} align="right" sx={{ width: (150*buttons.length) }}>
             <div>
@@ -713,7 +744,8 @@ export default function EnhancedTable(props) {
     setRows=null,
     pagesHandle=0,
     rowsHandle=10,
-
+    audit=false,
+    getAudit=null,
   } = props;
   const [order, setOrder] = React.useState(orderASC);
   const [orderBy, setOrderBy] = React.useState("");
@@ -1113,6 +1145,8 @@ export default function EnhancedTable(props) {
           expandedItems={expandedItems}
           buttons={getButtons(row[rowId], row)}
           expandibleButtonPosition={expandibleButtonPosition}
+          audit={audit}
+          getAudit={getAudit}
         />
       );
     });
@@ -1193,6 +1227,7 @@ export default function EnhancedTable(props) {
               loading={loading}
               expandibleButtonPosition={expandibleButtonPosition}
               buttons={countButtons()}
+              audit={audit}
             />
             <TableBody>
               {loading ? (
