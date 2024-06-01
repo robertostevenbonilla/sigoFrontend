@@ -318,7 +318,7 @@ const OrdenList = (props) => {
         console.error(error);
       });
     const mensajero =
-      currentUser?.auth?.roles.find((rol) => rol.name == "mensajero") !==
+      currentUser?.auth?.roles.find((rol) => rol.name === "mensajero") !==
       undefined
         ? true
         : false;
@@ -794,11 +794,10 @@ const OrdenList = (props) => {
       let empresaGuiaId = empresaUpId;
       if (
         currentUser.auth?.roles.find(
-          (rol) => rol.name == "admin" || rol.name == "mensajero"
+          (rol) => rol.name === "admin" || rol.name === "mensajero"
         ) === undefined
       ) {
         empresaGuiaId = currentUser.auth.persona.empresaId;
-        //console.log("otro empresaId",empresaUpId,empresaGuiaId,currentUser.auth.roles.find((rol) => rol.name == "admin" || rol.name == "mensajero"));
       }
       let orden = await EmpresaDataService.findGuia(empresaGuiaId).catch(
         (error) => {
@@ -1283,7 +1282,7 @@ const OrdenList = (props) => {
           }}
           delete={
             currentUser?.auth?.roles.find(
-              (rol) => rol.name == "mensajero" || rol.name == "supervisor"
+              (rol) => rol.name === "mensajero" || rol.name === "supervisor"
             ) !== undefined
               ? false
               : true
@@ -1689,7 +1688,7 @@ const OrdenList = (props) => {
           }
           extraRowButtons={
             currentUser?.auth?.roles.find(
-              (rol) => rol.name == "admin" || rol.name == "supervisor"
+              (rol) => rol.name === "admin" || rol.name === "supervisor"
             ) !== undefined
               ? showRowButtons
               : null

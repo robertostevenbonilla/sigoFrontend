@@ -2,22 +2,16 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import OrdenDataService from "../../services/orden.service";
-import FaseDataService from "../../services/fase.service";
 import {
-  Close,
   CloudUpload,
   EventNote,
   Info,
   ListAlt,
-  QrCodeScanner,
-  Save,
 } from "@mui/icons-material";
 import { Card } from "../Card";
 import {
-  Box,
   Button,
   Divider,
-  FormControlLabel,
   Grid,
   IconButton,
   ImageList,
@@ -26,30 +20,14 @@ import {
   List,
   ListItem,
   ListItemText,
-  Paper,
-  Switch,
   TextField,
   Typography,
   styled,
 } from "@mui/material";
-import { SearchInput } from "../form/AutoCompleteInput";
 import { setMessage, setOpenModal } from "../../reducers/message";
 
-import UsuarioDataService from "../../services/usuario.service";
 import moment from "moment";
 import { setLoading } from "../../reducers/ui";
-
-const VisuallyHiddenInput = styled("input")({
-  clip: "rect(0 0 0 0)",
-  clipPath: "inset(50%)",
-  height: 1,
-  overflow: "hidden",
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  whiteSpace: "nowrap",
-  width: 1,
-});
 
 const Recibo = (props) => {
   const { guia } = useParams();
@@ -62,8 +40,6 @@ const Recibo = (props) => {
   const [isLoad, setIsLoad] = useState(false);
   const [form, setForm] = useState({ incidencia: "", evidencias: [] });
   const [fileForm, setFile] = useState(null);
-  const [imgID, setImageID] = useState([]);
-  const [imgURL, setImageURL] = useState([]);
   const [checked, setChecked] = useState(false);
   const [incidenciasList, setIncidenciasList] = useState([]);
 
@@ -89,12 +65,6 @@ const Recibo = (props) => {
       .then((response) => {
         if (Object.keys(response.data).length > 0) {
           setOrden({ ...response.data });
-          setImageID(
-            response.data.Evidencias.map((i, v) => {
-              return i.id;
-            })
-          );
-          setImageURL(response.data.Evidencias);
           setIsLoad(true);
           setIncidenciasList(response.data.Incidencias);
         } else {
@@ -125,35 +95,25 @@ const Recibo = (props) => {
   };
 
   const saveEvidencia = async (incidenciaList) => {
-    console.log(fileForm, orden.id);
-    let filesID = [];
-    let filesURL = [];
+    let ite = 0;
     Array.from(fileForm).forEach(async (file) => {
-      const response = await OrdenDataService.evidenciaInc(file, incidenciaList.id);
-        /* .then((response) => { */
-          console.log(response.data);
-          console.log("Evidencia", response.data, incidenciaList);
-          /* const pos = incidenciasList.findIndex((x) => x.id === incidenciaList.id);
-          if (pos !== -1) { pos = 0; }
-          console.log("Imagenes", pos, incidenciaList[pos]); */
-          incidenciaList["evidencias"] = [
-            response.data,
-            ...incidenciaList["evidencias"],
-          ];
-          setIncidenciasList((incidenciasList) => [
-            incidenciaList,
-            ...incidenciasList,
-          ]);
-          console.log(incidenciasList,incidenciaList);
-          dispatch(setLoading(false));
-        /* })
-        .catch((e) => {
-          console.log(e);
-        }); */
+      const response = await OrdenDataService.evidenciaInc(
+        file,
+        incidenciaList.id
+      );
+      incidenciaList["evidencias"] = [
+        response.data,
+        ...incidenciaList["evidencias"],
+      ];
+      ite++;
+      if(ite === fileForm.length) {
+        setIncidenciasList((incidenciasList) => [
+          incidenciaList,
+          ...incidenciasList,
+        ]);
+        dispatch(setLoading(false));
+      }
     });
-    /* console.log(filesID, filesURL);
-    setImageID([...filesID]);
-    setImageURL([...filesURL]); */
   };
 
   const saveIncidencia = async (event) => {
@@ -166,17 +126,8 @@ const Recibo = (props) => {
       fecha: moment().format("YYYY-MM-DD hh:mm:ss"),
     };
     const response = await OrdenDataService.incidencia(data);
-      /* .then((response) => { */
-        console.log(response.data);
-        /* setIncidenciasList((incidenciasList) => [
-          response.data,
-          ...incidenciasList,
-        ]); */
-        saveEvidencia(response.data);
-      /* })
-      .catch((e) => {
-        console.log(e);
-      }); */
+    console.log(response.data);
+    saveEvidencia(response.data);
   };
 
   const handleChange = (event) => {
@@ -318,12 +269,6 @@ const Recibo = (props) => {
           className="text-start"
         >
           <Grid container spacing={1}>
-            {/* <Grid item md={2} sm={2} xs={12} sx={{ margin: "auto 0" }}>
-              <FormControlLabel
-                control={<Switch checked={checked} onChange={handleChange} />}
-                label="Hay incidencia"
-              />
-            </Grid> */}
             {
               <>
                 <Grid item md={12} sm={12} xs={12}>
@@ -383,7 +328,7 @@ const Recibo = (props) => {
 
             <Grid item md={12} sm={12} sx={12}>
               <List dense={true}>
-                {incidenciasList.map((item, key) => (
+                {incidenciasList.length > 0 && incidenciasList.map((item, key) => (
                   <>
                     <ListItem>
                       <ListItemText
@@ -391,7 +336,7 @@ const Recibo = (props) => {
                         secondary={
                           <>
                             <Typography
-                              sx={{ display: "inline", fontWeight: '600', }}
+                              sx={{ display: "inline", fontWeight: "600" }}
                               component="span"
                               variant="body2"
                               color="text.primary"

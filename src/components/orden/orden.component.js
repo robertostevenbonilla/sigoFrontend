@@ -9,19 +9,18 @@ import FaseDataService from "../../services/fase.service";
 import { ordenForm } from "../../helpers/forms";
 import { Card as CardContent } from "../Card";
 import {
-  AssignmentInd,
   Business,
+  CloudUpload,
   Dashboard,
   Edit,
+  EventNote,
   Info,
   ListAlt,
   Save,
 } from "@mui/icons-material";
 import {
-  Card,
   Button,
   Grid,
-  Paper,
   TextField,
   ImageListItem,
   ImageList,
@@ -33,11 +32,9 @@ import {
   Divider,
   Typography,
   Breadcrumbs,
-  Link,
   Chip,
 } from "@mui/material";
 import { SearchInput } from "../form/AutoCompleteInput";
-import { SelectInput } from "../form/SelectInput";
 import { setMessage, setOpenModal } from "../../reducers/message";
 import moment from "moment";
 import "dayjs/locale/es";
@@ -45,13 +42,14 @@ import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider, DesktopDatePicker } from "@mui/x-date-pickers";
 import UsuarioDataService from "../../services/usuario.service";
+import { setLoading } from "../../reducers/ui";
 
 const Orden = () => {
   const { id } = useParams();
   let navigate = useNavigate();
   const dispatch = useDispatch();
   const [form, setForm] = useState(ordenForm);
-  const [loading, setLoading] = useState(false);
+  /* const [loading, setLoading] = useState(false); */
   const [edited, setEdited] = useState(true);
   const [ciudadSelect, setCiudadSelect] = useState([]);
   const [empresaSelect, setEmpresaSelect] = useState([]);
@@ -59,7 +57,11 @@ const Orden = () => {
   const [motorizadoSelect, setMotorizadoSelect] = useState([]);
   const [faseSelect, setFaseSelect] = useState([]);
   const [editedSup, setEditedSup] = useState(true);
-
+  const [incidenciasList, setIncidenciasList] = useState([]);
+  const [fileForm, setFile] = useState(null);
+  const [orden, setOrden] = useState({});
+  const [eDescripcion, setEDescripcion] = useState('');
+  
   const { auth: currentUser } = useSelector((state) => state.auth);
   const { msg } = useSelector((state) => state.message);
   const { pages, rows } = useSelector((state) => state.ui);
@@ -68,7 +70,8 @@ const Orden = () => {
     OrdenDataService.get(id)
       .then((response) => {
         setForm(response.data);
-        console.log(response, response.data);
+        setIncidenciasList(response.data.Incidencias);
+        setOrden({ ...response.data });
       })
       .catch((e) => {
         console.log(e);
@@ -133,20 +136,8 @@ const Orden = () => {
 
   const handleInputChange = async (event) => {
     const { id, value } = event.target;
-    console.log(form, event.target, id, value);
-    setForm({ ...form, [id]: value });
-  };
-
-  const handleSearchInputChange = async (event) => {
-    const { name, value } = event.target;
-    console.log(form, event, name, value);
-    setForm({ ...form, [name]: [...value] });
-  };
-
-  const handleSwitchChange = (event) => {
-    const { id, checked } = event.target;
-    console.log(form, event.target, id, checked);
-    setForm({ ...form, [id]: checked });
+    if(id === 'incidencia') { setEDescripcion(value); }
+    else { setForm({ ...form, [id]: value }); }
   };
 
   const onChange = (e, name = null, value = null) => {
@@ -156,14 +147,9 @@ const Orden = () => {
     setForm({ ...form, nIdActor: 0, [inputName]: inputValue });
   };
 
-  const OnClearInput = (event) => {
-    console.log(event);
-  };
-
   const handleEdited = () => {
-    console.log("Edited", !edited, editedSup);
     if (
-      currentUser.auth?.roles.find((rol) => rol.name == "supervisor") !==
+      currentUser.auth?.roles.find((rol) => rol.name === "supervisor") !==
       undefined
     ) {
       setEditedSup(false);
@@ -202,17 +188,14 @@ const Orden = () => {
     };
     OrdenDataService.update(data)
       .then((response) => {
-        console.log(response);
         if (response.status === 200) {
           const message = {
             title: "Actualización Orden",
             msg: "",
             error: true,
           };
-          console.log(response.data.message);
           dispatch(setMessage({ ...message, msg: response.data.message }));
           dispatch(setOpenModal(true));
-          setLoading(false);
           setEdited(true);
           setEditedSup(!editedSup);
         }
@@ -220,6 +203,45 @@ const Orden = () => {
       .catch((error) => {
         console.log(error);
       });
+  };
+
+  const handleEvidencia = (event) => {
+    const file = event.target.files;
+    setFile(file);
+  };
+
+  const saveEvidencia = async (incidenciaList) => {
+    let ite = 0;
+    Array.from(fileForm).forEach(async (file, key) => {
+      const response = await OrdenDataService.evidenciaInc(
+        file,
+        incidenciaList.id
+      );
+      incidenciaList["evidencias"] = [
+        response.data,
+        ...incidenciaList["evidencias"],
+      ];
+      ite++;
+      if(ite === fileForm.length) {
+        setIncidenciasList((incidenciasList) => [
+          incidenciaList,
+          ...incidenciasList,
+        ]);
+        dispatch(setLoading(false));
+      }
+    });
+  };
+
+  const saveIncidencia = async () => {
+    dispatch(setLoading(true));
+    const data = {
+      ordenId: orden.id,
+      userId: currentUser.auth.id,
+      descripcion: eDescripcion,
+      fecha: moment().format("YYYY-MM-DD hh:mm:ss"),
+    };
+    const response = await OrdenDataService.incidencia(data);
+    saveEvidencia(response.data);
   };
 
   return (
@@ -589,7 +611,7 @@ const Orden = () => {
               disabled={edited}
             />
           </Grid>
-          {currentUser.auth?.roles.find((rol) => rol.name == "admin") !==
+          {currentUser.auth?.roles.find((rol) => rol.name === "admin") !==
             undefined && (
             <>
               <Grid item md={12} sm={12} xs={12} className="text-start">
@@ -617,75 +639,139 @@ const Orden = () => {
               </Grid>
             </>
           )}
-          <Grid item md={8} sm={8} sx={12}>
-            <ImageList
-              sx={{ width: "100%", maxHeight: 450 }}
-              variant="quilted"
-              cols={3}
-              rowHeight={200}
-            >
-              {form.Evidencias.map((item, key) => (
-                <ImageListItem key={key} sx={{ objectFit: "contain" }}>
-                  <img
-                    srcSet={`${process.env.REACT_APP_IMG_URL}${item.codigo}`}
-                    src={`${process.env.REACT_APP_IMG_URL}${item.codigo}`}
-                    /* alt={item.title} */
-                    loading="lazy"
-                    style={{ objectFit: "contain" }}
-                  />
-                  <ImageListItemBar
-                    title={item.nombre}
-                    subtitle={moment(
-                      item.createdAt[item.createdAt.length - 1] === "Z"
-                        ? item.createdAt.slice(0, -1)
-                        : item.createdAt
-                    ).format("YYYY-MM-DD hh:mm:ss")}
-                    actionIcon={
-                      <IconButton
-                        sx={{ color: "rgba(255, 255, 255, 0.54)" }}
-                        aria-label={`info about ${item.title}`}
-                      >
-                        <Info />
-                      </IconButton>
-                    }
-                  />
-                </ImageListItem>
-              ))}
-            </ImageList>
-          </Grid>
-          <Grid item md={4} sm={4} sx={12}>
-            <List dense={true} sx={{ width: "100%", maxHeight: 450 }}>
-              {form.Incidencias?.map((item, key) => (
-                <>
-                  <ListItem>
-                    <ListItemText
-                      primary={item.descripcion}
-                      secondary={
-                        <>
-                          <Typography
-                            sx={{ display: "inline" }}
-                            component="span"
-                            variant="body2"
-                            color="text.primary"
-                          >
-                            {item.usuario.persona.fullName}:
-                          </Typography>
-                          {moment(
-                            item.createdAt[item.fecha.length - 1] === "Z"
-                              ? item.fecha.slice(0, -1)
-                              : item.fecha
-                          ).format("YYYY-MM-DD hh:mm:ss")}
-                        </>
-                      }
-                    />
-                  </ListItem>
-                  <Divider variant="middle" component="li" />
-                </>
-              ))}
-            </List>
-          </Grid>
         </Grid>
       </CardContent>
+      {currentUser.auth?.roles.find(
+        (rol) => rol.name === "admin" || rol.name === "mensajero"
+      ) !== undefined && (
+        <CardContent
+          key="incidencias"
+          title="Evidencias"
+          icon={<EventNote sx={{ color: "white", fontSize: "23px" }} />}
+          openCollapse={true}
+          idElement="datosGenerales-orden"
+          className="text-start"
+        >
+          <Grid container spacing={1}>
+            <Grid item md={12} sm={12} xs={12}>
+              <TextField
+                id="incidencia"
+                name="incidencia"
+                label="Incidencia"
+                value={eDescripcion}
+                onChange={handleInputChange}
+                variant="outlined"
+                multiline
+                rows={3}
+                fullWidth
+                inputProps={{ step: 255, maxLength: 255 }}
+              />
+            </Grid>
+          </Grid>
+          <br />
+          <Grid container spacing={1}>
+            <Grid item md={8} sm={8} xs={12} sx={{ margin: "auto 0" }}>
+              <TextField
+                type="file"
+                inputProps={{
+                  multiple: true,
+                  accept: "image/png, image/gif, image/jpeg",
+                }}
+                onChange={handleEvidencia}
+                fullWidth
+              />
+            </Grid>
+            <Grid item md={4} sm={4} xs={12} sx={{ margin: "auto 0" }}>
+              <Button
+                component="label"
+                role={undefined}
+                variant="contained"
+                tabIndex={-1}
+                startIcon={<CloudUpload />}
+                onClick={saveIncidencia /* saveEvidencia */}
+              >
+                Guardar incidencia
+              </Button>
+            </Grid>
+
+            <Grid item md={12} sm={12} sx={12}>
+              <List dense={true}>
+                {incidenciasList.length > 0 && incidenciasList.map((item, key) => (
+                  <>
+                    <ListItem>
+                      <ListItemText
+                        primary={item.descripcion}
+                        secondary={
+                          <>
+                            <Typography
+                              sx={{ display: "inline", fontWeight: "600" }}
+                              component="span"
+                              variant="body2"
+                              color="text.primary"
+                            >
+                              {item.usuario?.persona.fullName}:{" "}
+                            </Typography>
+                            {moment(
+                              item.createdAt[item.fecha.length - 1] === "Z"
+                                ? item.fecha.slice(0, -1)
+                                : item.fecha
+                            ).format("YYYY-MM-DD HH:mm:ss")}
+                          </>
+                        }
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <Grid item md={12} sm={12} sx={12}>
+                        <ImageList
+                          sx={{ width: "100%", maxHeight: 450 }}
+                          variant="quilted"
+                          cols={3}
+                          rowHeight={200}
+                        >
+                          {item.evidencias.map((itemImg, keyImg) => (
+                            <ImageListItem
+                              id={`${key}-${itemImg.id}`}
+                              key={`${key}-${itemImg.id}`}
+                              sx={{ objectFit: "contain" }}
+                            >
+                              <img
+                                srcSet={`${process.env.REACT_APP_IMG_URL}${itemImg.codigo}`}
+                                src={`${process.env.REACT_APP_IMG_URL}${itemImg.codigo}`}
+                                /* alt={item.title} */
+                                loading="lazy"
+                                style={{ objectFit: "contain" }}
+                              />
+                              <ImageListItemBar
+                                title={itemImg.nombre}
+                                subtitle={moment(
+                                  itemImg.createdAt[
+                                    itemImg.createdAt.length - 1
+                                  ] === "Z"
+                                    ? itemImg.createdAt.slice(0, -1)
+                                    : itemImg.createdAt
+                                ).format("YYYY-MM-DD hh:mm:ss")}
+                                actionIcon={
+                                  <IconButton
+                                    sx={{ color: "rgba(255, 255, 255, 0.54)" }}
+                                    aria-label={`info about ${itemImg.title}`}
+                                  >
+                                    <Info />
+                                  </IconButton>
+                                }
+                              />
+                            </ImageListItem>
+                          ))}
+                        </ImageList>
+                      </Grid>
+                    </ListItem>
+                    <Divider variant="middle" component="li" />
+                  </>
+                ))}
+              </List>
+            </Grid>
+          </Grid>
+        </CardContent>
+      )}
     </div>
   );
 };
