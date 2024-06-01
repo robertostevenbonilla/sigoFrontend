@@ -77,9 +77,10 @@ const QrReader = () => {
           if (Object.keys(response.data).length > 0) {
             let ordenGuia = [];
             ordenGuia[guiaR] = response.data;
-            //this.orders = { ...orders, ...ordenGuia };
-            setOrdenes({ ...ordenes, ...ordenGuia });
-            console.log('ordenes', ordenes, { ...ordenes, ...ordenGuia });
+            setOrdenes(prevGuias => ({
+                ...prevGuias,
+                ...ordenGuia
+            }));
           } else {
             const message = {
               title: "Orden",

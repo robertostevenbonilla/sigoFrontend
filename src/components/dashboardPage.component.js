@@ -7,6 +7,23 @@ import { setMessage, setOpenModal } from "../reducers/message";
 import { personaForm } from "../helpers/forms";
 import { withRouter } from "../common/with-router";
 import Form from "react-bootstrap/Form";
+import ReactECharts from 'echarts-for-react';  // or var ReactECharts = require('echarts-for-react');
+
+import {
+  TitleComponent,
+  TooltipComponent,
+  GridComponent,
+  DatasetComponent,
+  TransformComponent
+} from 'echarts/components';
+
+// Features like Universal Transition and Label Layout
+import { LabelLayout, UniversalTransition } from 'echarts/features';
+
+// Import the Canvas renderer
+// Note that including the CanvasRenderer or SVGRenderer is a required step
+import { CanvasRenderer } from 'echarts/renderers';
+
 import { Card } from "./Card";
 import {
   AccountCircle,
@@ -22,6 +39,7 @@ import {
 import { Box, Button, Grid, TextField } from "@mui/material";
 import { BarChart, DefaultizedPieValueType } from "@mui/x-charts";
 import {
+  PieArcLabel,
   PieArcLabelPlot,
   PieChart,
   pieArcLabelClasses,
@@ -35,6 +53,22 @@ import OrdenDataService from "../services/orden.service";
 const size = {
   height: 500,
 };
+const pieOptions = {
+  mobile: {
+    arcLabelMinAngle: 45,
+    outerRadius: 140,
+    cx: 140,
+    highlightScope: { faded: 'global', highlighted: 'item' },
+    faded: { innerRadius: 30, additionalRadius: -30, color: 'gray' },
+  },
+  tablet: {
+    arcLabelMinAngle: 0,
+    outerRadius: 240,
+    cx: 240,
+    highlightScope: { faded: 'global', highlighted: 'item' },
+    faded: { innerRadius: 30, additionalRadius: -30, color: 'gray' },
+  }
+}
 
 const StyledText = styled("text")(({ theme }) => ({
   fill: theme.palette.text.primary,
@@ -49,7 +83,7 @@ const chartSetting = {
       label: "Ordenes",
     },
   ],
-  width: 400,
+  width: 300,
   height: 300,
   sx: {
     [`.${axisClasses.left} .${axisClasses.label}`]: {
@@ -59,9 +93,17 @@ const chartSetting = {
   },
 };
 
+const getDeviceType = () => {
+  const width = window.innerWidth;
+  // Puedes ajustar el valor de 768 para adaptarlo a tus necesidades
+  return width >= 768 ? 'tablet' : 'mobile';
+};
+
 const valueFormatter = (value) => `${value} ordenes`;
 
 const DashboardPage = () => {
+  const [deviceType, setDeviceType] = useState(getDeviceType());
+
   let navigate = useNavigate();
   const dispatch = useDispatch();
   const [dashboardData, setDashboard] = useState([]);
@@ -78,6 +120,11 @@ const DashboardPage = () => {
   const { auth: currentUser } = useSelector((state) => state.auth);
 
   useEffect(() => {
+    const handleResize = () => {
+      setDeviceType(getDeviceType());
+    };
+    window.addEventListener('resize', handleResize);
+
     console.log(currentUser.isLoggedIn, currentUser, currentUser.auth?.reset_password);
     if (!currentUser.isLoggedIn) {
       navigate("/login");
@@ -128,6 +175,10 @@ const DashboardPage = () => {
           console.error(error);
         });
     }
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   useEffect(() => {
@@ -147,6 +198,34 @@ const DashboardPage = () => {
     );
   };
 
+  const options = {
+    title: {
+      text: 'Ordenes',
+      subtext: deviceType === 'mobile' ? '' : 'Total de ordenes por estado',
+      left: 'center'
+    },
+    tooltip: {
+      trigger: 'item'
+    },
+    series: [
+      {
+        name: 'Estado orden',
+        type: 'pie',
+        radius: deviceType === 'mobile'? '50%' : '75%',
+        data: ordenesEstatus.map(item => ({ value: item.value, name: item.label })),
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)'
+          }
+        }
+      }
+    ]
+  };
+
+  console.log('grafica', ordenesEstatus)
+
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
       <Card
@@ -159,7 +238,7 @@ const DashboardPage = () => {
         <Grid container spacing={1}>
           {currentUser.auth?.roles[0].name !== "mensajero" && (
             <>
-              <Grid item xs={12} md={3} sd={3} sx={{}}>
+              <Grid item xs={6} md={3} sd={3} sx={{}}>
                 <Box
                   xs={12}
                   md={3}
@@ -183,7 +262,7 @@ const DashboardPage = () => {
                   {dashboardData.clientesTotal} clientes
                 </Box>
               </Grid>
-              <Grid item xs={12} md={3} sd={3} sx={{}}>
+              <Grid item xs={6} md={3} sd={3} sx={{}}>
                 <Box
                   xs={12}
                   md={3}
@@ -209,7 +288,7 @@ const DashboardPage = () => {
               </Grid>
             </>
           )}
-          <Grid item xs={12} md={3} sd={3} sx={{}}>
+          <Grid item xs={6} md={3} sd={3} sx={{}}>
             <Box
               xs={12}
               md={3}
@@ -235,7 +314,7 @@ const DashboardPage = () => {
           </Grid>
           {currentUser.auth?.roles[0].name !== "mensajero" && (
             <>
-              <Grid item xs={12} md={3} sd={3} sx={{}}>
+              <Grid item xs={6} md={3} sd={3} sx={{}}>
                 <Box
                   xs={12}
                   md={3}
@@ -268,29 +347,28 @@ const DashboardPage = () => {
         </Grid>
         <Grid container spacing={2}>
           <Grid item xs={12} md={8} sd={8}>
-            <PieChart
+            <ReactECharts option={options} style={{height: deviceType === 'mobile' ? '400px' : '600px'}}/>
+            {/* <PieChart
               series={[
                 {
                   data: [...ordenesEstatus],
-                  innerRadius: 60,
-                  /* outerRadius: 110, */
                   arcLabel: (item) =>
                     item.value === 0 ? "" : `${item.label} (${item.value})`,
-                  arcLabelMinAngle: 0,
-                  arcLabelRadius: 195,
-                  outerRadius: 160,
+                  ...(deviceType === 'mobile' ? pieOptions.mobile : pieOptions.tablet),
                 },
               ]}
               sx={{
                 [`& .${pieArcLabelClasses.root}`]: {
                   fontWeight: "bold",
+                  fill: 'white',
                 },
               }}
               slotProps={{ legend: { hidden: true } }}
               {...size}
             >
-              <PieCenterLabel>Ordenes</PieCenterLabel>
-            </PieChart>
+              <PieArcLabel>Ordenes</PieArcLabel>
+              {/* <PieCenterLabel>Ordenes</PieCenterLabel> *}
+            </PieChart> */}
           </Grid>
           <Grid item xs={12} md={4} sd={4} sx={{ margin: "auto 0" }}>
             {ordenesEstatus.map((estado, index) => {
