@@ -695,6 +695,8 @@ const OrdenList = (props) => {
         dispatch(setOpenModal(true));
         setReload(true);
         setFaseUpId(-1);
+        document.getElementsByTagName('body')[0]?.style.removeProperty('overflow')
+        document.getElementsByTagName('body')[0]?.style.removeProperty('padding-right')
       })
       .catch((err) => {
         console.log(err);

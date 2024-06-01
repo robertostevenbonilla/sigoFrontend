@@ -7,22 +7,7 @@ import { setMessage, setOpenModal } from "../reducers/message";
 import { personaForm } from "../helpers/forms";
 import { withRouter } from "../common/with-router";
 import Form from "react-bootstrap/Form";
-import ReactECharts from 'echarts-for-react';  // or var ReactECharts = require('echarts-for-react');
-
-import {
-  TitleComponent,
-  TooltipComponent,
-  GridComponent,
-  DatasetComponent,
-  TransformComponent
-} from 'echarts/components';
-
-// Features like Universal Transition and Label Layout
-import { LabelLayout, UniversalTransition } from 'echarts/features';
-
-// Import the Canvas renderer
-// Note that including the CanvasRenderer or SVGRenderer is a required step
-import { CanvasRenderer } from 'echarts/renderers';
+import ReactECharts from 'echarts-for-react';
 
 import { Card } from "./Card";
 import {
