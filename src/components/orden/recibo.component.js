@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import OrdenDataService from "../../services/orden.service";
+import { OrdenDataService } from "../../services/orden.service";
 import {
   CloudUpload,
   EventNote,
@@ -33,6 +33,11 @@ const Recibo = (props) => {
   const { guia } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  
+  const { 
+    getByGuia,
+    evidenciaInc,
+    incidencia, } = OrdenDataService();
 
   const { auth: currentUser } = useSelector((state) => state.auth);
   const [orden, setOrden] = useState({});
@@ -61,7 +66,7 @@ const Recibo = (props) => {
   }, [guia]);
 
   const getOrdenByGuia = (guiaR) => {
-    OrdenDataService.getByGuia(guiaR)
+    getByGuia(guiaR)
       .then((response) => {
         if (Object.keys(response.data).length > 0) {
           setOrden({ ...response.data });
@@ -97,7 +102,7 @@ const Recibo = (props) => {
   const saveEvidencia = async (incidenciaList) => {
     let ite = 0;
     Array.from(fileForm).forEach(async (file) => {
-      const response = await OrdenDataService.evidenciaInc(
+      const response = await evidenciaInc(
         file,
         incidenciaList.id
       );
@@ -125,7 +130,7 @@ const Recibo = (props) => {
       descripcion: form.incidencia,
       fecha: moment().format("YYYY-MM-DD hh:mm:ss"),
     };
-    const response = await OrdenDataService.incidencia(data);
+    const response = await incidencia(data);
     console.log(response.data);
     saveEvidencia(response.data);
   };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import OrdenDataService from "../../services/orden.service";
+import { OrdenDataService } from "../../services/orden.service";
 import EmpresaDataService from "../../services/empresa.service";
 import CiudadDataService from "../../services/ciudad.service";
 import ServicioDataService from "../../services/servicio.service";
@@ -10,6 +10,7 @@ import EnhancedTable from "../table/table";
 import {
   AccountBox,
   Approval,
+  ConfirmationNumber,
   ContentCopy,
   Dashboard,
   DeliveryDining,
@@ -36,6 +37,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   Grid,
   IconButton,
   List,
@@ -251,6 +253,10 @@ const OrdenList = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const { getAll, update, asignar, getReporteGuia, getReporte, getTicket } =
+    OrdenDataService();
+
   const [searchParams] = useSearchParams();
 
   const [ordenes, setOrdenes] = useState([]);
@@ -409,7 +415,7 @@ const OrdenList = (props) => {
 
   const handleInputChangeM = async (event) => {
     const { id, value } = event.target;
-  console.log('handleInputChangeM',form, event.target, id, value);
+    console.log("handleInputChangeM", form, event.target, id, value);
     switch (id) {
       case "motorizadoId":
         setMotorizadoId(value);
@@ -422,14 +428,13 @@ const OrdenList = (props) => {
 
   const retrieveOrdenes = (page = 0, size = 10) => {
     dispatch(loadingTable(true));
-    OrdenDataService.getAll(page, size, filtros, "fechaEntrega:desc")
+    getAll(page, size, filtros, "fechaEntrega:desc")
       .then((response) => {
         setOrdenes(response.data);
         dispatch(loadingTable(false));
       })
-      .catch((e) => {
-        console.log(e);
-        //AuthDataService.refreshToken()
+      .catch((error) => {
+        console.log(error);
         dispatch(loadingTable(false));
       });
   };
@@ -525,10 +530,31 @@ const OrdenList = (props) => {
   };
 
   const getPdfFile = async (orders) => {
-    OrdenDataService.getReporteGuia(orders)
+    getReporteGuia(orders)
       .then((reporte) => {
         let fileName =
           "reporte" + moment().format("YYYY-MM-DD-HH:mm:ss.SS") + ".pdf";
+        console.log(reporte);
+
+        const url = URL.createObjectURL(reporte.data);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        dispatch(setLoading(false));
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
+
+  const getTicketPDF = async (id) => {
+    getTicket(id)
+      .then((reporte) => {
+        let fileName =
+          "ticket-" + id + "-" + moment().format("YYYY-MM-DD-HH:mm:ss.SS") + ".pdf";
         console.log(reporte);
 
         const url = URL.createObjectURL(reporte.data);
@@ -638,7 +664,7 @@ const OrdenList = (props) => {
       mensajeroId: null,
     };
     console.log(dataM);
-    OrdenDataService.asignar(dataM)
+    asignar(dataM)
       .then((response) => {
         const message = {
           title: "Mensajero",
@@ -661,7 +687,7 @@ const OrdenList = (props) => {
       mensajeroId: motorizadoId,
     };
     console.log(dataM);
-    OrdenDataService.asignar(dataM)
+    asignar(dataM)
       .then((response) => {
         setOpenDialog(false);
         const message = {
@@ -687,7 +713,7 @@ const OrdenList = (props) => {
       mensajeroId: null,
     };
     console.log(dataM);
-    OrdenDataService.asignar(dataM)
+    asignar(dataM)
       .then((response) => {
         setOpenDialogFase(false);
         const message = {
@@ -699,6 +725,12 @@ const OrdenList = (props) => {
         dispatch(setOpenModal(true));
         setReload(true);
         setFaseUpId(-1);
+        document
+          .getElementsByTagName("body")[0]
+          ?.style.removeProperty("overflow");
+        document
+          .getElementsByTagName("body")[0]
+          ?.style.removeProperty("padding-right");
       })
       .catch((err) => {
         console.log(err);
@@ -864,7 +896,7 @@ const OrdenList = (props) => {
         return e;
       });
       //return false;
-      bulkcreate = await OrdenDataService.bulkcreate(jsonData);
+      bulkcreate = await bulkcreate(jsonData);
       console.log(bulkcreate);
       retrieveOrdenes(pages + 1, rows);
       setOpenDialogXLS(false);
@@ -877,7 +909,7 @@ const OrdenList = (props) => {
   const downloadReporte = (tipo = "completo", formato = "pdf") => {
     console.log("downloadReporte", tipo, formato);
     dispatch(setLoading(true));
-    OrdenDataService.getReporte(tipo, formato, filtros)
+    getReporte(tipo, formato, filtros)
       .then((reporte) => {
         if (formato === "excel") formato = "xlsx";
         let fileName =
@@ -970,6 +1002,17 @@ const OrdenList = (props) => {
             <WhatsApp fontSize={"small"} sx={{ color: "#25d366" }} />
           </IconButton>
         </Tooltip>
+        <Tooltip title="Etiqueta" placement="top">
+          <IconButton
+            size="small"
+            onClick={async () => {
+              console.log(id, row);
+              await getTicketPDF(id);
+            }}
+          >
+            <ConfirmationNumber fontSize={"small"} sx={{ color: "#edca88" }} />
+          </IconButton>
+        </Tooltip>
       </>
     );
   };
@@ -1020,13 +1063,36 @@ const OrdenList = (props) => {
                     const cambio = JSON.parse(auditRow.cambio);
                     const faseList = faseSelect;
                     const mensajeroList = motorizadoSelect;
-                    console.log("Audit",cambio,faseList,mensajeroList);
                     return (
-                      <ListItem>
-                        <strong>{auditRow.usuario.persona.fullName} </strong>
-                        {cambio?.faseId !== undefined && (cambio?.faseId !== null ? " - "+faseList.find(x => x.id === cambio.faseId)?.nombre : " - Quito estado")}
-                        {cambio?.mensajeroId !== undefined && (cambio?.mensajeroId !== null ? " - "+mensajeroList.find(x => x.id === cambio.mensajeroId)?.fullname : " - Quito mensajero")}
+                      <><ListItem>
+                        <Grid container spacing={1}>
+                          <Grid item md={12} sm={12} xs={12}>
+                            <strong>{auditRow.usuario.persona.fullName}</strong> (<small>{auditRow.createdAt}</small>)
+                          </Grid>
+                          <Grid item md={12} sm={12} xs={12}>
+                            <div>
+                              <strong>Estado:</strong> {cambio?.faseId !== undefined ?
+                                (cambio?.faseId !== null
+                                  ? " - " +
+                                    faseList.find((x) => x.id === cambio.faseId)
+                                      ?.nombre
+                                  : " - Quito estado") : "Sin cambio"}
+                            </div>
+                          </Grid>
+                          <Grid item md={12} sm={12} xs={12}>
+                            <div>
+                              <strong>Mensajero:</strong> {cambio?.mensajeroId !== undefined ?
+                                (cambio?.mensajeroId !== null
+                                  ? " - " +
+                                    mensajeroList.find(
+                                      (x) => x.id === cambio.mensajeroId
+                                    )?.fullname
+                                  : " - Quito mensajero") : "Sin cambio"}
+                            </div>
+                          </Grid>
+                        </Grid>
                       </ListItem>
+                      <Divider variant="middle" component="li" sx={{borderBottomWidth: 'medium'}} /></>
                     );
                   })}
                 </List>
@@ -1267,17 +1333,16 @@ const OrdenList = (props) => {
           noDataMessage={"Por el momento no existen registros."}
           view={true}
           onViewFunction={(id, row) => {
-            //localStorage.setItem("filter", JSON.stringify({ ...form }));
             navigate(`/orden/${id}`);
           }}
           download={true}
           onDownloadFunction={async (id, row) => {
-            console.log("handleSelect ", id, row);
             dispatch(setLoading(true));
             await getPdfFile([id]);
           }}
           getAudit={async (row) => {
-            setAudit(row.Audits);
+            const reverseAudit = row.Audits.reverse();
+            setAudit(reverseAudit);
             setOpenDialogA(true);
           }}
           delete={
@@ -1298,7 +1363,7 @@ const OrdenList = (props) => {
               id: id,
               estado: 0,
             };
-            await OrdenDataService.update(data)
+            await update(data)
               .then((response) => {
                 if (response.status === 200) {
                   const message = {
