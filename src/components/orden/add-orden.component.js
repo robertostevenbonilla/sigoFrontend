@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import OrdenDataService from "../../services/orden.service";
+import { 
+  OrdenDataService, } from "../../services/orden.service";
 import EmpresaDataService from "../../services/empresa.service";
 import CiudadDataService from "../../services/ciudad.service";
 import ServicioDataService from "../../services/servicio.service";
@@ -39,6 +40,11 @@ const AddOrden = () => {
   const { id } = useParams();
   let navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const { 
+    get,
+    create, } = OrdenDataService();
+
   const [form, setForm] = useState({
     ...ordenForm,
     fechaRecepcion: moment(),
@@ -57,7 +63,7 @@ const AddOrden = () => {
   const { pages, rows } = useSelector((state) => state.ui);
 
   const getOrden = (id) => {
-    OrdenDataService.get(id)
+    get(id)
       .then((response) => {
         setForm(response.data);
         console.log(response, response.data);
@@ -210,7 +216,7 @@ const AddOrden = () => {
         form.ciudadDestinoId === -1 ? null : form.ciudadDestinoId,
       mensajeroId: form.mensajeroId === -1 ? null : form.mensajeroId,
     };
-    OrdenDataService.create(data)
+    create(data)
       .then((response) => {
         console.log(response);
         if (response.status === 201) {

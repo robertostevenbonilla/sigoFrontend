@@ -33,7 +33,7 @@ import { useDrawingArea } from "@mui/x-charts/hooks";
 import { styled } from "@mui/material/styles";
 import { axisClasses } from "@mui/x-charts";
 import { SearchInput } from "./form/AutoCompleteInput";
-import OrdenDataService from "../services/orden.service";
+import { OrdenDataService } from "../services/orden.service";
 
 const size = {
   height: 500,
@@ -91,6 +91,11 @@ const DashboardPage = () => {
 
   let navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const {
+    faseCount,
+    serviceCount, } = OrdenDataService();
+
   const [dashboardData, setDashboard] = useState([]);
   const [ordenesEstatus, setOrdenesEstatus] = useState([]);
   const [ordenesService, setOrdenesService] = useState([
@@ -143,7 +148,7 @@ const DashboardPage = () => {
             console.error(error);
           });
       }
-      OrdenDataService.faseCount(idR, mensajeroId)
+      faseCount(idR, mensajeroId)
         .then((response) => {
           console.log("ordenesEstatus", response.data, response.data.length);
           setOrdenesEstatus(response.data);
@@ -151,7 +156,7 @@ const DashboardPage = () => {
         .catch((error) => {
           console.error(error);
         });
-      OrdenDataService.serviceCount(idR, mensajeroId)
+      serviceCount(idR, mensajeroId)
         .then((response) => {
           console.log("ordenesEstatus", response.data, response.data.length);
           setOrdenesService(response.data);

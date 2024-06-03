@@ -11,18 +11,19 @@ import QrFrame from "../../assets/qr-frame.svg";
 import { Box, Button, Card, Grid, Paper } from "@mui/material";
 import { SearchInput } from "../form/AutoCompleteInput";
 import { Close, QrCodeScanner, Save } from "@mui/icons-material";
-import OrdenDataService from "../../services/orden.service";
+import { OrdenDataService } from "../../services/orden.service";
 import { setMessage, setOpenModal } from "../../reducers/message";
 import FaseDataService from "../../services/fase.service";
 import UsuarioDataService from "../../services/usuario.service";
 
 const QrReader = () => {
-  // QR States
-  /* const scanner = useRef();
-  const videoEl = useRef(null);
-  const qrBoxEl = useRef(null); */
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const { 
+    asignar,
+    getByGuia, } = OrdenDataService();
+
   let scannerNR = null;
   let orders = [];
   const { auth: currentUser } = useSelector((state) => state.auth);
@@ -56,6 +57,9 @@ const QrReader = () => {
   };
 
   const loadMotirizados = () => {
+    if(currentUser?.auth?.roles.find(
+      (rol) => rol.name === "mensajero"
+    ) === undefined) {
     UsuarioDataService.motorizados()
       .then((response) => {
         setMotorizadoSelect(response.data);
@@ -66,13 +70,16 @@ const QrReader = () => {
       .catch((err) => {
         console.log(err);
       });
+    } else {
+      setMorotizadoId(currentUser.auth.id);
+    }
   };
 
   const getOrdenByGuia = async (guiaR) => {
     if(guiaR === "") return false;
     console.log("getOrdenByGuia", guiaR, ordenes, Object.keys(ordenes), Object.keys(ordenes).find((guia) => guia === guiaR));
     if (Object.keys(ordenes).find((guia) => guia === guiaR) === undefined) {
-      await OrdenDataService.getByGuia(guiaR)
+      await getByGuia(guiaR)
         .then((response) => {
           if (Object.keys(response.data).length > 0) {
             let ordenGuia = [];
@@ -130,7 +137,7 @@ const QrReader = () => {
       estadoId: fase,
     };
     console.log(dataM);
-    OrdenDataService.asignar(dataM)
+    asignar(dataM)
       .then((response) => {
         const message = {
           title: "Asignación",
@@ -325,7 +332,6 @@ const QrReader = () => {
           key="Asignar"
           title="Asignar"
           icon={<QrCodeScanner sx={{ color: "white", fontSize: "23px" }} />}
-          /* openCollapse={true} */
           idElement="datosGenerales-asignar"
           className="text-start"
           sx={{ padding: "20px" }}

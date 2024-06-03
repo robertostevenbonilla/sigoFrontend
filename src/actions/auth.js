@@ -1,14 +1,16 @@
 import { useDispatch } from "react-redux";
-import AuthDataService from "../services/auth.service";
+import { AuthDataService } from "../services/auth.service";
 import { setAuth } from "../reducers/auth";
 import { setMessage, setOpenModal } from "../reducers/message";
 
 export const UserAuth = () => {
   const dispatch = useDispatch();
 
+  const { loginAPI, logoutAPI, signupAPI, resetPasswordAPI } = AuthDataService();
+
   const login = async (username, password) => {
     try {
-      const response = await AuthDataService.loginAPI(username, password);
+      const response = await loginAPI(username, password);
       console.log("Login response",response);
       const auth = {
         isLoggedIn: true,
@@ -40,7 +42,7 @@ export const UserAuth = () => {
   };
 
   const logout = async () => {
-    const response = await AuthDataService.logoutAPI();
+    const response = await logoutAPI();
     const auth = {
       isLoggedIn: false,
       auth: null,
@@ -52,7 +54,7 @@ export const UserAuth = () => {
 
   const signup = async (data) => {
     console.log("signup");
-    const response = await AuthDataService.signupAPI(data);
+    const response = await signupAPI(data);
     console.log(response);
     try {
     } catch (e) {
@@ -62,7 +64,7 @@ export const UserAuth = () => {
 
   const resetPassword = async (data) => {
     console.log("resetPassword",data);
-    const response = await AuthDataService.resetPassword(data);
+    const response = await resetPasswordAPI(data);
     console.log(response);
   };
 

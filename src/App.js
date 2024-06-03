@@ -96,7 +96,7 @@ const closedMixin = (theme) => ({
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  overflowX: "auto",
+  overflowX: "hidden",
   overflowY: "auto",
   width: `calc(${theme.spacing(7)} + 1px)`,
   [theme.breakpoints.up("sm")]: {
@@ -164,7 +164,7 @@ function App() {
   const { closeModal: closeModal } = useSelector((state) => state.message);
   const { isLoading } = useSelector((state) => state.ui);
 
-  let location = useLocation();
+  const location = useLocation();
 
   const [showModal, setShow] = useState(false);
 
@@ -203,7 +203,7 @@ function App() {
     dispatch(setRows(10));
   };
 
-  if (!currentUser?.isLoggedIn) {
+  if (!currentUser?.isLoggedIn && location.pathname.includes("login") && !location.pathname.includes("recibo")) {
     return (
       <div className="login-container">
         <Login />
@@ -633,7 +633,6 @@ function App() {
         <Modal
           show={isModalOpen}
           onHide={handleClose}
-          aria-labelledby="contained-modal-title-vcenter"
           centered
           style={{
             zIndex: 2500,
@@ -678,6 +677,7 @@ function App() {
           >
             <Routes>
               <Route path="/" element={<DashboardPage />} />
+              <Route path="/login" element={<Login />} />
               <Route path="/changepassword" element={<ChangePassword />} />
               <Route path="/persona" element={<PersonaList />} />
               <Route path="/persona/add" element={<AddPersona />} />

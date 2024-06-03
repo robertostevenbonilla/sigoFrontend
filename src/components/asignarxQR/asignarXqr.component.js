@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import OrdenDataService from "../../services/orden.service";
+import { OrdenDataService } from "../../services/orden.service";
 import FaseDataService from "../../services/fase.service";
 import { Close, GridOn, PictureAsPdf, QrCodeScanner, Save, SummarizeOutlined } from "@mui/icons-material";
 import { Card } from "../Card";
@@ -26,6 +26,11 @@ import { setLoading } from "../../reducers/ui";
 const AsignarXqr = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  
+  const { 
+    asignar,
+    getByGuia,
+    getReporte, } = OrdenDataService();
 
   const { auth: currentUser } = useSelector((state) => state.auth);
   const [motorizadoSelect, setMotorizadoSelect] = useState([]);
@@ -54,7 +59,7 @@ const AsignarXqr = (props) => {
   }, [ordenes])
 
   const getOrdenByGuia = (guiaR) => {
-    OrdenDataService.getByGuia(guiaR)
+    getByGuia(guiaR)
       .then((response) => {
         if(Object.keys(response.data).length > 0) {
           let ordenGuia = [];
@@ -209,7 +214,7 @@ const AsignarXqr = (props) => {
       estadoId: fase,
     };
     console.log(dataM);
-    OrdenDataService.asignar(dataM)
+    asignar(dataM)
       .then((response) => {
         const message = {
           title: "Asignación",
@@ -236,7 +241,7 @@ const AsignarXqr = (props) => {
     console.log("guias", `guia:in:${guias}`);
     //return false;
     dispatch(setLoading(true));
-    OrdenDataService.getReporte(tipo, formato, `guia:in:${guias}`)
+    getReporte(tipo, formato, `guia:in:${guias}`)
       .then((reporte) => {
         if (formato === "excel") formato = "xlsx";
         let fileName =

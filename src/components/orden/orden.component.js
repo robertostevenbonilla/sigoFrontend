@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import OrdenDataService from "../../services/orden.service";
+import { OrdenDataService } from "../../services/orden.service";
 import EmpresaDataService from "../../services/empresa.service";
 import CiudadDataService from "../../services/ciudad.service";
 import ServicioDataService from "../../services/servicio.service";
@@ -48,6 +48,13 @@ const Orden = () => {
   const { id } = useParams();
   let navigate = useNavigate();
   const dispatch = useDispatch();
+  
+  const { 
+    get,
+    update,
+    evidenciaInc,
+    incidencia, } = OrdenDataService();
+  
   const [form, setForm] = useState(ordenForm);
   /* const [loading, setLoading] = useState(false); */
   const [edited, setEdited] = useState(true);
@@ -67,7 +74,7 @@ const Orden = () => {
   const { pages, rows } = useSelector((state) => state.ui);
 
   const getOrden = (id) => {
-    OrdenDataService.get(id)
+    get(id)
       .then((response) => {
         setForm(response.data);
         setIncidenciasList(response.data.Incidencias);
@@ -186,7 +193,7 @@ const Orden = () => {
       ciudadDestinoId: form.ciudadDestinoId,
       mensajeroId: form.mensajeroId,
     };
-    OrdenDataService.update(data)
+    update(data)
       .then((response) => {
         if (response.status === 200) {
           const message = {
@@ -213,7 +220,7 @@ const Orden = () => {
   const saveEvidencia = async (incidenciaList) => {
     let ite = 0;
     Array.from(fileForm).forEach(async (file, key) => {
-      const response = await OrdenDataService.evidenciaInc(
+      const response = await evidenciaInc(
         file,
         incidenciaList.id
       );
@@ -240,7 +247,7 @@ const Orden = () => {
       descripcion: eDescripcion,
       fecha: moment().format("YYYY-MM-DD hh:mm:ss"),
     };
-    const response = await OrdenDataService.incidencia(data);
+    const response = await incidencia(data);
     saveEvidencia(response.data);
   };
 
