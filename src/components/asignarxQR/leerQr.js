@@ -112,6 +112,24 @@ const QrReader = () => {
               ...prevGuias,
               ...ordenGuia,
             }));
+            const dataM = {
+              guias: [guiaR],
+              mensajeroId: morotizadoId,
+              estadoId: process.env.REACT_APP_FASE_RUTA,
+            };
+            asignar(dataM)
+              .then((response) => {
+                /* const message = {
+                  title: "Asignación",
+                  msg: "Procesado correctamente.",
+                  error: true,
+                };
+                dispatch(setMessage({ ...message }));
+                dispatch(setOpenModal(true)); */
+              })
+              .catch((err) => {
+                console.log(err);
+              });
           } else {
             const message = {
               title: "Orden",
@@ -141,7 +159,6 @@ const QrReader = () => {
   };
 
   const handleCloseOrd = (ge) => {
-    console.log(`${process.env.REACT_APP_FASE_ENTREGADO}`);
     const dataM = {
       guias: ge,
       mensajeroId: null,
