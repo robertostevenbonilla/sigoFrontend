@@ -28,6 +28,7 @@ import UsuarioList from "./components/usuario/usuario-list.component";
 import Usuario from "./components/usuario/usuario.component";
 import {
   AppBar,
+  Badge,
   Box,
   Divider,
   Grid,
@@ -37,7 +38,6 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  MenuItem,
   Toolbar,
   Typography,
   createTheme,
@@ -70,7 +70,8 @@ import {
   HolidayVillage,
   ListAlt,
   Logout,
-  Menu,
+  Mail,
+  Notifications,
   QrCode2,
   QrCodeScanner,
 } from "@mui/icons-material";
@@ -79,6 +80,16 @@ import AsignarXqr from "./components/asignarxQR/asignarXqr.component";
 import Recibo from "./components/orden/recibo.component";
 import { setPages, setRows } from "./reducers/ui";
 import QrReader from "./components/asignarxQR/leerQr";
+
+import Dropdown from "@mui/joy/Dropdown";
+import Menu from "@mui/joy/Menu";
+import MenuButton from "@mui/joy/MenuButton";
+import MenuItem from "@mui/joy/MenuItem";
+
+import { socket } from './socket';
+import { ConnectionState } from './components/ConnectionState';
+import { ConnectionManager } from './components/ConnectionManager';
+import { Events } from "./components/Events";
 
 const drawerWidth = 240;
 
@@ -152,6 +163,33 @@ function App() {
   let navigate = useNavigate();
   const theme = useTheme();
 
+  useEffect(() => {
+    function onConnect() {
+      setIsConnected(true);
+    }
+
+    function onDisconnect() {
+      setIsConnected(false);
+    }
+
+    function onFooEvent(value) {
+      setFooEvents(previous => [...previous, value]);
+    }
+
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+    socket.on('foo', onFooEvent);
+
+    return () => {
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
+      socket.off('foo', onFooEvent);
+    };
+  }, []);
+  
+  const [isConnected, setIsConnected] = useState(socket.connected);
+  const [fooEvents, setFooEvents] = useState([]);
+
   const [anchorEl, setAnchorEl] = React.useState(null);
 
   const [showModeratorBoard, setShowModeratorBoard] = useState(false);
@@ -203,7 +241,11 @@ function App() {
     dispatch(setRows(10));
   };
 
-  if (!currentUser?.isLoggedIn && location.pathname.includes("login") && !location.pathname.includes("recibo")) {
+  if (
+    !currentUser?.isLoggedIn &&
+    location.pathname.includes("login") &&
+    !location.pathname.includes("recibo")
+  ) {
     return (
       <div className="login-container">
         <Login />
@@ -212,11 +254,14 @@ function App() {
   } else {
     return (
       <div className="App">
+        {/* <ConnectionState isConnected={ isConnected } />
+        <Events events={ fooEvents } />
+        <ConnectionManager /> */}
         {isLoading && <Loading />}
         <AppBar position="fixed" sx={{ background: "white" }}>
           {currentUser.isLoggedIn /* && currentUser.auth?.reset_password == 0 */ && (
             <Grid container justify="flex-end" alignItems="center">
-              <Grid item sm={8}></Grid>
+              <Grid item sm={7}></Grid>
               <Grid item sm={3} sx={{ textAlign: "right" }}>
                 <Typography
                   variant="subtitle2"
@@ -225,6 +270,26 @@ function App() {
                 >
                   {currentUser.auth.persona.fullName}
                 </Typography>
+              </Grid>
+              <Grid item sm={1} sx={{ textAlign: "right" }}>
+                <Dropdown>
+                  <MenuButton variant="plain">
+                    <Box sx={{ display: "flex", gap: 4 }}>
+                      <Badge
+                        color="primary"
+                        variant="solid"
+                        badgeContent={999}
+                        badgeInset="0 -15px 0 0"
+                        /* sx={{ background: "#3364FF", color: "white" }} */
+                      >
+                        <Notifications />
+                      </Badge>
+                    </Box>
+                  </MenuButton>
+                  <Menu>
+                    <MenuItem>Test</MenuItem>
+                  </Menu>
+                </Dropdown>
               </Grid>
               <Grid item sm={1}>
                 <IconButton size="large" onClick={cerrarSesion} color="black">

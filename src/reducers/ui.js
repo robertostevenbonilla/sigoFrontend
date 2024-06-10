@@ -4,7 +4,9 @@ const initialState = {
     isLoadingTable: false,
     isLoading: false,
     pages: 1,
-    rows: 10,
+    rowsN: 10,
+    selected: [],
+    selectedObj: [],
 };
 
 export const uiSlice = createSlice({
@@ -22,6 +24,12 @@ export const uiSlice = createSlice({
     },
     setRows: (state, action) => {
       state.rows = action.payload;
+    },
+    setSelected: (state, action) => {
+      state.selected = action.payload;
+    },
+    setSelectedObj: (state, action) => {
+      state.selectedObj = action.payload;
     }
 }
 });
@@ -30,5 +38,7 @@ export const {
     loadingTable,
     setPages,
     setRows,
-    setLoading
+    setLoading,
+    setSelected,
+    setSelectedObj,
 } = uiSlice.actions;

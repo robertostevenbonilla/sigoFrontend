@@ -714,7 +714,7 @@ export default function EnhancedTable(props) {
     setExpandableItem = null,
     extraFilters = null,
     getFilters = null,
-    selected = null,
+    selected = [],
     selectedObj = null,
     setSelected = null,
     setSelectedObj = null,
@@ -749,7 +749,7 @@ export default function EnhancedTable(props) {
   } = props;
   const [order, setOrder] = React.useState(orderASC);
   const [orderBy, setOrderBy] = React.useState("");
-  const [innerSelected, setInnerSelected] = React.useState([]);
+  const [innerSelected, setInnerSelected] = React.useState(selected);
   const [innerSelectedObj, setInnerSelectedObj] = React.useState([]);
 
   const [page, setPage] = React.useState(pagesHandle);
@@ -792,19 +792,15 @@ export default function EnhancedTable(props) {
   }, [rowId]);
 
   React.useEffect(() => {
-    console.log("page",page);
     if(props.setPages) dispatch(setPages(page));
   }, [page]);
 
   React.useEffect(() => {
-    console.log("rowsPerPage",rowsPerPage);
     if(props.setRows) dispatch(setRows(rowsPerPage));
   }, [rowsPerPage]);
 
   React.useEffect(() => {
-    console.log("searchParams", refresh);
     if (searchParams && !disablePathParameters && !refresh) {
-      console.log("searchParams1", refresh);
       const innerPage = parseInt(
         searchParams.get("page") ? searchParams.get("page") : 1
       );
@@ -817,8 +813,6 @@ export default function EnhancedTable(props) {
       if((innerPage - 1) >= 0) setPage(innerPage - 1);
       setRowsPerPage(innerRowsPerPage);
       setSearch(innerSearch);
-      console.log(innerPage,innerRowsPerPage, innerSearch);
-      console.log(page,rowsPerPage, search);
     }
   }, [searchParams]);
 
@@ -842,9 +836,10 @@ export default function EnhancedTable(props) {
   }, [table]);
 
   React.useEffect(() => {
-    if ((selected ? selected : innerSelected).length > 0) {
-      const newSelected = (selected ? selected : innerSelected).filter((sel) =>
-        dataTable.rows.some((row) => row[rowId] === sel && !row.disableCheckbox)
+    if ((selected !== null ? selected : innerSelected)?.length > 0) {
+      //console.log("dataTable innerSelected", selected, innerSelected);
+      const newSelected = (selected !== null ? selected : innerSelected)?.filter((sel) =>
+        dataTable.rows?.some((row) => row[rowId] === sel && !row.disableCheckbox)
       );
       if (newSelected.length !== (selected ? selected : innerSelected).length)
         handleSelected(newSelected);
@@ -852,7 +847,8 @@ export default function EnhancedTable(props) {
   }, [dataTable]);
 
   React.useEffect(() => {
-    if (handleSelectedChange) {
+    //console.log("useEffect innerSelected", innerSelected);
+    if (handleSelectedChange !== null) {
       handleSelectedChange(innerSelected);
     }
   }, [innerSelected]);
@@ -886,7 +882,7 @@ export default function EnhancedTable(props) {
   }, [rowsHandle]);
 
   const handleSelected = (newSelected) => {
-    if (setSelected) {
+    if (setSelected !== null) {
       setSelected(newSelected);
     } else {
       setInnerSelected(newSelected);
@@ -1019,8 +1015,15 @@ export default function EnhancedTable(props) {
     setPage(0);
   };
 
-  const isSelected = (name) =>
-    (selected ? selected : innerSelected).indexOf(name) !== -1;
+  const isSelected = (name) => {
+    //console.log("isSelected", selectedObj, selected, (selected !== null ? selected : innerSelected), name);
+    if(selected?.length === 0 && selectedObj !== null) {
+      if(selectedObj.find((obj) => obj.id === name) !== undefined) {
+        setSelected(selectedObj.map((obj) => obj.id));
+      }
+    }
+    return (selected !== null ? selected : innerSelected).indexOf(name) !== -1;
+  }
 
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - (table?.rows ? table?.rows.length : 0)) : 0;

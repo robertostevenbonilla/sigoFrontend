@@ -240,6 +240,16 @@ const Orden = () => {
   };
 
   const saveIncidencia = async () => {
+    if (eDescripcion === "") {
+      const message = {
+        title: "Guardar Incidencia",
+        msg: "Ingrese una descripción.",
+        error: true,
+      };
+      dispatch(setMessage({ ...message }));
+      dispatch(setOpenModal(true));
+      return false;
+    }
     dispatch(setLoading(true));
     const data = {
       ordenId: orden.id,
@@ -381,6 +391,7 @@ const Orden = () => {
                 variant="outlined"
                 fullWidth
                 disabled={edited}
+                inputProps={{ step: 255, maxLength: 255 }}
               />
             </Grid>
             <Grid item className="sGitem">
@@ -449,6 +460,7 @@ const Orden = () => {
                 variant="outlined"
                 fullWidth
                 disabled={edited}
+                inputProps={{ step: 255, maxLength: 255 }}
               />
             </Grid>
             <Grid item className="sGitem">
@@ -616,6 +628,7 @@ const Orden = () => {
               multiline
               rows={3}
               disabled={edited}
+              inputProps={{ step: 500, maxLength: 500 }}
             />
           </Grid>
           {currentUser.auth?.roles.find((rol) => rol.name === "admin") !==

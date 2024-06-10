@@ -64,8 +64,13 @@ import dayjs from "dayjs";
 import moment from "moment";
 import { read, utils, write } from "xlsx";
 import { setForm, setFiltros, setShowFilters } from "../../reducers/filtro";
-import { setPages, setRows, setLoading } from "../../reducers/ui";
-import AuthDataService from "../../services/auth.service";
+import {
+  setPages,
+  setRows,
+  setLoading,
+  setSelected,
+  setSelectedObj,
+} from "../../reducers/ui";
 
 var doc = new jsPDF();
 
@@ -267,12 +272,9 @@ const OrdenList = (props) => {
   const { filtros } = useSelector((state) => state.filtro);
   const { showFilters } = useSelector((state) => state.filtro);
   const { pages } = useSelector((state) => state.ui);
-  const { rows } = useSelector((state) => state.ui);
-
-  //const [formFilter, setForm] = useState(ordenFilterForm);
-  //const [filtros, setFiltros] = useState("");
-  //const [pages, setPages] = useState(1);
-  //const [rows, setRows] = useState(10);
+  const { rowsN } = useSelector((state) => state.ui);
+  const { selected } = useSelector((state) => state.ui);
+  const { selectedObj } = useSelector((state) => state.ui);
 
   const [ciudadSelect, setCiudadSelect] = useState([]);
   const [empresaSelect, setEmpresaSelect] = useState([]);
@@ -282,8 +284,6 @@ const OrdenList = (props) => {
   const [showReport, setShowReport] = useState(true);
 
   const [filtersLoaded, setFiltersLoaded] = useState(false);
-  const [selected, setSelected] = useState([]);
-  const [selectedObj, setSelectedObj] = useState([]);
   const [fileXLS, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
 
@@ -338,7 +338,7 @@ const OrdenList = (props) => {
   };
 
   useEffect(() => {
-    console.log(currentUser, location);
+    console.log(currentUser, location, selected, selectedObj);
     const innerPage =
       parseInt(searchParams.get("page") ? searchParams.get("page") : 1) - 1;
     const innerRowsPerPage = parseInt(
@@ -346,6 +346,7 @@ const OrdenList = (props) => {
     );
     dispatch(setPages(innerPage));
     dispatch(setRows(innerRowsPerPage));
+
     if (currentUser.auth?.reset_password === 1) {
       navigate("/changepassword");
     } else if (!currentUser.isLoggedIn) {
@@ -358,7 +359,7 @@ const OrdenList = (props) => {
       );
       dispatch(setPages(innerPage));
       dispatch(setRows(innerRowsPerPage));
-      console.log("paginacion1", pages, rows);
+      console.log("paginacion1", pages, rowsN);
       retrieveOrdenes(innerPage + 1, innerRowsPerPage);
       loadMotirizados();
       loadSelects();
@@ -372,12 +373,12 @@ const OrdenList = (props) => {
   }, [downloadObj]);
 
   useEffect(() => {
-    console.log("filtros", filtros, pages, rows);
     if (filtros !== "") {
-      setSelected([]);
-      setSelectedObj([]);
-      setOrdenes([]);
-      retrieveOrdenes(pages + 1, rows);
+      console.log("filtros", filtros, pages, rowsN, selected, selectedObj);
+      /* dispatch(setSelected([]));
+      dispatch(setSelectedObj([])); 
+      setOrdenes([]);*/
+      retrieveOrdenes(pages + 1, rowsN);
       if (filtros === "none") {
         dispatch(setFiltros(""));
       } else {
@@ -393,11 +394,11 @@ const OrdenList = (props) => {
   };
 
   const handleSelected = (items) => {
-    setSelected(items);
+    dispatch(setSelected(items));
   };
 
   const handleSelectedObj = (items) => {
-    setSelectedObj(items);
+    dispatch(setSelectedObj(items));
   };
 
   const handleSearchInputChange = async (event) => {
@@ -551,10 +552,15 @@ const OrdenList = (props) => {
   };
 
   const getTicketPDF = async (id) => {
+    dispatch(setLoading(true));
     getTicket(id)
       .then((reporte) => {
         let fileName =
-          "ticket-" + id + "-" + moment().format("YYYY-MM-DD-HH:mm:ss.SS") + ".pdf";
+          "ticket-" +
+          id +
+          "-" +
+          moment().format("YYYY-MM-DD-HH:mm:ss.SS") +
+          ".pdf";
         console.log(reporte);
 
         const url = URL.createObjectURL(reporte.data);
@@ -582,36 +588,7 @@ const OrdenList = (props) => {
     };
     const doc = new jsPDF(pgFormat);
 
-    /* doc.html(content, {
-      callback: function (doc) {
-        if (download) {
-          doc.save(downloadObj[0].guia + ".pdf");
-          setDownload(false);
-          setDownloadObj([]);
-        } else {
-          doc.save("rutas.pdf");
-          setSelected([]);
-          setSelectedObj([]);
-        }
-      },
-      html2canvas: { scale: 0.98 }, //0.215
-      autoPaging: true,
-    }); */
-
     contents.forEach(async (cont, index) => {
-      /* await doc.html(contents[index], {
-        callback: function (doc) {
-          console.log(contents.length-1, index)
-          if(contents.length-1 === index) {
-            doc.save("rutas.pdf");
-          } else {
-            doc.addPage(pgFormat);
-          }
-        },
-        html2canvas: { scale: 0.615 },
-        autoPaging: true,
-        y: (297*index)
-      }); */
       console.log(cont);
       var scaleBy = 2;
       var w = 595;
@@ -759,7 +736,6 @@ const OrdenList = (props) => {
     });
     console.log("filtros", filtered);
     dispatch(setFiltros(filtered));
-    //retrieveOrdenes(pages+1, rows);
   };
 
   const handleCloseDialog = () => {
@@ -898,7 +874,7 @@ const OrdenList = (props) => {
       //return false;
       bulkcreate = await bulkcreate(jsonData);
       console.log(bulkcreate);
-      retrieveOrdenes(pages + 1, rows);
+      retrieveOrdenes(pages + 1, rowsN);
       setOpenDialogXLS(false);
       setFile(null);
       setFileName("");
@@ -1032,7 +1008,7 @@ const OrdenList = (props) => {
           icon={<ListAlt sx={{ color: "white !important" }} />}
           label="Ordenes"
           onClick={() => {
-            navigate(`/orden?page=${pages + 1}&rowsPerPage=${rows}`);
+            navigate(`/orden?page=${pages + 1}&rowsPerPage=${rowsN}`);
           }}
           sx={{ background: "#3364FF", color: "white", padding: "2px 5px" }}
         />
@@ -1064,35 +1040,49 @@ const OrdenList = (props) => {
                     const faseList = faseSelect;
                     const mensajeroList = motorizadoSelect;
                     return (
-                      <><ListItem>
-                        <Grid container spacing={1}>
-                          <Grid item md={12} sm={12} xs={12}>
-                            <strong>{auditRow.usuario.persona.fullName}</strong> (<small>{auditRow.createdAt}</small>)
+                      <>
+                        <ListItem>
+                          <Grid container spacing={1}>
+                            <Grid item md={12} sm={12} xs={12}>
+                              <strong>
+                                {auditRow.usuario.persona.fullName}
+                              </strong>{" "}
+                              (<small>{auditRow.createdAt}</small>)
+                            </Grid>
+                            <Grid item md={12} sm={12} xs={12}>
+                              <div>
+                                <strong>Estado:</strong>{" "}
+                                {cambio?.faseId !== undefined
+                                  ? cambio?.faseId !== null
+                                    ? " - " +
+                                      faseList.find(
+                                        (x) => x.id === cambio.faseId
+                                      )?.nombre
+                                    : " - Quito estado"
+                                  : "Sin cambio"}
+                              </div>
+                            </Grid>
+                            <Grid item md={12} sm={12} xs={12}>
+                              <div>
+                                <strong>Mensajero:</strong>{" "}
+                                {cambio?.mensajeroId !== undefined
+                                  ? cambio?.mensajeroId !== null
+                                    ? " - " +
+                                      mensajeroList.find(
+                                        (x) => x.id === cambio.mensajeroId
+                                      )?.fullname
+                                    : " - Quito mensajero"
+                                  : "Sin cambio"}
+                              </div>
+                            </Grid>
                           </Grid>
-                          <Grid item md={12} sm={12} xs={12}>
-                            <div>
-                              <strong>Estado:</strong> {cambio?.faseId !== undefined ?
-                                (cambio?.faseId !== null
-                                  ? " - " +
-                                    faseList.find((x) => x.id === cambio.faseId)
-                                      ?.nombre
-                                  : " - Quito estado") : "Sin cambio"}
-                            </div>
-                          </Grid>
-                          <Grid item md={12} sm={12} xs={12}>
-                            <div>
-                              <strong>Mensajero:</strong> {cambio?.mensajeroId !== undefined ?
-                                (cambio?.mensajeroId !== null
-                                  ? " - " +
-                                    mensajeroList.find(
-                                      (x) => x.id === cambio.mensajeroId
-                                    )?.fullname
-                                  : " - Quito mensajero") : "Sin cambio"}
-                            </div>
-                          </Grid>
-                        </Grid>
-                      </ListItem>
-                      <Divider variant="middle" component="li" sx={{borderBottomWidth: 'medium'}} /></>
+                        </ListItem>
+                        <Divider
+                          variant="middle"
+                          component="li"
+                          sx={{ borderBottomWidth: "medium" }}
+                        />
+                      </>
                     );
                   })}
                 </List>
@@ -1668,43 +1658,49 @@ const OrdenList = (props) => {
           )}
           selectedItemsButtons={
             <List style={flexContainer}>
-              <ListItem>
-                <Button
-                  className="extraButton"
-                  variant="contained"
-                  startIcon={<Approval />}
-                  onClick={() => {
-                    addFase();
-                  }}
-                >
-                  Asignar Estado
-                </Button>
-              </ListItem>
-              <ListItem>
-                <Button
-                  className="extraButton"
-                  variant="contained"
-                  startIcon={<DeliveryDining />}
-                  onClick={() => {
-                    addMensajero();
-                  }}
-                >
-                  Asignar Mensajero
-                </Button>
-              </ListItem>
-              <ListItem>
-                <Button
-                  className="extraButton"
-                  variant="contained"
-                  startIcon={<DeliveryDining />}
-                  onClick={() => {
-                    removeMensajero();
-                  }}
-                  color="error"
-                >
-                  Quitar Mensajero
-                </Button>
-              </ListItem>
+              {currentUser?.auth?.roles.find(
+                (rol) => rol.name === "mensajero"
+              ) === undefined && (
+                <>
+                  <ListItem>
+                    <Button
+                      className="extraButton"
+                      variant="contained"
+                      startIcon={<Approval />}
+                      onClick={() => {
+                        addFase();
+                      }}
+                    >
+                      Asignar Estado
+                    </Button>
+                  </ListItem>
+                  <ListItem>
+                    <Button
+                      className="extraButton"
+                      variant="contained"
+                      startIcon={<DeliveryDining />}
+                      onClick={() => {
+                        addMensajero();
+                      }}
+                    >
+                      Asignar Mensajero
+                    </Button>
+                  </ListItem>
+                  <ListItem>
+                    <Button
+                      className="extraButton"
+                      variant="contained"
+                      startIcon={<DeliveryDining />}
+                      onClick={() => {
+                        removeMensajero();
+                      }}
+                      color="error"
+                    >
+                      Quitar Mensajero
+                    </Button>
+                  </ListItem>
+                </>
+              )}
               <ListItem>
                 <Button
                   className="extraButton"
@@ -1722,7 +1718,7 @@ const OrdenList = (props) => {
           setPages={setPages}
           setRows={setRows}
           pagesHandle={pages}
-          rowsHandle={rows}
+          rowsHandle={rowsN}
           extraButtons={
             currentUser.auth?.roles[0].name === "mensajero" ? (
               <></>

@@ -8,6 +8,7 @@ import CheckButton from "react-validation/build/button";
 
 import { UserAuth } from "../actions/auth";
 import { usuarioForm } from "../helpers/forms";
+import { TextField } from "@mui/material";
 
 const required = (value) => {
   if (!value) {
@@ -21,12 +22,12 @@ const required = (value) => {
 
 const ChangePassword = (props) => {
   const { logout } = UserAuth();
+  const { resetPassword } = UserAuth();
+
   let navigate = useNavigate();
   const checkBtn = useRef();
   const [formUsuario, setForm] = useState(usuarioForm);
   const [loading, setLoading] = useState(false);
-
-  const { resetPassword } = UserAuth();
 
   const { auth: currentUser } = useSelector((state) => state.auth);
 
@@ -35,8 +36,8 @@ const ChangePassword = (props) => {
     if (!currentUser?.isLoggedIn) {
       navigate("/login");
     } else {
-      setForm({...formUsuario, ...currentUser.auth});
-      console.log("ChangePassword",currentUser);
+      setForm({ ...formUsuario, ...currentUser.auth });
+      console.log("ChangePassword", currentUser);
     }
   }, []);
 
@@ -44,7 +45,7 @@ const ChangePassword = (props) => {
     e.preventDefault();
     setLoading(true);
     console.log("handleChangePassword");
-    resetPassword({...formUsuario})
+    resetPassword({ ...formUsuario })
       .then((res) => {
         console.log("data", res);
         logout().then((respose) => {
@@ -52,7 +53,7 @@ const ChangePassword = (props) => {
         });
       })
       .catch((res) => {
-        console.log("catch",res);
+        console.log("catch", res);
         setLoading(false);
       });
   };
@@ -60,56 +61,52 @@ const ChangePassword = (props) => {
   const onChange = (e, name = null, value = null) => {
     const inputName = name !== null ? name : e.target.name;
     const inputValue = value !== null ? value : e.target.value;
-    console.log(inputName,inputValue,formUsuario);
+    console.log(inputName, inputValue, formUsuario);
     setForm({ ...formUsuario, [inputName]: inputValue });
   };
 
   return (
     <div className="col-md-12">
       <div className="card card-container">
-        <img
-          src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
-          alt="profile-img"
-          className="profile-img-card"
-          width="60px"
-          style={{"margin": "0 auto"}}
-        />
 
-        <Form onSubmit={handleChangePassword}>
+        <Form onSubmit={handleChangePassword} sx={{ padding: "20px" }}>
           <div className="form-group">
-            <label htmlFor="username">Username</label>
-            <Input
+            <TextField
               type="text"
               className="form-control"
               name="username"
+              label="Usuario"
               value={formUsuario?.username}
               validations={[required]}
               disabled
               readOnly
+              sx={{ marginBottom: "20px" }}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password actual</label>
-            <Input
+            <TextField
               type="password"
               className="form-control"
               name="password"
-              value={formUsuario.password}
+              label="Contraseña actual"
+              value={formUsuario?.password}
               onChange={onChange}
               validations={[required]}
+              sx={{ marginBottom: "20px" }}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password nuevo</label>
-            <Input
+            <TextField
               type="password"
               className="form-control"
               name="newPassword"
-              value={formUsuario.newPassword}
+              label="Contraseña Nueva"
+              value={formUsuario?.newPassword}
               onChange={onChange}
               validations={[required]}
+              sx={{ marginBottom: "20px" }}
             />
           </div>
 
@@ -118,7 +115,7 @@ const ChangePassword = (props) => {
               {loading && (
                 <span className="spinner-border spinner-border-sm"></span>
               )}
-              <span>Login</span>
+              <span>Cambiar contraseña</span>
             </button>
           </div>
           <CheckButton style={{ display: "none" }} ref={checkBtn} />

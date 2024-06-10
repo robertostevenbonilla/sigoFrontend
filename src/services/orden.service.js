@@ -31,117 +31,408 @@ export const OrdenDataService = () => {
   };
 
   const getSelect = async () => {
-    return await http.get("/orden/select", { headers: { ...header() } });
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.get("/orden/select", { headers: { ...header() } });
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
   };
 
   const get = async (id) => {
-    return await http.get(`/orden/${id}`, { headers: { ...header() } });
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.get(`/orden/${id}`, { headers: { ...header() } });
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
   };
 
   const getByGuia = async (guia) => {
-    return await http.get(`/orden/guia/${guia}`, { headers: { ...header() } });
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.get(`/orden/guia/${guia}`, { headers: { ...header() } });
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
   };
 
   const create = async (data) => {
-    return await http.post("/orden/create", data, { headers: { ...header() } });
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.post("/orden/create", data, { headers: { ...header() } });
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
   };
 
   const update = async (data) => {
-    return await http.put(`/orden/${data.id}`, data, {
-      headers: { ...header() },
-    });
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.put(`/orden/${data.id}`, data, {
+          headers: { ...header() },
+        });
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
   };
 
   const deleted = async (id) => {
-    return await http.delete(`/orden/${id}`, { headers: { ...header() } });
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.delete(`/orden/${id}`, { headers: { ...header() } });
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
   };
 
   const findByRemitente = async (remitente) => {
-    return await http.get(`/orden/list?remitente=${remitente}`, {
-      headers: { ...header() },
-    });
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.get(`/orden/list?remitente=${remitente}`, {
+          headers: { ...header() },
+        });
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
   };
 
   const findByDestinatario = async (destinatario) => {
-    return await http.get(`/orden/list?destinatario=${destinatario}`, {
-      headers: { ...header() },
-    });
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.get(`/orden/list?destinatario=${destinatario}`, {
+          headers: { ...header() },
+        });
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
   };
 
   const asignar = async (data) => {
-    return await http.post(`/orden/asignar`, data, {
-      headers: { ...header() },
-    });
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.post(`/orden/asignar`, data, {
+          headers: { ...header() },
+        });
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
   };
 
   const faseCount = async (id, mensajeroId) => {
     let qp = id === null ? "" : "?empresaIdFilter=" + id;
     qp += mensajeroId !== null ? "&mensajeroIdFilter=" + mensajeroId : "";
-    return await http.get(`/orden/faseCount${qp}`, {
-      headers: { ...header() },
-    });
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.get(`/orden/faseCount${qp}`, {
+          headers: { ...header() },
+        });
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
   };
 
   const serviceCount = async (id, mensajeroId) => {
     let qp = id === null ? "" : "?empresaIdFilter=" + id;
     qp += mensajeroId !== null ? "&mensajeroIdFilter=" + mensajeroId : "";
-    return await http.get(`/orden/serviceCount${qp}`, {
-      headers: { ...header() },
-    });
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.get(`/orden/serviceCount${qp}`, {
+          headers: { ...header() },
+        });
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
   };
 
   const evidencia = async (file, id) => {
     const formData = new FormData();
     formData.append("file", file);
-    return await http.post(`/evidencia/orden/${id}`, formData, {
-      headers: { ...header(), "Content-type": "multipart/form-data" },
-    });
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.post(`/evidencia/orden/${id}`, formData, {
+          headers: { ...header(), "Content-type": "multipart/form-data" },
+        });
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
   };
 
   const evidenciaInc = async (file, id) => {
     const formData = new FormData();
     formData.append("file", file);
-    return await http.post(`/evidencia/incidencia/${id}`, formData, {
-      headers: { ...header(), "Content-type": "multipart/form-data" },
-    });
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.post(`/evidencia/incidencia/${id}`, formData, {
+          headers: { ...header(), "Content-type": "multipart/form-data" },
+        });
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
   };
 
   const incidencia = async (data) => {
-    return await http.post("/incidencia/create", data, {
-      headers: { ...header() },
-    });
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.post("/incidencia/create", data, {
+          headers: { ...header() },
+        });
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
   };
 
   const bulkcreate = async (data) => {
-    return await http.post(
-      "/orden/bulkcreate",
-      { ordenes: data },
-      { headers: { ...header() } }
-    );
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.post(
+          "/orden/bulkcreate",
+          { ordenes: data },
+          { headers: { ...header() } }
+        );
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
   };
 
   const getReporteGuia = async (data) => {
-    return await http.post(
-      "/orden/reporteGuia?type=pdf",
-      { ordenes: data },
-      { headers: { ...header() }, responseType: "blob" }
-    );
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.post(
+          "/orden/reporteGuia?type=pdf",
+          { ordenes: data },
+          { headers: { ...header() }, responseType: "blob" }
+        );
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
   };
 
   const getTicket = async (data) => {
-    return await http.get(
-      `/orden/${data}/ticket?type=pdf`,
-      { headers: { ...header() }, responseType: "blob" }
-    );
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.get(
+          `/orden/${data}/ticket?type=pdf`,
+          { headers: { ...header() }, responseType: "blob" }
+        );
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
   };
 
   const getReporte = async (tipo, formato, filter) => {
     let url = `/orden/reporte${tipo}?type=${formato}`;
     if (filter !== "") url += `&filter=${filter}`;
-    return await http.get(url, {
-      headers: { ...header() },
-      responseType: "blob",
-    });
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.get(url, {
+          headers: { ...header() },
+          responseType: "blob",
+        });
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
+  };
+
+  const byFase = async () => {
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.get(`/orden/byFase`, {
+          headers: { ...header() },
+        });
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
   };
 
   return {
@@ -164,6 +455,7 @@ export const OrdenDataService = () => {
     getReporteGuia,
     getReporte,
     getTicket,
+    byFase,
   };
 };
 /* const OrdenDataService = {
