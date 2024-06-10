@@ -272,7 +272,7 @@ function App() {
                 </Typography>
               </Grid>
               <Grid item sm={1} sx={{ textAlign: "right" }}>
-                <Dropdown>
+                {/* <Dropdown>
                   <MenuButton variant="plain">
                     <Box sx={{ display: "flex", gap: 4 }}>
                       <Badge
@@ -280,7 +280,7 @@ function App() {
                         variant="solid"
                         badgeContent={999}
                         badgeInset="0 -15px 0 0"
-                        /* sx={{ background: "#3364FF", color: "white" }} */
+                        /* sx={{ background: "#3364FF", color: "white" }} * /
                       >
                         <Notifications />
                       </Badge>
@@ -289,7 +289,7 @@ function App() {
                   <Menu>
                     <MenuItem>Test</MenuItem>
                   </Menu>
-                </Dropdown>
+                </Dropdown> */}
               </Grid>
               <Grid item sm={1}>
                 <IconButton size="large" onClick={cerrarSesion} color="black">
