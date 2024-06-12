@@ -234,13 +234,13 @@ const Recibo = (props) => {
                 Ciudad
               </Grid>
               <Grid item xs={4} className="pdfValue">
-                {orden?.ciudadOrigen.nombre}
+                {orden?.ciudadOrigen?.nombre}
               </Grid>
               <Grid item xs={2} className="pdfItem">
                 Ciudad
               </Grid>
               <Grid item xs={4} className="pdfValue">
-                {orden?.ciudadDestino.nombre}
+                {orden?.ciudadDestino?.nombre}
               </Grid>
               <Grid item xs={2} className="pdfItem">
                 Producto
