@@ -259,8 +259,15 @@ const OrdenList = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { getAll, update, asignar, getReporteGuia, getReporte, getTicket } =
-    OrdenDataService();
+  const {
+    getAll,
+    update,
+    asignar,
+    getReporteGuia,
+    getReporte,
+    getTicket,
+    bulkcreate,
+  } = OrdenDataService();
 
   const [searchParams] = useSearchParams();
 
@@ -849,7 +856,7 @@ const OrdenList = (props) => {
       }
       orden = orden.data;
       let addGuia = 1;
-      let bulkcreate = null;
+      let bulkcreateList = null;
       jsonData.forEach((obj, pos) => {
         obj.origen = direccionOrigen;
         obj.direccionOrigen = direccionOrigen;
@@ -872,8 +879,8 @@ const OrdenList = (props) => {
         return e;
       });
       //return false;
-      bulkcreate = await bulkcreate(jsonData);
-      console.log(bulkcreate);
+      bulkcreateList = await bulkcreate(jsonData);
+      console.log(bulkcreateList);
       retrieveOrdenes(pages + 1, rowsN);
       setOpenDialogXLS(false);
       setFile(null);
@@ -978,6 +985,10 @@ const OrdenList = (props) => {
             <WhatsApp fontSize={"small"} sx={{ color: "#25d366" }} />
           </IconButton>
         </Tooltip>
+        { currentUser?.auth?.roles.find(
+              (rol) =>
+                rol.name === "mensajero"
+            ) === undefined &&
         <Tooltip title="Etiqueta" placement="top">
           <IconButton
             size="small"
@@ -989,6 +1000,7 @@ const OrdenList = (props) => {
             <ConfirmationNumber fontSize={"small"} sx={{ color: "#edca88" }} />
           </IconButton>
         </Tooltip>
+        }
       </>
     );
   };
@@ -1337,7 +1349,10 @@ const OrdenList = (props) => {
           }}
           delete={
             currentUser?.auth?.roles.find(
-              (rol) => rol.name === "mensajero" || rol.name === "supervisor"
+              (rol) =>
+                rol.name === "mensajero" ||
+                rol.name === "supervisor" ||
+                rol.name === "empresa"
             ) !== undefined
               ? false
               : true
@@ -1749,7 +1764,11 @@ const OrdenList = (props) => {
           }
           extraRowButtons={
             currentUser?.auth?.roles.find(
-              (rol) => rol.name === "admin" || rol.name === "supervisor"
+              (rol) =>
+                rol.name === "admin" ||
+                rol.name === "supervisor" ||
+                rol.name === "empresa" ||
+                rol.name === "mensajero"
             ) !== undefined
               ? showRowButtons
               : null

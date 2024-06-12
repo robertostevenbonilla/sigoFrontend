@@ -3,10 +3,8 @@ import {
   useNavigate /* , useLocation, useSearchParams */,
 } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-
 // Styles
 import "./qrStyles.css";
-
 // Qr Scanner
 import QrScanner from "qr-scanner";
 import QrFrame from "../../assets/qr-frame.svg";
@@ -82,14 +80,16 @@ const QrReader = () => {
         .then((response) => {
           setMotorizadoSelect(response.data);
           if (currentUser.auth?.roles[0].name === "mensajero") {
-            setMorotizadoId(currentUser.auth.id);
+            setMorotizadoId(() => (currentUser.auth.id));
+            console.log("if",currentUser.auth.id);
           }
         })
         .catch((err) => {
           console.log(err);
         });
     } else {
-      setMorotizadoId(currentUser.auth.id);
+      console.log("else",currentUser.auth.id);
+      setMorotizadoId(() => (currentUser.auth.id));
     }
   };
 
@@ -114,7 +114,7 @@ const QrReader = () => {
             }));
             const dataM = {
               guias: [guiaR],
-              mensajeroId: morotizadoId,
+              mensajeroId: currentUser.auth.id,
               estadoId: process.env.REACT_APP_FASE_RUTA,
             };
             asignar(dataM)
@@ -176,7 +176,7 @@ const QrReader = () => {
         let ord = ordenes;
         ge.forEach((guia) => {
           delete ord[guia];
-        })
+        });
         setSelected([]);
         setOrdenes(() => ({ ...ord }));
       })
@@ -215,22 +215,11 @@ const QrReader = () => {
     let newSelected = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(
-        selected,
-        name
-      ); 
+      newSelected = newSelected.concat(selected, name);
     } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(
-        selected.slice(1)
-      );
-
-    } else if (
-      selectedIndex ===
-      selected.length - 1
-    ) {
-      newSelected = newSelected.concat(
-        selected.slice(0, -1)
-      );
+      newSelected = newSelected.concat(selected.slice(1));
+    } else if (selectedIndex === selected.length - 1) {
+      newSelected = newSelected.concat(selected.slice(0, -1));
     } else if (selectedIndex > 0) {
       newSelected = newSelected.concat(
         selected.slice(0, selectedIndex),
@@ -280,9 +269,9 @@ const QrReader = () => {
               <Checkbox
                 color="primary"
                 checked={isItemSelected}
-                onClick={(event) => handleClick(event, row['guia'], row)}
+                onClick={(event) => handleClick(event, row["guia"], row)}
                 inputProps={{
-                  "aria-labelledby": row['id'],
+                  "aria-labelledby": row["id"],
                 }}
               />
             </Grid>
@@ -538,8 +527,8 @@ const QrReader = () => {
             )}
 
             <Grid item xs={12} sm={12}>
-              {selected.length > 0 &&
-                <Button 
+              {selected.length > 0 && (
+                <Button
                   color="success"
                   variant="contained"
                   onClick={() => {
@@ -548,7 +537,7 @@ const QrReader = () => {
                 >
                   Finalizar entrega
                 </Button>
-              }
+              )}
               {Object.keys(ordenes).length > 0 && listOrdenes()}
             </Grid>
           </Grid>

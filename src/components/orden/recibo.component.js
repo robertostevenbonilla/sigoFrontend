@@ -180,7 +180,7 @@ const Recibo = (props) => {
                 Servicio
               </Grid>
               <Grid item xs={4} className="pdfValue">
-                {orden?.Servicio.nombre}
+                {orden?.Servicio?.nombre}
               </Grid>
               <Grid item xs={2} className="pdfItem">
                 Origen
