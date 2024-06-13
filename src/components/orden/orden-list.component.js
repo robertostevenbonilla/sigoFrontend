@@ -266,6 +266,8 @@ const OrdenList = (props) => {
     getReporteGuia,
     getReporte,
     getTicket,
+    getTickets,
+    getRecibos,
     bulkcreate,
   } = OrdenDataService();
 
@@ -299,6 +301,7 @@ const OrdenList = (props) => {
 
   const [reloadData, setReload] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
+  const [openDialogPrint, setOpenDialogPrint] = useState(false);
   const [openDialogA, setOpenDialogA] = useState(false);
   const [openDialogXLS, setOpenDialogXLS] = useState(false);
   const [openDialogReport, setOpenDialogReport] = useState(false);
@@ -537,6 +540,11 @@ const OrdenList = (props) => {
     await getPdfFile(selected);
   };
 
+  const downloadRecibo = async () => {
+    dispatch(setLoading(true));
+    await getPdfRecibo(selected);
+  };
+
   const getPdfFile = async (orders) => {
     getReporteGuia(orders)
       .then((reporte) => {
@@ -544,6 +552,26 @@ const OrdenList = (props) => {
           "reporte" + moment().format("YYYY-MM-DD-HH:mm:ss.SS") + ".pdf";
         console.log(reporte);
 
+        const url = URL.createObjectURL(reporte.data);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        dispatch(setLoading(false));
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
+
+  const getPdfRecibo = async (orders) => {
+    getRecibos(orders)
+      .then((reporte) => {
+        let fileName =
+          "recibo" + moment().format("YYYY-MM-DD-HH:mm:ss.SS") + ".pdf";
+        console.log(reporte);
         const url = URL.createObjectURL(reporte.data);
         const link = document.createElement("a");
         link.href = url;
@@ -566,6 +594,30 @@ const OrdenList = (props) => {
           "ticket-" +
           id +
           "-" +
+          moment().format("YYYY-MM-DD-HH:mm:ss.SS") +
+          ".pdf";
+        console.log(reporte);
+
+        const url = URL.createObjectURL(reporte.data);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        dispatch(setLoading(false));
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
+
+  const getTicketsPDF = async (orders) => {
+    dispatch(setLoading(true));
+    getTickets(orders)
+      .then((reporte) => {
+        let fileName =
+          "tickets-" +
           moment().format("YYYY-MM-DD-HH:mm:ss.SS") +
           ".pdf";
         console.log(reporte);
@@ -750,6 +802,7 @@ const OrdenList = (props) => {
     setFaseUpId(-1);
     setAudit([]);
     setOpenDialog(false);
+    setOpenDialogPrint(false);
     setOpenDialogXLS(false);
     setOpenDialogReport(false);
     setOpenDialogFase(false);
@@ -985,22 +1038,23 @@ const OrdenList = (props) => {
             <WhatsApp fontSize={"small"} sx={{ color: "#25d366" }} />
           </IconButton>
         </Tooltip>
-        { currentUser?.auth?.roles.find(
-              (rol) =>
-                rol.name === "mensajero"
-            ) === undefined &&
-        <Tooltip title="Etiqueta" placement="top">
-          <IconButton
-            size="small"
-            onClick={async () => {
-              console.log(id, row);
-              await getTicketPDF(id);
-            }}
-          >
-            <ConfirmationNumber fontSize={"small"} sx={{ color: "#edca88" }} />
-          </IconButton>
-        </Tooltip>
-        }
+        {currentUser?.auth?.roles.find((rol) => rol.name === "mensajero") ===
+          undefined && (
+          <Tooltip title="Etiqueta" placement="top">
+            <IconButton
+              size="small"
+              onClick={async () => {
+                console.log(id, row);
+                await getTicketPDF(id);
+              }}
+            >
+              <ConfirmationNumber
+                fontSize={"small"}
+                sx={{ color: "#edca88" }}
+              />
+            </IconButton>
+          </Tooltip>
+        )}
       </>
     );
   };
@@ -1314,6 +1368,66 @@ const OrdenList = (props) => {
                   }}
                 >
                   Reporte Completo
+                </Button>
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog} color="error">
+              Cancelar
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          id="popupImprimirTickets"
+          open={openDialogPrint}
+          onClose={handleCloseDialog}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"Imprimir guia o tickets."}
+          </DialogTitle>
+          <DialogContent sx={{ paddingTop: "10px !important" }}>
+            <Grid container spacing={2} alignItems={"center"}>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  className="extraButton"
+                  variant="contained"
+                  startIcon={<PictureAsPdf />}
+                  sx={{ width: "90%", margin: "auto" }}
+                  onClick={() => {
+                    downloadPdf();
+                  }}
+                >
+                  Guia
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  className="extraButton"
+                  variant="contained"
+                  startIcon={<PictureAsPdf />}
+                  sx={{ width: "90%", margin: "auto" }}
+                  onClick={() => {
+                    downloadRecibo();
+                  }}
+                >
+                  Recibo
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  className="extraButton"
+                  variant="contained"
+                  startIcon={<PictureAsPdf />}
+                  sx={{ width: "90%", margin: "auto" }}
+                  onClick={() => {
+                    getTicketsPDF(selected);
+                  }}
+                >
+                  Sticker
                 </Button>
               </Grid>
             </Grid>
@@ -1722,7 +1836,8 @@ const OrdenList = (props) => {
                   variant="contained"
                   startIcon={<PictureAsPdf />}
                   onClick={() => {
-                    downloadPdf();
+                    setOpenDialogPrint(true);
+                    //downloadPdf();
                   }}
                 >
                   Imprimir

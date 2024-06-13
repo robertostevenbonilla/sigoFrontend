@@ -28,6 +28,8 @@ import { setMessage, setOpenModal } from "../../reducers/message";
 
 import moment from "moment";
 import { setLoading } from "../../reducers/ui";
+import FaseDataService from "../../services/fase.service";
+import { SearchInput } from "../form/AutoCompleteInput";
 
 const Recibo = (props) => {
   const { guia } = useParams();
@@ -37,7 +39,9 @@ const Recibo = (props) => {
   const { 
     getByGuia,
     evidenciaInc,
-    incidencia, } = OrdenDataService();
+    incidencia,
+    asignar,
+  } = OrdenDataService();
 
   const { auth: currentUser } = useSelector((state) => state.auth);
   const [orden, setOrden] = useState({});
@@ -47,6 +51,8 @@ const Recibo = (props) => {
   const [fileForm, setFile] = useState(null);
   const [checked, setChecked] = useState(false);
   const [incidenciasList, setIncidenciasList] = useState([]);
+  const [faseSelect, setFaseSelect] = useState([]);
+  const [faseId, setFaseId] = useState(-1);
 
   useEffect(() => {
     console.log(currentUser, process.env.REACT_APP_IMG_URL);
@@ -56,6 +62,7 @@ const Recibo = (props) => {
       setLoggedIn(false);
     } else {
       setLoggedIn(true);
+      loadFase();
     }
   }, []);
 
@@ -64,6 +71,21 @@ const Recibo = (props) => {
       getOrdenByGuia(guia);
     }
   }, [guia]);
+
+  const loadFase = () => {
+    const mensajero = currentUser?.auth?.roles.find(
+        (rol) => rol.name == "mensajero"
+      ) !== undefined
+        ? true
+        : false;
+    FaseDataService.getSelect(mensajero)
+      .then((response) => {
+        setFaseSelect(response.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
 
   const getOrdenByGuia = (guiaR) => {
     getByGuia(guiaR)
@@ -122,6 +144,26 @@ const Recibo = (props) => {
   };
 
   const saveIncidencia = async (event) => {
+    if (form.incidencia === "") {
+      const message = {
+        title: "Guardar Incidencia",
+        msg: "Ingrese una descripción.",
+        error: true,
+      };
+      dispatch(setMessage({ ...message }));
+      dispatch(setOpenModal(true));
+      return false;
+    }
+    if (faseId === -1) {
+      const message = {
+        title: "Guardar Incidencia",
+        msg: "Seleccione un estado.",
+        error: true,
+      };
+      dispatch(setMessage({ ...message }));
+      dispatch(setOpenModal(true));
+      return false;
+    }
     console.log(fileForm, orden.id);
     dispatch(setLoading(true));
     const data = {
@@ -132,11 +174,41 @@ const Recibo = (props) => {
     };
     const response = await incidencia(data);
     console.log(response.data);
+    await saveAsignar();
     saveEvidencia(response.data);
   };
 
   const handleChange = (event) => {
     setChecked(!checked);
+  };
+
+  const handleInputChangeF = async (event) => {
+    const { id, value } = event.target;
+    console.log(event.target, id, value);
+    setFaseId(value);
+  };
+
+  const saveAsignar = async () => {
+    const fase = faseId === -1 ? null : faseId;
+    const dataM = {
+      guias: [orden.guia],
+      mensajeroId: currentUser.auth.id,
+      estadoId: fase,
+    };
+    console.log(dataM);
+    await asignar(dataM)
+      .then((response) => {
+        const message = {
+          title: "Asignación",
+          msg: "Procesado correctamente.",
+          error: true,
+        };
+        dispatch(setMessage({ ...message }));
+        dispatch(setOpenModal(true));
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   return (
@@ -274,36 +346,36 @@ const Recibo = (props) => {
           className="text-start"
         >
           <Grid container spacing={1}>
-            {
-              <>
-                <Grid item md={12} sm={12} xs={12}>
-                  <TextField
-                    id="incidencia"
-                    name="incidencia"
-                    label="Incidencia"
-                    value={form.incidencia}
-                    onChange={handleInputChange}
-                    variant="outlined"
-                    multiline
-                    rows={3}
-                    fullWidth
-                    inputProps={{ step: 255, maxLength: 255 }}
-                  />
-                </Grid>
-                {/* <Grid item md={4} sm={4} xs={12} sx={{ margin: "auto 0" }}>
-                  <Button
-                    component="label"
-                    role={undefined}
-                    variant="contained"
-                    tabIndex={-1}
-                    startIcon={<EventNote />}
-                    onClick={saveIncidencia}
-                  >
-                    Guardar incidencia
-                  </Button>
-                </Grid> */}
-              </>
-            }
+            <Grid item xs={12} sm={6} md={6}>
+              <SearchInput
+                options={[
+                  { id: -1, nombre: "Seleccione un estado" },
+                  ...faseSelect,
+                ]}
+                value={faseId}
+                placeholder={"Seleccione un estado"}
+                id={"faseId"}
+                name={"faseId"}
+                label={"Estado"}
+                getOptionLabel={"nombre"}
+                getIndexLabel={"id"}
+                onChange={handleInputChangeF}
+              />
+            </Grid>
+            <Grid item md={12} sm={12} xs={12}>
+              <TextField
+                id="incidencia"
+                name="incidencia"
+                label="Incidencia"
+                value={form.incidencia}
+                onChange={handleInputChange}
+                variant="outlined"
+                multiline
+                rows={3}
+                fullWidth
+                inputProps={{ step: 255, maxLength: 255 }}
+              />
+            </Grid>
           </Grid>
           <br />
           <Grid container spacing={1}>

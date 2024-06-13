@@ -390,6 +390,52 @@ export const OrdenDataService = () => {
     return returnData;
   };
 
+  const getTickets = async (data) => {
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.post(
+          `/orden/tickets?type=pdf`,
+          { ordenes: data },
+          { headers: { ...header() }, responseType: "blob" }
+        );
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
+  };
+
+  const getRecibos = async (data) => {
+    let returnData = null;
+    let recall = false;
+    do {
+      try {
+        returnData = await http.post(
+          `/orden/recibos?type=pdf`,
+          { ordenes: data },
+          { headers: { ...header() }, responseType: "blob" }
+        );
+        recall = false;
+      } catch (error) {
+        console.error(error);
+        if (error.response.status === 403) {
+          recall = await refreshTokenProcess();
+        } else {
+          throw error;
+        }
+      }
+    } while (recall);
+    return returnData;
+  };
+
   const getReporte = async (tipo, formato, filter) => {
     let url = `/orden/reporte${tipo}?type=${formato}`;
     if (filter !== "") url += `&filter=${filter}`;
@@ -455,6 +501,8 @@ export const OrdenDataService = () => {
     getReporteGuia,
     getReporte,
     getTicket,
+    getTickets,
+    getRecibos,
     byFase,
   };
 };
