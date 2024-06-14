@@ -53,7 +53,9 @@ const Orden = () => {
     get,
     update,
     evidenciaInc,
-    incidencia, } = OrdenDataService();
+    incidencia,
+    asignar,
+  } = OrdenDataService();
   
   const [form, setForm] = useState(ordenForm);
   /* const [loading, setLoading] = useState(false); */
@@ -63,6 +65,7 @@ const Orden = () => {
   const [servicioSelect, setServicioSelect] = useState([]);
   const [motorizadoSelect, setMotorizadoSelect] = useState([]);
   const [faseSelect, setFaseSelect] = useState([]);
+  const [faseIdEvi, setFaseIdEvi] = useState(-1);
   const [editedSup, setEditedSup] = useState(true);
   const [incidenciasList, setIncidenciasList] = useState([]);
   const [fileForm, setFile] = useState(null);
@@ -145,6 +148,11 @@ const Orden = () => {
     const { id, value } = event.target;
     if(id === 'incidencia') { setEDescripcion(value); }
     else { setForm({ ...form, [id]: value }); }
+  };
+
+  const handleInputChangeF = async (event) => {
+    const { id, value } = event.target;
+    setFaseIdEvi(value);
   };
 
   const onChange = (e, name = null, value = null) => {
@@ -230,10 +238,12 @@ const Orden = () => {
       ];
       ite++;
       if(ite === fileForm.length) {
-        setIncidenciasList((incidenciasList) => [
+        await setIncidenciasList((incidenciasList) => [
           incidenciaList,
           ...incidenciasList,
         ]);
+        setFaseIdEvi(-1);
+        setEDescripcion('');
         dispatch(setLoading(false));
       }
     });
@@ -258,7 +268,32 @@ const Orden = () => {
       fecha: moment().format("YYYY-MM-DD hh:mm:ss"),
     };
     const response = await incidencia(data);
+    await saveAsignar();
     saveEvidencia(response.data);
+  };
+
+  const saveAsignar = async () => {
+    const fase = faseIdEvi === -1 ? null : faseIdEvi;
+    const dataM = {
+      guias: [orden.guia],
+      mensajeroId: null,
+      estadoId: fase,
+    };
+    console.log(dataM);
+    await asignar(dataM)
+      .then((response) => {
+        const message = {
+          title: "Asignación",
+          msg: "Procesado correctamente.",
+          error: true,
+        };
+        setForm({ ...form, faseId: fase });
+        dispatch(setMessage({ ...message }));
+        dispatch(setOpenModal(true));
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   return (
@@ -673,6 +708,22 @@ const Orden = () => {
           className="text-start"
         >
           <Grid container spacing={1}>
+            <Grid item md={6} sm={6} xs={12}>
+              <SearchInput
+                options={[
+                  { id: -1, nombre: "Seleccione un estado" },
+                  ...faseSelect,
+                ]}
+                value={faseIdEvi}
+                placeholder={"Seleccione un estado"}
+                id={"faseIdEvi"}
+                name={"faseIdEvi"}
+                label={"Estado"}
+                getOptionLabel={"nombre"}
+                getIndexLabel={"id"}
+                onChange={handleInputChangeF}
+              />
+            </Grid>
             <Grid item md={12} sm={12} xs={12}>
               <TextField
                 id="incidencia"

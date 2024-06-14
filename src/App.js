@@ -706,7 +706,7 @@ function App() {
           <Modal.Header closeButton onClick={handleCloseModal}>
             <Modal.Title>{currentMessage.title}</Modal.Title>
           </Modal.Header>
-          <Modal.Body>{currentMessage.msg}</Modal.Body>
+          <Modal.Body><pre>{currentMessage.msg}</pre></Modal.Body>
           <Modal.Footer>
             <Button
               variant="secondary"

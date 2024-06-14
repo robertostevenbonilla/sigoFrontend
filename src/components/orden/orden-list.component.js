@@ -437,9 +437,9 @@ const OrdenList = (props) => {
     }
   };
 
-  const retrieveOrdenes = (page = 0, size = 10) => {
+  const retrieveOrdenes = async (page = 0, size = 10) => {
     dispatch(loadingTable(true));
-    getAll(page, size, filtros, "fechaEntrega:desc")
+    await getAll(page, size, filtros, "fechaEntrega:desc")
       .then((response) => {
         setOrdenes(response.data);
         dispatch(loadingTable(false));
@@ -617,9 +617,7 @@ const OrdenList = (props) => {
     getTickets(orders)
       .then((reporte) => {
         let fileName =
-          "tickets-" +
-          moment().format("YYYY-MM-DD-HH:mm:ss.SS") +
-          ".pdf";
+          "tickets-" + moment().format("YYYY-MM-DD-HH:mm:ss.SS") + ".pdf";
         console.log(reporte);
 
         const url = URL.createObjectURL(reporte.data);
@@ -848,7 +846,6 @@ const OrdenList = (props) => {
         type: "array",
         raw: false,
         cellDates: true,
-        dateNF: "yyyy-mm-dd",
       });
       // find the name of your sheet in the workbook first
       let worksheet = workbook.Sheets["Plantilla"];
@@ -856,7 +853,6 @@ const OrdenList = (props) => {
       // convert to json format
       let jsonData = utils.sheet_to_json(worksheet, {
         raw: false,
-        dateNF: "yyyy-mm-dd",
       });
       delete jsonData[0];
       let empresaGuiaId = empresaUpId;
@@ -910,6 +906,7 @@ const OrdenList = (props) => {
       orden = orden.data;
       let addGuia = 1;
       let bulkcreateList = null;
+      let datosValidos = true;
       jsonData.forEach((obj, pos) => {
         obj.origen = direccionOrigen;
         obj.direccionOrigen = direccionOrigen;
@@ -926,20 +923,41 @@ const OrdenList = (props) => {
         obj.guia = orden.codigo + (orden.Guias * 1 + addGuia);
         obj.servicioId = servicioSelect.filter((x) => x.codigo === "STD")[0].id;
         obj.faseId = faseSelect.filter((x) => x.codigo === "CRD")[0].id;
+        datosValidos = validarData(obj);
         addGuia++;
       });
+      if (!datosValidos) {
+        const message = {
+          title: "Subir Ordenes",
+          msg: `Validar la correcta longitud de los campos.\ncodigo 20 caracteres\ndescripcion 500 caracteres\ndestinatario 255 caracteres\ndireccionDestino 1000 caracteres\nproducto 500 caracteres\n`,
+          error: true,
+        };
+        dispatch(setMessage({ ...message }));
+        dispatch(setOpenModal(true));
+        return false;
+      }
       jsonData = jsonData.filter(function (e) {
         return e;
       });
       //return false;
       bulkcreateList = await bulkcreate(jsonData);
       console.log(bulkcreateList);
-      retrieveOrdenes(pages + 1, rowsN);
+      await retrieveOrdenes(pages + 1, rowsN);
       setOpenDialogXLS(false);
       setFile(null);
       setFileName("");
     };
     reader.readAsArrayBuffer(file);
+  };
+
+  const validarData = (obj) => {
+    let validate = true;
+    if (obj.codigo.length > 20) validate = false;
+    if (obj.descripcion.length > 500) validate = false;
+    if (obj.destinatario.length > 255) validate = false;
+    if (obj.direccionDestino.length > 1000) validate = false;
+    if (obj.producto.length > 500) validate = false;
+    return validate;
   };
 
   const downloadReporte = (tipo = "completo", formato = "pdf") => {
