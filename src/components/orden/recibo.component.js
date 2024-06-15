@@ -175,7 +175,7 @@ const Recibo = (props) => {
     const response = await incidencia(data);
     console.log(response.data);
     await saveAsignar();
-    saveEvidencia(response.data);
+    await saveEvidencia(response.data);
   };
 
   const handleChange = (event) => {
