@@ -12,6 +12,7 @@ export const OrdenDataService = () => {
     let url = `/orden/?page=${page}&size=${size}`;
     if (filter !== "" && filter !== "none") url += `&filter=${filter}`;
     if (sort !== "") url += `&sort=${sort}`;
+    else url += `&sort=fechaEntrega:desc`;
     let returnData = null;
     let recall = false;
     do {

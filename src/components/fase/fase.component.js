@@ -92,6 +92,7 @@ const Fase = () => {
       nombre: form.nombre,
       color: form.color,
       showMensajero: form.showMensajero,
+      permitirAsignar: form.permitirAsignar,
     };
     FaseDataService.update(data)
       .then((response) => {
@@ -194,7 +195,24 @@ const Fase = () => {
               label="Mensajero"
               labelPlacement="start"
               disabled={edited}
-              sx={{margin: 'auto'}}
+              sx={{ margin: "auto" }}
+            />
+          </Grid>
+          <Grid item md={6} sm={6} xs={12}>
+            <FormControlLabel
+              control={
+                <Switch
+                  id="permitirAsignar"
+                  name="permitirAsignar"
+                  checked={form.permitirAsignar}
+                  onChange={handleSwitchChange}
+                  inputProps={{ "aria-label": "controlled" }}
+                />
+              }
+              label="Asignar"
+              labelPlacement="start"
+              disabled={edited}
+              sx={{ margin: "auto" }}
             />
           </Grid>
           <Grid item md={12} sm={12} xs={12} className="text-start">

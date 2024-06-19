@@ -73,6 +73,30 @@ const columnsFase = [
       );
     },
   },
+  {
+    field: "permitirAsignar",
+    headerName: "Asignar",
+    type: "render",
+    renderFunction: (row) => {
+      return row.permitirAsignar === 0 ? (
+        <List>
+          <ListItem>
+            <ListItemIcon style={{ minWidth: 30 }}>
+              <ErrorOutline sx={{ color: "#ffdd29" }} />
+            </ListItemIcon>
+          </ListItem>
+        </List>
+      ) : (
+        <List>
+          <ListItem>
+            <ListItemIcon style={{ minWidth: 30 }}>
+              <TaskAlt color="success" />
+            </ListItemIcon>
+          </ListItem>
+        </List>
+      );
+    },
+  },
 ];
 
 const FaseList = (props) => {

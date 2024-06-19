@@ -55,6 +55,7 @@ const AddFase = () => {
       nombre: form.nombre,
       color: form.color,
       showMensajero: form.showMensajero,
+      permitirAsignar: form.permitirAsignar,
     };
     console.log(dataAU);
     FaseDataService.create(dataAU)
@@ -175,6 +176,22 @@ const AddFase = () => {
                   />
                 }
                 label="Mensajero"
+                labelPlacement="start"
+                sx={{ margin: "auto" }}
+              />
+            </Grid>
+            <Grid item md={6} sm={6} xs={12}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    id="permitirAsignar"
+                    name="permitirAsignar"
+                    checked={form.permitirAsignar}
+                    onChange={handleSwitchChange}
+                    inputProps={{ "aria-label": "controlled" }}
+                  />
+                }
+                label="Asignar"
                 labelPlacement="start"
                 sx={{ margin: "auto" }}
               />

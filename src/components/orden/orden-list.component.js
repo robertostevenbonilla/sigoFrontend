@@ -76,6 +76,10 @@ var doc = new jsPDF();
 
 const columnsOrden = [
   {
+    field: "id",
+    headerName: "Id",
+  },
+  {
     field: "guia",
     headerName: "Guia",
   },
@@ -1530,7 +1534,7 @@ const OrdenList = (props) => {
           getFilters={getFilters}
           showFilters={showFilters}
           setShowFilters={setShowFilters}
-          orderASC="asc"
+          orderASC="desc"
           showCheckboxes={true}
           selected={selected}
           selectedObj={selectedObj}
