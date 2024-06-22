@@ -32,7 +32,7 @@ import FaseDataService from "../../services/fase.service";
 import { SearchInput } from "../form/AutoCompleteInput";
 
 const Recibo = (props) => {
-  const { id } = useParams();
+  const { guia } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
@@ -68,10 +68,10 @@ const Recibo = (props) => {
   }, []);
 
   useEffect(() => {
-    if (id !== "") {
-      getOrdenByGuia(id);
+    if (guia !== "") {
+      getOrdenByGuia(guia);
     }
-  }, [id]);
+  }, [guia]);
 
   const loadFase = () => {
     const mensajero = currentUser?.auth?.roles.find(
