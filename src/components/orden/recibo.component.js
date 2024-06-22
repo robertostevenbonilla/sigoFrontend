@@ -167,7 +167,7 @@ const Recibo = (props) => {
     if (fileForm === null) {
       const message = {
         title: "Guardar Incidencia",
-        msg: "Ingrese una evidencia.",
+        msg: "Ingrese una fotografía.",
         error: true,
       };
       dispatch(setMessage({ ...message }));
