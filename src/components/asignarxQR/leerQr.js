@@ -327,7 +327,7 @@ const QrReader = () => {
             variant="contained"
             sx={{ margin: "auto" }}
             onClick={() => {
-              navigate(`/recibo/${row.guia}`);
+              navigate(`/recibo/${row.id}`);
             }}
           >
             Ver más

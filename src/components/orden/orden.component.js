@@ -48,15 +48,9 @@ const Orden = () => {
   const { id } = useParams();
   let navigate = useNavigate();
   const dispatch = useDispatch();
-  
-  const { 
-    get,
-    update,
-    evidenciaInc,
-    incidencia,
-    asignar,
-  } = OrdenDataService();
-  
+
+  const { get, update, evidenciaInc, incidencia, asignar } = OrdenDataService();
+
   const [form, setForm] = useState(ordenForm);
   /* const [loading, setLoading] = useState(false); */
   const [edited, setEdited] = useState(true);
@@ -70,8 +64,8 @@ const Orden = () => {
   const [incidenciasList, setIncidenciasList] = useState([]);
   const [fileForm, setFile] = useState(null);
   const [orden, setOrden] = useState({});
-  const [eDescripcion, setEDescripcion] = useState('');
-  
+  const [eDescripcion, setEDescripcion] = useState("");
+
   const { auth: currentUser } = useSelector((state) => state.auth);
   const { msg } = useSelector((state) => state.message);
   const { pages, rows } = useSelector((state) => state.ui);
@@ -110,7 +104,12 @@ const Orden = () => {
       .catch((error) => {
         console.error(error);
       });
-    FaseDataService.getSelect()
+    const mensajero =
+      currentUser?.auth?.roles.find((rol) => rol.name == "mensajero") !==
+      undefined
+        ? true
+        : false;
+    FaseDataService.getSelect(mensajero)
       .then((response) => {
         setFaseSelect(response.data);
       })
@@ -146,8 +145,11 @@ const Orden = () => {
 
   const handleInputChange = async (event) => {
     const { id, value } = event.target;
-    if(id === 'incidencia') { setEDescripcion(value); }
-    else { setForm({ ...form, [id]: value }); }
+    if (id === "incidencia") {
+      setEDescripcion(value);
+    } else {
+      setForm({ ...form, [id]: value });
+    }
   };
 
   const handleInputChangeF = async (event) => {
@@ -228,22 +230,19 @@ const Orden = () => {
   const saveEvidencia = async (incidenciaList) => {
     let ite = 0;
     Array.from(fileForm).forEach(async (file, key) => {
-      const response = await evidenciaInc(
-        file,
-        incidenciaList.id
-      );
+      const response = await evidenciaInc(file, incidenciaList.id);
       incidenciaList["evidencias"] = [
         response.data,
         ...incidenciaList["evidencias"],
       ];
       ite++;
-      if(ite === fileForm.length) {
+      if (ite === fileForm.length) {
         await setIncidenciasList((incidenciasList) => [
           incidenciaList,
           ...incidenciasList,
         ]);
         setFaseIdEvi(-1);
-        setEDescripcion('');
+        setEDescripcion("");
         dispatch(setLoading(false));
       }
     });
@@ -717,7 +716,7 @@ const Orden = () => {
         </Grid>
       </CardContent>
       {currentUser.auth?.roles.find(
-        (rol) => rol.name === "admin" || rol.name === "empresa" || rol.name === "mensajero"
+        (rol) => rol.name === "admin" || rol.name === "empresa"
       ) !== undefined && (
         <CardContent
           key="incidencias"
@@ -787,77 +786,80 @@ const Orden = () => {
 
             <Grid item md={12} sm={12} sx={12}>
               <List dense={true}>
-                {incidenciasList.length > 0 && incidenciasList.map((item, key) => (
-                  <>
-                    <ListItem>
-                      <ListItemText
-                        primary={item.descripcion}
-                        secondary={
-                          <>
-                            <Typography
-                              sx={{ display: "inline", fontWeight: "600" }}
-                              component="span"
-                              variant="body2"
-                              color="text.primary"
-                            >
-                              {item.usuario?.persona.fullName}:{" "}
-                            </Typography>
-                            {moment(
-                              item.createdAt[item.fecha.length - 1] === "Z"
-                                ? item.fecha.slice(0, -1)
-                                : item.fecha
-                            ).format("YYYY-MM-DD HH:mm:ss")}
-                          </>
-                        }
-                      />
-                    </ListItem>
-                    <ListItem>
-                      <Grid item md={12} sm={12} sx={12}>
-                        <ImageList
-                          sx={{ width: "100%", maxHeight: 450 }}
-                          variant="quilted"
-                          cols={3}
-                          rowHeight={200}
-                        >
-                          {item.evidencias.map((itemImg, keyImg) => (
-                            <ImageListItem
-                              id={`${key}-${itemImg.id}`}
-                              key={`${key}-${itemImg.id}`}
-                              sx={{ objectFit: "contain" }}
-                            >
-                              <img
-                                srcSet={`${process.env.REACT_APP_IMG_URL}${itemImg.codigo}`}
-                                src={`${process.env.REACT_APP_IMG_URL}${itemImg.codigo}`}
-                                /* alt={item.title} */
-                                loading="lazy"
-                                style={{ objectFit: "contain" }}
-                              />
-                              <ImageListItemBar
-                                title={itemImg.nombre}
-                                subtitle={moment(
-                                  itemImg.createdAt[
-                                    itemImg.createdAt.length - 1
-                                  ] === "Z"
-                                    ? itemImg.createdAt.slice(0, -1)
-                                    : itemImg.createdAt
-                                ).format("YYYY-MM-DD hh:mm:ss")}
-                                actionIcon={
-                                  <IconButton
-                                    sx={{ color: "rgba(255, 255, 255, 0.54)" }}
-                                    aria-label={`info about ${itemImg.title}`}
-                                  >
-                                    <Info />
-                                  </IconButton>
-                                }
-                              />
-                            </ImageListItem>
-                          ))}
-                        </ImageList>
-                      </Grid>
-                    </ListItem>
-                    <Divider variant="middle" component="li" />
-                  </>
-                ))}
+                {incidenciasList.length > 0 &&
+                  incidenciasList.map((item, key) => (
+                    <>
+                      <ListItem>
+                        <ListItemText
+                          primary={item.descripcion}
+                          secondary={
+                            <>
+                              <Typography
+                                sx={{ display: "inline", fontWeight: "600" }}
+                                component="span"
+                                variant="body2"
+                                color="text.primary"
+                              >
+                                {item.usuario?.persona.fullName}:{" "}
+                              </Typography>
+                              {moment(
+                                item.createdAt[item.fecha.length - 1] === "Z"
+                                  ? item.fecha.slice(0, -1)
+                                  : item.fecha
+                              ).format("YYYY-MM-DD HH:mm:ss")}
+                            </>
+                          }
+                        />
+                      </ListItem>
+                      <ListItem>
+                        <Grid item md={12} sm={12} sx={12}>
+                          <ImageList
+                            sx={{ width: "100%", maxHeight: 450 }}
+                            variant="quilted"
+                            cols={3}
+                            rowHeight={200}
+                          >
+                            {item.evidencias.map((itemImg, keyImg) => (
+                              <ImageListItem
+                                id={`${key}-${itemImg.id}`}
+                                key={`${key}-${itemImg.id}`}
+                                sx={{ objectFit: "contain" }}
+                              >
+                                <img
+                                  srcSet={`${process.env.REACT_APP_IMG_URL}${itemImg.codigo}`}
+                                  src={`${process.env.REACT_APP_IMG_URL}${itemImg.codigo}`}
+                                  /* alt={item.title} */
+                                  loading="lazy"
+                                  style={{ objectFit: "contain" }}
+                                />
+                                <ImageListItemBar
+                                  title={itemImg.nombre}
+                                  subtitle={moment(
+                                    itemImg.createdAt[
+                                      itemImg.createdAt.length - 1
+                                    ] === "Z"
+                                      ? itemImg.createdAt.slice(0, -1)
+                                      : itemImg.createdAt
+                                  ).format("YYYY-MM-DD hh:mm:ss")}
+                                  actionIcon={
+                                    <IconButton
+                                      sx={{
+                                        color: "rgba(255, 255, 255, 0.54)",
+                                      }}
+                                      aria-label={`info about ${itemImg.title}`}
+                                    >
+                                      <Info />
+                                    </IconButton>
+                                  }
+                                />
+                              </ImageListItem>
+                            ))}
+                          </ImageList>
+                        </Grid>
+                      </ListItem>
+                      <Divider variant="middle" component="li" />
+                    </>
+                  ))}
               </List>
             </Grid>
           </Grid>

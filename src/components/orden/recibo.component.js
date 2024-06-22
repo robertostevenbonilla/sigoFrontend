@@ -32,11 +32,12 @@ import FaseDataService from "../../services/fase.service";
 import { SearchInput } from "../form/AutoCompleteInput";
 
 const Recibo = (props) => {
-  const { guia } = useParams();
+  const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
   const { 
+    get,
     getByGuia,
     evidenciaInc,
     incidencia,
@@ -67,10 +68,10 @@ const Recibo = (props) => {
   }, []);
 
   useEffect(() => {
-    if (guia !== "") {
-      getOrdenByGuia(guia);
+    if (id !== "") {
+      getOrdenByGuia(id);
     }
-  }, [guia]);
+  }, [id]);
 
   const loadFase = () => {
     const mensajero = currentUser?.auth?.roles.find(
@@ -88,7 +89,7 @@ const Recibo = (props) => {
   };
 
   const getOrdenByGuia = (guiaR) => {
-    getByGuia(guiaR)
+    get(guiaR)
       .then((response) => {
         if (Object.keys(response.data).length > 0) {
           setOrden({ ...response.data });
@@ -102,6 +103,7 @@ const Recibo = (props) => {
           };
           dispatch(setMessage({ ...message }));
           dispatch(setOpenModal(true));
+          navigate("/scanqr")
         }
       })
       .catch((e) => {
