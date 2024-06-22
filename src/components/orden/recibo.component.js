@@ -164,6 +164,16 @@ const Recibo = (props) => {
       dispatch(setOpenModal(true));
       return false;
     }
+    if (fileForm === null) {
+      const message = {
+        title: "Guardar Incidencia",
+        msg: "Ingrese una evidencia.",
+        error: true,
+      };
+      dispatch(setMessage({ ...message }));
+      dispatch(setOpenModal(true));
+      return false;
+    }
     console.log(fileForm, orden.id);
     dispatch(setLoading(true));
     const data = {

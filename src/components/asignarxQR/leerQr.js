@@ -38,6 +38,7 @@ const QrReader = () => {
 
   const [ordenes, setOrdenes] = useState([]);
   const [redding, setRedding] = useState(false);
+  const [QRvalue, setQRvalue] = useState('');
   const [faseSelect, setFaseSelect] = useState([]);
   const [motorizadoSelect, setMotorizadoSelect] = useState([]);
   const [morotizadoId, setMorotizadoId] = useState(-1);
@@ -97,6 +98,7 @@ const QrReader = () => {
     if (guiaR === "") return false;
     console.log(
       "getOrdenByGuia",
+      QRvalue,
       guiaR,
       ordenes,
       Object.keys(ordenes),
@@ -347,9 +349,10 @@ const QrReader = () => {
     const guia = result?.data;
     let guiaR = guia.replace("httpÑ--sigo.goyaexpressdelivery.com-recibo-", "");
     guiaR = guiaR.replace("http://sigo.goyaexpressdelivery.com/recibo/", "");
-
+    console.log("QRvalue", QRvalue, guiaR);
     if (!redding) {
-      setRedding(true);
+      setRedding(() => true);
+      setQRvalue(() => guiaR);
       await getOrdenByGuia(guiaR);
     }
   };

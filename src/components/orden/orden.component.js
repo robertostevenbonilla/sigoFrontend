@@ -260,6 +260,26 @@ const Orden = () => {
       dispatch(setOpenModal(true));
       return false;
     }
+    if (faseIdEvi === -1) {
+      const message = {
+        title: "Guardar Incidencia",
+        msg: "Seleccione un estado.",
+        error: true,
+      };
+      dispatch(setMessage({ ...message }));
+      dispatch(setOpenModal(true));
+      return false;
+    }
+    if (fileForm === null) {
+      const message = {
+        title: "Guardar Incidencia",
+        msg: "Ingrese una fotografía.",
+        error: true,
+      };
+      dispatch(setMessage({ ...message }));
+      dispatch(setOpenModal(true));
+      return false;
+    }
     dispatch(setLoading(true));
     const data = {
       ordenId: orden.id,
@@ -269,7 +289,7 @@ const Orden = () => {
     };
     const response = await incidencia(data);
     await saveAsignar();
-    saveEvidencia(response.data);
+    await saveEvidencia(response.data);
   };
 
   const saveAsignar = async () => {
@@ -697,7 +717,7 @@ const Orden = () => {
         </Grid>
       </CardContent>
       {currentUser.auth?.roles.find(
-        (rol) => rol.name === "admin" || rol.name === "mensajero"
+        (rol) => rol.name === "admin" || rol.name === "empresa" || rol.name === "mensajero"
       ) !== undefined && (
         <CardContent
           key="incidencias"
