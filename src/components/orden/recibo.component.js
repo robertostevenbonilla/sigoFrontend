@@ -136,10 +136,13 @@ const Recibo = (props) => {
       ];
       ite++;
       if(ite === fileForm.length) {
-        setIncidenciasList((incidenciasList) => [
+        await setIncidenciasList((incidenciasList) => [
           incidenciaList,
           ...incidenciasList,
         ]);
+        setForm({ incidencia: "", evidencias: [] });
+        setFaseId(-1);
+        setFile(null);
         dispatch(setLoading(false));
       }
     });

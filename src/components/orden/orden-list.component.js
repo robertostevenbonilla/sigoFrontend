@@ -75,10 +75,10 @@ import {
 var doc = new jsPDF();
 
 const columnsOrden = [
-  {
+  /* {
     field: "id",
     headerName: "Id",
-  },
+  }, */
   {
     field: "guia",
     headerName: "Guia",
@@ -1911,6 +1911,7 @@ const OrdenList = (props) => {
               : null
           }
           audit={true}
+          showNumber={true}
         />
       </Card>
     </div>

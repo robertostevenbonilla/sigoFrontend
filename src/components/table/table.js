@@ -195,6 +195,7 @@ function EnhancedTableHead(props) {
     expandibleButtonPosition,
     buttons,
     audit,
+    showNumber,
   } = props;
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
@@ -227,6 +228,11 @@ function EnhancedTableHead(props) {
                   }}
                 />
               )}
+            </TableCell>
+          )}
+          {showNumber && (
+            <TableCell id='position' align="right" sx={{ width: (150*buttons.length) }}>
+              <div>#</div>
             </TableCell>
           )}
           {columns.map((headCell) => (
@@ -293,7 +299,9 @@ function EnhancedTableRow(props) {
     disableCheckboxes,
     expandibleButtonPosition,
     audit,
-    getAudit
+    getAudit,
+    number,
+    showNumber,
   } = props;
 
   const [formattedRow, setFormattedRow] = React.useState({});
@@ -379,6 +387,13 @@ function EnhancedTableRow(props) {
                 }}
               />
             )}
+          </TableCell>
+        )}
+        {showNumber && (
+          <TableCell id={`btn${rowId}`} align="right" sx={{ width: (150*buttons.length) }}>
+            <div>
+              {number}
+            </div>
           </TableCell>
         )}
         {columns.map((column) => {
@@ -746,6 +761,7 @@ export default function EnhancedTable(props) {
     rowsHandle=10,
     audit=false,
     getAudit=null,
+    showNumber=false,
   } = props;
   const [order, setOrder] = React.useState(orderASC);
   const [orderBy, setOrderBy] = React.useState("");
@@ -1129,6 +1145,7 @@ export default function EnhancedTable(props) {
       const isExpandable =
         row[rowId] ===
         (expandableItem !== null ? expandableItem : innerExpandableTable);
+      console.log(index,page,rowsPerPage);
       return (
         <EnhancedTableRow
           isItemSelected={isItemSelected}
@@ -1150,6 +1167,8 @@ export default function EnhancedTable(props) {
           expandibleButtonPosition={expandibleButtonPosition}
           audit={audit}
           getAudit={getAudit}
+          number={(index+1)+(page * rowsPerPage)}
+          showNumber={showNumber}
         />
       );
     });
@@ -1231,6 +1250,7 @@ export default function EnhancedTable(props) {
               expandibleButtonPosition={expandibleButtonPosition}
               buttons={countButtons()}
               audit={audit}
+              showNumber={showNumber}
             />
             <TableBody>
               {loading ? (
