@@ -354,10 +354,11 @@ const OrdenList = (props) => {
   useEffect(() => {
     console.log(currentUser, location, selected, selectedObj);
     const innerPage =
-      parseInt(searchParams.get("page") ? searchParams.get("page") : 1) - 1;
+      parseInt(searchParams.get("page") > 0 ? searchParams.get("page") : 1) - 1;
     const innerRowsPerPage = parseInt(
-      searchParams.get("rowsPerPage") ? searchParams.get("rowsPerPage") : 10
+      searchParams.get("rowsPerPage") > 0 ? searchParams.get("rowsPerPage") : 10
     );
+    console.log("paginacion List", searchParams.get("rowsPerPage"), innerPage, innerRowsPerPage);
     dispatch(setPages(innerPage));
     dispatch(setRows(innerRowsPerPage));
 
@@ -366,13 +367,14 @@ const OrdenList = (props) => {
     } else if (!currentUser.isLoggedIn) {
       navigate("/login");
     } else {
-      const innerPage =
-        parseInt(searchParams.get("page") ? searchParams.get("page") : 1) - 1;
+      /* const innerPage =
+        parseInt(searchParams.get("page") ? searchParams.get("page") : 0) - 1;
       const innerRowsPerPage = parseInt(
         searchParams.get("rowsPerPage") ? searchParams.get("rowsPerPage") : 10
       );
+      console.log("paginacion List", searchParams.get("rowsPerPage"), innerPage, innerRowsPerPage);
       dispatch(setPages(innerPage));
-      dispatch(setRows(innerRowsPerPage));
+      dispatch(setRows(innerRowsPerPage)); */
       console.log("paginacion1", pages, rowsN);
       retrieveOrdenes(innerPage + 1, innerRowsPerPage);
       loadMotirizados();
@@ -442,6 +444,8 @@ const OrdenList = (props) => {
   };
 
   const retrieveOrdenes = async (page = 0, size = 10) => {
+    console.log("retrieveOrdenes", page, size, filtros);
+    if(size < 0) size = 10;
     dispatch(loadingTable(true));
     await getAll(page, size, filtros, "fechaEntrega:desc")
       .then((response) => {

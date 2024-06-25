@@ -123,6 +123,7 @@ const AddOrden = () => {
       navigate("/changepassword");
     } else {
       loadSelects();
+      console.log(form);
     }
   }, []);
 
@@ -132,18 +133,12 @@ const AddOrden = () => {
     if (id === "empresaId" && value > 0) {
       console.log("gui", value);
       var response = await EmpresaDataService.findGuia(value)
-        /* .then((response) => {
-          var guia = (response.codigo+(((response.Guia)*1)+1));
-          console.log("guia", response, guia);
-          setForm({ ...form, "guia": guia });
-        }) */
         .catch((error) => {
           console.error(error);
         });
       response = response.data;
       var guia = response.codigo + (response.Guias * 1 + 1);
       console.log("guia", response, guia);
-      //setForm({ ...form, [id]: value });
       setForm({
         ...form,
         [id]: value,
@@ -164,13 +159,11 @@ const AddOrden = () => {
 
   const handleSearchInputChange = async (event) => {
     const { name, value } = event.target;
-    console.log(form, event, name, value);
     setForm({ ...form, [name]: [...value] });
   };
 
   const handleSwitchChange = (event) => {
     const { id, checked } = event.target;
-    console.log(form, event.target, id, checked);
     setForm({ ...form, [id]: checked });
   };
 

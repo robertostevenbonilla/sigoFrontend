@@ -1145,7 +1145,6 @@ export default function EnhancedTable(props) {
       const isExpandable =
         row[rowId] ===
         (expandableItem !== null ? expandableItem : innerExpandableTable);
-      console.log(index,page,rowsPerPage);
       return (
         <EnhancedTableRow
           isItemSelected={isItemSelected}

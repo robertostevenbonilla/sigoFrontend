@@ -77,13 +77,13 @@ export const ordenForm = {
     codigo: '',
     empresaId: null,
     servicioId: null,
-    faseId: null,
+    faseId: process.env.REACT_APP_FASE_CREADO*1,
     ciudadOrigenId: null,
     ciudadDestinoId: null,
     mensajeroId: null,
     Evidencias: [],
 }
-
+ 
 export const ordenFilterForm = {
     empresaId: [],
     servicioId: [],

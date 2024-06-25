@@ -144,6 +144,7 @@ const Recibo = (props) => {
         setFaseId(-1);
         setFile(null);
         dispatch(setLoading(false));
+        navigate("/scanqr");
       }
     });
   };
