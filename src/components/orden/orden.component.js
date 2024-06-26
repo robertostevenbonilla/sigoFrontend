@@ -337,6 +337,7 @@ const Orden = () => {
         <Typography color="text.primary">{form.guia}</Typography>
       </Breadcrumbs>
       <CardContent
+        id="datosGenerales-orden"
         title="Orden"
         icon={<Business sx={{ color: "white", fontSize: "23px" }} />}
         openCollapse={true}
@@ -726,63 +727,66 @@ const Orden = () => {
           idElement="datosGenerales-orden"
           className="text-start"
         >
-          <Grid container spacing={1}>
-            <Grid item md={6} sm={6} xs={12}>
-              <SearchInput
-                options={[
-                  { id: -1, nombre: "Seleccione un estado" },
-                  ...faseSelect,
-                ]}
-                value={faseIdEvi}
-                placeholder={"Seleccione un estado"}
-                id={"faseIdEvi"}
-                name={"faseIdEvi"}
-                label={"Estado"}
-                getOptionLabel={"nombre"}
-                getIndexLabel={"id"}
-                onChange={handleInputChangeF}
-              />
+          {currentUser.auth?.roles.find((rol) => rol.name === "admin") !==
+            undefined && (
+            <Grid container spacing={1}>
+              <Grid item md={6} sm={6} xs={12}>
+                <SearchInput
+                  options={[
+                    { id: -1, nombre: "Seleccione un estado" },
+                    ...faseSelect,
+                  ]}
+                  value={faseIdEvi}
+                  placeholder={"Seleccione un estado"}
+                  id={"faseIdEvi"}
+                  name={"faseIdEvi"}
+                  label={"Estado"}
+                  getOptionLabel={"nombre"}
+                  getIndexLabel={"id"}
+                  onChange={handleInputChangeF}
+                />
+              </Grid>
+              <Grid item md={12} sm={12} xs={12}>
+                <TextField
+                  id="incidencia"
+                  name="incidencia"
+                  label="Incidencia"
+                  value={eDescripcion}
+                  onChange={handleInputChange}
+                  variant="outlined"
+                  multiline
+                  rows={3}
+                  fullWidth
+                  inputProps={{ step: 255, maxLength: 255 }}
+                />
+              </Grid>
+              <Grid item md={8} sm={8} xs={12} sx={{ margin: "auto 0" }}>
+                <TextField
+                  type="file"
+                  inputProps={{
+                    multiple: true,
+                    accept: "image/png, image/gif, image/jpeg",
+                  }}
+                  onChange={handleEvidencia}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item md={4} sm={4} xs={12} sx={{ margin: "auto 0" }}>
+                <Button
+                  component="label"
+                  role={undefined}
+                  variant="contained"
+                  tabIndex={-1}
+                  startIcon={<CloudUpload />}
+                  onClick={saveIncidencia /* saveEvidencia */}
+                >
+                  Guardar incidencia
+                </Button>
+              </Grid>
             </Grid>
-            <Grid item md={12} sm={12} xs={12}>
-              <TextField
-                id="incidencia"
-                name="incidencia"
-                label="Incidencia"
-                value={eDescripcion}
-                onChange={handleInputChange}
-                variant="outlined"
-                multiline
-                rows={3}
-                fullWidth
-                inputProps={{ step: 255, maxLength: 255 }}
-              />
-            </Grid>
-          </Grid>
+          )}
           <br />
           <Grid container spacing={1}>
-            <Grid item md={8} sm={8} xs={12} sx={{ margin: "auto 0" }}>
-              <TextField
-                type="file"
-                inputProps={{
-                  multiple: true,
-                  accept: "image/png, image/gif, image/jpeg",
-                }}
-                onChange={handleEvidencia}
-                fullWidth
-              />
-            </Grid>
-            <Grid item md={4} sm={4} xs={12} sx={{ margin: "auto 0" }}>
-              <Button
-                component="label"
-                role={undefined}
-                variant="contained"
-                tabIndex={-1}
-                startIcon={<CloudUpload />}
-                onClick={saveIncidencia /* saveEvidencia */}
-              >
-                Guardar incidencia
-              </Button>
-            </Grid>
 
             <Grid item md={12} sm={12} sx={12}>
               <List dense={true}>

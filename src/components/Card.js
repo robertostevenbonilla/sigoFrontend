@@ -50,11 +50,11 @@ export const Card = ({
         height: 'auto',
         display: 'flex',
         flexDirection: 'column',
-        width: '98%',
         margin: '5px auto',
         marginBottom: '20px'
       }}
       id={idElement}
+      className="card__container"
     >
       <div className="card__card-title-container">
         {icon && <div className="card__icon" onClick={onClickCollpased}>{icon}</div>}

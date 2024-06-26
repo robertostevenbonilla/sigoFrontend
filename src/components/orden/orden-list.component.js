@@ -352,34 +352,25 @@ const OrdenList = (props) => {
   };
 
   useEffect(() => {
-    console.log(currentUser, location, selected, selectedObj);
-    const innerPage =
-      parseInt(searchParams.get("page") > 0 ? searchParams.get("page") : 1) - 1;
-    const innerRowsPerPage = parseInt(
-      searchParams.get("rowsPerPage") > 0 ? searchParams.get("rowsPerPage") : 10
-    );
-    console.log("paginacion List", searchParams.get("rowsPerPage"), innerPage, innerRowsPerPage);
-    dispatch(setPages(innerPage));
-    dispatch(setRows(innerRowsPerPage));
-
     if (currentUser.auth?.reset_password === 1) {
       navigate("/changepassword");
     } else if (!currentUser.isLoggedIn) {
       navigate("/login");
     } else {
-      /* const innerPage =
-        parseInt(searchParams.get("page") ? searchParams.get("page") : 0) - 1;
+      console.log(currentUser, location, selected, selectedObj);
+      const innerPage =
+        parseInt(searchParams.get("page") > 0 ? searchParams.get("page") : 1) - 1;
       const innerRowsPerPage = parseInt(
-        searchParams.get("rowsPerPage") ? searchParams.get("rowsPerPage") : 10
+        searchParams.get("rowsPerPage") > 0 ? searchParams.get("rowsPerPage") : 10
       );
       console.log("paginacion List", searchParams.get("rowsPerPage"), innerPage, innerRowsPerPage);
       dispatch(setPages(innerPage));
-      dispatch(setRows(innerRowsPerPage)); */
-      console.log("paginacion1", pages, rowsN);
+      dispatch(setRows(innerRowsPerPage));
       retrieveOrdenes(innerPage + 1, innerRowsPerPage);
       loadMotirizados();
       loadSelects();
-    }
+      }
+    console.log("useEffect", pages, rowsN);
   }, []);
 
   useEffect(() => {
@@ -391,9 +382,6 @@ const OrdenList = (props) => {
   useEffect(() => {
     if (filtros !== "") {
       console.log("filtros", filtros, pages, rowsN, selected, selectedObj);
-      /* dispatch(setSelected([]));
-      dispatch(setSelectedObj([])); 
-      setOrdenes([]);*/
       retrieveOrdenes(pages + 1, rowsN);
       if (filtros === "none") {
         dispatch(setFiltros(""));
@@ -961,7 +949,7 @@ const OrdenList = (props) => {
   const validarData = (obj) => {
     let validate = true;
     if (obj.codigo.length > 20) validate = false;
-    if (obj.descripcion.length > 500) validate = false;
+    if (obj.descripcion?.length > 500) validate = false;
     if (obj.destinatario.length > 255) validate = false;
     if (obj.direccionDestino.length > 1000) validate = false;
     if (obj.producto.length > 500) validate = false;
