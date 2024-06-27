@@ -837,6 +837,7 @@ const OrdenList = (props) => {
     let reader = new FileReader();
 
     reader.onload = async function (e) {
+      dispatch(setLoading(true));
       let data = new Uint8Array(e.target.result);
       let workbook = read(data, {
         type: "array",
@@ -919,7 +920,7 @@ const OrdenList = (props) => {
         obj.guia = orden.codigo + (orden.Guias * 1 + addGuia);
         obj.servicioId = servicioSelect.filter((x) => x.codigo === "STD")[0].id;
         obj.faseId = faseSelect.filter((x) => x.codigo === "CRD")[0].id;
-        datosValidos = validarData(obj);
+        datosValidos = datosValidos && validarData(obj);
         addGuia++;
       });
       if (!datosValidos) {
@@ -942,6 +943,7 @@ const OrdenList = (props) => {
       setOpenDialogXLS(false);
       setFile(null);
       setFileName("");
+      dispatch(setLoading(false));
     };
     reader.readAsArrayBuffer(file);
   };
