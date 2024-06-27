@@ -904,6 +904,7 @@ const OrdenList = (props) => {
       let addGuia = 1;
       let bulkcreateList = null;
       let datosValidos = true;
+      let posError = "";
       jsonData.forEach((obj, pos) => {
         obj.origen = direccionOrigen;
         obj.direccionOrigen = direccionOrigen;
@@ -920,17 +921,21 @@ const OrdenList = (props) => {
         obj.guia = orden.codigo + (orden.Guias * 1 + addGuia);
         obj.servicioId = servicioSelect.filter((x) => x.codigo === "STD")[0].id;
         obj.faseId = faseSelect.filter((x) => x.codigo === "CRD")[0].id;
-        datosValidos = datosValidos && validarData(obj);
+        const validaTMP = validarData(obj);
+        datosValidos = datosValidos && validaTMP;
+        if(!validaTMP) posError += " "+(pos+2)+",";
         addGuia++;
       });
       if (!datosValidos) {
+        posError = posError.substring(0, posError.length - 1);
         const message = {
           title: "Subir Ordenes",
-          msg: `Validar la correcta longitud de los campos.\ncodigo 20 caracteres\ndescripcion 500 caracteres\ndestinatario 255 caracteres\ndireccionDestino 1000 caracteres\nproducto 500 caracteres\n`,
+          msg: `Validar la correcta longitud de los campos.\ncodigo 20 caracteres\ndescripcion 500 caracteres\ndestinatario 255 caracteres\ndireccionDestino 1000 caracteres\nproducto 500 caracteres\nColumnas:${posError}`,
           error: true,
         };
         dispatch(setMessage({ ...message }));
         dispatch(setOpenModal(true));
+        dispatch(setLoading(false));
         return false;
       }
       jsonData = jsonData.filter(function (e) {
