@@ -691,7 +691,7 @@ const OrdenList = (props) => {
     let guias = selectedObj.map((registro) => registro.guia);
     const dataM = {
       guias: guias,
-      mensajeroId: null,
+      mensajeroId: -1,
     };
     console.log(dataM);
     asignar(dataM)
