@@ -6,7 +6,7 @@ export const OrdenDataService = () => {
   const { header } = AuthHeader();
   const { refreshTokenProcess } = AuthDataService();
 
-  const getAll = async (page, size, filter = "", sort = "") => {
+  const getAll = async (page, size, filter = "", sort = "", moreFilters) => {
     if (page - 1 < 0) page = 0;
     else page = page - 1;
     let url = `/orden/?page=${page}&size=${size}`;

@@ -275,6 +275,10 @@ const OrdenList = (props) => {
     bulkcreate,
   } = OrdenDataService();
 
+  const searchableKeys = [
+    "guia",
+  ];
+
   const [searchParams] = useSearchParams();
 
   const [ordenes, setOrdenes] = useState([]);
@@ -299,6 +303,7 @@ const OrdenList = (props) => {
   const [filtersLoaded, setFiltersLoaded] = useState(false);
   const [fileXLS, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
+  const [searchableText, setSearchableText] = useState("");
 
   const [download, setDownload] = useState(false);
   const [downloadObj, setDownloadObj] = useState([]);
@@ -391,6 +396,13 @@ const OrdenList = (props) => {
     }
   }, [filtros]);
 
+  useEffect(() => {
+    if (searchableText !== "") {
+      console.log("searchableText", searchableText, pages, rowsN, selected, selectedObj);
+      retrieveOrdenes(pages, rowsN);
+    }
+  }, [searchableText]);
+
   const getFilters = async () => {
     if (!filtersLoaded) {
       setFiltersLoaded(true);
@@ -432,10 +444,16 @@ const OrdenList = (props) => {
   };
 
   const retrieveOrdenes = async (page = 0, size = 10) => {
-    console.log("retrieveOrdenes", page, size, filtros);
+    console.log("retrieveOrdenes", page, size, filtros, searchableText);
+    let text = '';
+    if(searchableText !== "") {
+      searchableKeys.forEach((item) => { text += `${item}:like:${searchableText};` });
+      text = text.substring(0, text.length-1);
+    }
     if(size < 0) size = 10;
     dispatch(loadingTable(true));
-    await getAll(page, size, filtros, "fechaEntrega:desc")
+
+    await getAll(page, size, filtros+text, "fechaEntrega:desc")
       .then((response) => {
         setOrdenes(response.data);
         dispatch(loadingTable(false));
@@ -445,6 +463,11 @@ const OrdenList = (props) => {
         dispatch(loadingTable(false));
       });
   };
+
+  const handleSearch = async (searchValue) => {
+    setSearchableText(searchValue);
+    console.log("handleSearch", searchValue);
+  }
 
   const loadMotirizados = () => {
     UsuarioDataService.motorizados()
@@ -1519,13 +1542,9 @@ const OrdenList = (props) => {
                 console.log(error);
               });
           }}
-          searchableKeys={[
-            "fechaEntrega",
-            "remitente",
-            "destinatario",
-            "email",
-            "guia",
-          ]}
+          onsearchFunction={handleSearch}
+          searchableKeys={searchableKeys}
+          searchableText={searchableText}
           rowId={"id"}
           paginationServer={true}
           handlePagination={retrieveOrdenes}

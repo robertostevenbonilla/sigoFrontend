@@ -762,6 +762,8 @@ export default function EnhancedTable(props) {
     audit=false,
     getAudit=null,
     showNumber=false,
+    onsearchFunction=null,
+    searchableText="",
   } = props;
   const [order, setOrder] = React.useState(orderASC);
   const [orderBy, setOrderBy] = React.useState("");
@@ -793,7 +795,7 @@ export default function EnhancedTable(props) {
     if (disablePathParameters) {
       setPage(0);
       setRowsPerPage(10);
-      setSearch("");
+      setSearch(searchableText);
     } else if (!disablePathParameters && refresh) {
       console.log(table,disablePathParameters,refresh);
       navigate(
@@ -825,7 +827,7 @@ export default function EnhancedTable(props) {
       );
       const innerSearch = searchParams.get("search")
         ? searchParams.get("search")
-        : "";
+        : searchableText;
       if((innerPage - 1) >= 0) setPage(innerPage - 1);
       setRowsPerPage(innerRowsPerPage);
       setSearch(innerSearch);
@@ -833,7 +835,10 @@ export default function EnhancedTable(props) {
   }, [searchParams]);
 
   React.useEffect(() => {
-    if (search) {
+    if(onsearchFunction !== null){
+      console.log(search);
+      onsearchFunction(search);
+    } else if (search) {
       setPage(0);
       setDataTable({
         ...table,
@@ -888,12 +893,12 @@ export default function EnhancedTable(props) {
   }, [refresh]);
 
   React.useEffect(() => {
-    //if (page !== pagesHandle)
+    if (page !== pagesHandle)
       setPage(pagesHandle);
   }, [pagesHandle]);
 
   React.useEffect(() => {
-    //if (rowsPerPage !== rowsHandle)
+    if (rowsPerPage !== rowsHandle)
       setRowsPerPage(rowsHandle);
   }, [rowsHandle]);
 
@@ -1145,6 +1150,7 @@ export default function EnhancedTable(props) {
       const isExpandable =
         row[rowId] ===
         (expandableItem !== null ? expandableItem : innerExpandableTable);
+      console.log(page,rowsPerPage);
       return (
         <EnhancedTableRow
           isItemSelected={isItemSelected}
@@ -1194,7 +1200,7 @@ export default function EnhancedTable(props) {
       <EnhancedTableToolbar
         numSelected={(selected ? selected : innerSelected).length}
         setSearch={setSearch}
-        search={search}
+        search={search !== '' ? search : searchableText}
         extraFilters={extraFilters}
         resetPagination={resetPagination}
         getFilters={getFilters}
@@ -1314,16 +1320,20 @@ export default function EnhancedTable(props) {
             </Select>
           </Grid>
         </Grid>
+        {!isNaN(dataTable?.pages
+              ? dataTable?.pages
+              : Math.ceil(dataTable.rows?.length / rowsPerPage)) &&
         <Pagination
           sx={{ color: "neutral" }}
           count={
             dataTable?.pages
-              ? dataTable?.pages
-              : Math.ceil(dataTable.rows?.length / rowsPerPage)
+              ? dataTable?.pages*1
+              : Math.ceil(dataTable.rows?.length / rowsPerPage)*1
           }
           page={page + 1}
           onChange={handleChangePage}
         />
+        }
       </Grid>
     </Grid>
   );
