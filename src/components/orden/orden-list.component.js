@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { OrdenDataService } from "../../services/orden.service";
@@ -257,7 +257,15 @@ const flexContainer = {
   flexDirection: "row",
   padding: 0,
 };
+const loadDataOnlyOnce = [];
 
+function usePrevious(value) {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
 const OrdenList = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -282,6 +290,7 @@ const OrdenList = (props) => {
   const [searchParams] = useSearchParams();
 
   const [ordenes, setOrdenes] = useState([]);
+  const prevordenes = usePrevious(ordenes)
 
   const { auth: currentUser } = useSelector((state) => state.auth);
   const { isLoadingTable } = useSelector((state) => state.ui);
@@ -289,9 +298,13 @@ const OrdenList = (props) => {
   const { filtros } = useSelector((state) => state.filtro);
   const { showFilters } = useSelector((state) => state.filtro);
   const { pages } = useSelector((state) => state.ui);
+  const prevPages = usePrevious(pages)
   const { rowsN } = useSelector((state) => state.ui);
+  const prevrowsN = usePrevious(rowsN)
   const { selected } = useSelector((state) => state.ui);
+  const prevselected = usePrevious(selected)
   const { selectedObj } = useSelector((state) => state.ui);
+  const prevselectedObj = usePrevious(selectedObj)
 
   const [ciudadSelect, setCiudadSelect] = useState([]);
   const [empresaSelect, setEmpresaSelect] = useState([]);
@@ -376,7 +389,27 @@ const OrdenList = (props) => {
       loadSelects();
       }
     console.log("useEffect", pages, rowsN);
-  }, []);
+  }, loadDataOnlyOnce);
+
+  useEffect(() => {
+    console.log("useEffectGeneral, algo cambia");
+
+    if(pages!==prevPages || pages === undefined){
+      console.log("pages change","antes",prevPages,"despues",pages)
+    }
+    if(rowsN!==prevrowsN || rowsN === undefined){
+      console.log("rowsN change","antes",prevrowsN,"despues",rowsN)
+    }
+    if(selected!==prevselected || selected === undefined){
+      console.log("selected change","antes",prevselected,"despues",selected)
+    }
+    if(selectedObj!==prevselectedObj || selectedObj === undefined){
+      console.log("selectedObj change","antes",prevselectedObj,"despues",selectedObj)
+    }
+    if(ordenes!==prevordenes || ordenes === undefined){
+      console.log("ordenes change","antes",prevordenes,"despues",ordenes)
+    }
+  });
 
   useEffect(() => {
     if (downloadObj.length > 0) {

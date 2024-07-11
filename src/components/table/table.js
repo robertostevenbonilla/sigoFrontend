@@ -810,6 +810,7 @@ export default function EnhancedTable(props) {
   }, [rowId]);
 
   React.useEffect(() => {
+    console.log("cambio pagina interna")
     if(props.setPages) dispatch(setPages(page));
   }, [page]);
 
@@ -892,10 +893,11 @@ export default function EnhancedTable(props) {
     }
   }, [refresh]);
 
-  React.useEffect(() => {
+  /* React.useEffect(() => {
+    console.log("cambio pagesHandle",pagesHandle,page);
     if (page !== pagesHandle)
       setPage(pagesHandle);
-  }, [pagesHandle]);
+  }, [pagesHandle]); */ 
 
   React.useEffect(() => {
     if (rowsPerPage !== rowsHandle)
@@ -1156,6 +1158,7 @@ export default function EnhancedTable(props) {
           isItemSelected={isItemSelected}
           row={row}
           rowId={rowId}
+          key={"key" + row?.id}
           handleClick={handleClick}
           labelId={labelId}
           columns={dataTable.columns}
