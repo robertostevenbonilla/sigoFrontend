@@ -1175,7 +1175,7 @@ export default function EnhancedTable(props) {
           row={row}
           rowId={rowId}
           key={"key" + row?.id}
-          handleClick={handleClick}
+          handleClick1={handleClick}
           labelId={labelId}
           columns={dataTable.columns}
           showCheckboxes={showCheckboxes}
