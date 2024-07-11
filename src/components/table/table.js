@@ -830,7 +830,8 @@ export default function EnhancedTable(props) {
   }, [rowId]);
 
   React.useEffect(() => {
-    if (props.setPages) dispatch(setPages(page));
+    console.log("cambio pagina interna")
+    if(props.setPages) dispatch(setPages(page));
   }, [page]);
 
   React.useEffect(() => {
@@ -912,9 +913,11 @@ export default function EnhancedTable(props) {
     }
   }, [refresh]);
 
-  React.useEffect(() => {
-    if (page !== pagesHandle) setPage(pagesHandle);
-  }, [pagesHandle]);
+  /* React.useEffect(() => {
+    console.log("cambio pagesHandle",pagesHandle,page);
+    if (page !== pagesHandle)
+      setPage(pagesHandle);
+  }, [pagesHandle]); */ 
 
   React.useEffect(() => {
     if (rowsPerPage !== rowsHandle) setRowsPerPage(rowsHandle);
@@ -1154,13 +1157,13 @@ export default function EnhancedTable(props) {
 
   const getRows = () => {
     console.log("getRows");
-    /* let rows = stableSort(dataTable?.rows, getComparator(order, orderBy));
+    let rows = stableSort(dataTable?.rows, getComparator(order, orderBy));
     if (!paginationServer) {
       rows = rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    } */
-    const row = dataTable?.rows[0];
-    const index = 0;
-    //return rows.map((row, index) => {
+    }
+    /* const row = dataTable?.rows[0];
+    const index = 0; */
+    return rows.map((row, index) => {
       const isItemSelected = isSelected(row[rowId]);
       const labelId = `enhanced-table-checkbox-${index}`;
       const isExpandable =
@@ -1171,7 +1174,8 @@ export default function EnhancedTable(props) {
           isItemSelected={isItemSelected}
           row={row}
           rowId={rowId}
-          handleClick1={handleClick}
+          key={"key" + row?.id}
+          handleClick={handleClick}
           labelId={labelId}
           columns={dataTable.columns}
           showCheckboxes={showCheckboxes}
@@ -1191,7 +1195,7 @@ export default function EnhancedTable(props) {
           showNumber={showNumber}
         />
       );
-    //});
+    });
   };
 
   return (
