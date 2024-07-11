@@ -275,9 +275,7 @@ const OrdenList = (props) => {
     bulkcreate,
   } = OrdenDataService();
 
-  const searchableKeys = [
-    "guia",
-  ];
+  const searchableKeys = ["guia"];
 
   const [searchParams] = useSearchParams();
 
@@ -364,18 +362,26 @@ const OrdenList = (props) => {
     } else {
       console.log(currentUser, location, selected, selectedObj);
       const innerPage =
-        parseInt(searchParams.get("page") > 0 ? searchParams.get("page") : 1) - 1;
+        parseInt(searchParams.get("page") > 0 ? searchParams.get("page") : 1) -
+        1;
       const innerRowsPerPage = parseInt(
-        searchParams.get("rowsPerPage") > 0 ? searchParams.get("rowsPerPage") : 10
+        searchParams.get("rowsPerPage") > 0
+          ? searchParams.get("rowsPerPage")
+          : 10
       );
-      console.log("paginacion List", searchParams.get("rowsPerPage"), innerPage, innerRowsPerPage);
+      console.log(
+        "paginacion List",
+        searchParams.get("rowsPerPage"),
+        innerPage,
+        innerRowsPerPage
+      );
       dispatch(setPages(innerPage));
       dispatch(setRows(innerRowsPerPage));
       retrieveOrdenes(innerPage + 1, innerRowsPerPage);
       loadMotirizados();
       loadSelects();
-      }
-    console.log("useEffect", pages, rowsN);
+    }
+    console.log("useEffectIni", pages, rowsN);
   }, []);
 
   useEffect(() => {
@@ -398,7 +404,14 @@ const OrdenList = (props) => {
 
   useEffect(() => {
     if (searchableText !== "") {
-      console.log("searchableText", searchableText, pages, rowsN, selected, selectedObj);
+      console.log(
+        "searchableText",
+        searchableText,
+        pages,
+        rowsN,
+        selected,
+        selectedObj
+      );
       retrieveOrdenes(pages, rowsN);
     }
   }, [searchableText]);
@@ -445,15 +458,17 @@ const OrdenList = (props) => {
 
   const retrieveOrdenes = async (page = 0, size = 10) => {
     console.log("retrieveOrdenes", page, size, filtros, searchableText);
-    let text = '';
-    if(searchableText !== "") {
-      searchableKeys.forEach((item) => { text += `${item}:like:${searchableText};` });
-      text = text.substring(0, text.length-1);
+    let text = "";
+    if (searchableText !== "") {
+      searchableKeys.forEach((item) => {
+        text += `${item}:like:${searchableText};`;
+      });
+      text = text.substring(0, text.length - 1);
     }
-    if(size < 0) size = 10;
+    if (size < 0) size = 10;
     dispatch(loadingTable(true));
 
-    await getAll(page, size, filtros+text, "fechaEntrega:desc")
+    await getAll(page, size, filtros + text, "fechaEntrega:desc")
       .then((response) => {
         setOrdenes(response.data);
         dispatch(loadingTable(false));
@@ -467,7 +482,7 @@ const OrdenList = (props) => {
   const handleSearch = async (searchValue) => {
     setSearchableText(searchValue);
     console.log("handleSearch", searchValue);
-  }
+  };
 
   const loadMotirizados = () => {
     UsuarioDataService.motorizados()
@@ -946,7 +961,7 @@ const OrdenList = (props) => {
         obj.faseId = faseSelect.filter((x) => x.codigo === "CRD")[0].id;
         const validaTMP = validarData(obj);
         datosValidos = datosValidos && validaTMP;
-        if(!validaTMP) posError += " "+(pos+2)+",";
+        if (!validaTMP) posError += " " + (pos + 2) + ",";
         addGuia++;
       });
       if (!datosValidos) {
