@@ -115,7 +115,6 @@ const DashboardPage = () => {
     };
     window.addEventListener('resize', handleResize);
 
-    console.log(currentUser.isLoggedIn, currentUser, currentUser.auth?.reset_password);
     if (!currentUser.isLoggedIn) {
       navigate("/login");
     } else if (currentUser.auth?.reset_password === 1) {
@@ -131,7 +130,6 @@ const DashboardPage = () => {
       if ( currentUser.auth?.roles.find((rol) => rol.name !== "mensajero") ) {
         EmpresaDataService.resumen(idR)
           .then((response) => {
-            console.log("dashboard", response);
             setDashboard(response.data);
           })
           .catch((error) => {
@@ -141,7 +139,6 @@ const DashboardPage = () => {
         mensajeroId = currentUser.auth.id;
         EmpresaDataService.resumenM(currentUser.auth.id)
           .then((response) => {
-            console.log("dashboard", response);
             setDashboard(response.data);
           })
           .catch((error) => {
@@ -150,7 +147,6 @@ const DashboardPage = () => {
       }
       faseCount(idR, mensajeroId)
         .then((response) => {
-          console.log("ordenesEstatus", response.data, response.data.length);
           setOrdenesEstatus(response.data);
         })
         .catch((error) => {
@@ -158,7 +154,6 @@ const DashboardPage = () => {
         });
       serviceCount(idR, mensajeroId)
         .then((response) => {
-          console.log("ordenesEstatus", response.data, response.data.length);
           setOrdenesService(response.data);
         })
         .catch((error) => {
@@ -213,8 +208,6 @@ const DashboardPage = () => {
       }
     ]
   };
-
-  console.log('grafica', ordenesEstatus)
 
   return (
     <div style={{ width: "100%", margin: "0px auto" }}>
