@@ -830,8 +830,8 @@ export default function EnhancedTable(props) {
   }, [rowId]);
 
   React.useEffect(() => {
-    console.log("cambio pagina interna")
-    if(props.setPages) dispatch(setPages(page));
+    console.log("cambio pagina interna");
+    if (props.setPages) dispatch(setPages(page));
   }, [page]);
 
   React.useEffect(() => {
@@ -887,6 +887,8 @@ export default function EnhancedTable(props) {
       );
       if (newSelected.length !== (selected ? selected : innerSelected).length)
         handleSelected(newSelected);
+
+      console.log("newSelected", newSelected);
     }
   }, [dataTable]);
 
@@ -917,7 +919,7 @@ export default function EnhancedTable(props) {
     console.log("cambio pagesHandle",pagesHandle,page);
     if (page !== pagesHandle)
       setPage(pagesHandle);
-  }, [pagesHandle]); */ 
+  }, [pagesHandle]); */
 
   React.useEffect(() => {
     if (rowsPerPage !== rowsHandle) setRowsPerPage(rowsHandle);
@@ -1036,7 +1038,7 @@ export default function EnhancedTable(props) {
       .map((obj) => obj);
 
     handleSelected(newSelected);
-    handleSelectedObj(newObjSelected);
+    // handleSelectedObj(newObjSelected);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -1156,15 +1158,18 @@ export default function EnhancedTable(props) {
   };
 
   const getRows = () => {
-    console.log("getRows");
     let rows = stableSort(dataTable?.rows, getComparator(order, orderBy));
     if (!paginationServer) {
       rows = rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     }
+
+    console.log("getRows");
+    // console.log(rows, " sjkfjdskjflsdjflk");
     /* const row = dataTable?.rows[0];
     const index = 0; */
     return rows.map((row, index) => {
       const isItemSelected = isSelected(row[rowId]);
+
       const labelId = `enhanced-table-checkbox-${index}`;
       const isExpandable =
         row[rowId] ===

@@ -1,16 +1,17 @@
-import { createSlice } from '@reduxjs/toolkit';
+// User: rbonilla - pass: qwerty
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    isLoadingTable: false,
-    isLoading: false,
-    pages: 1,
-    rowsN: 10,
-    selected: [],
-    selectedObj: [],
+  isLoadingTable: false,
+  isLoading: false,
+  pages: 1,
+  rowsN: 10,
+  selected: [],
+  selectedObj: [],
 };
 
 export const uiSlice = createSlice({
-  name: 'ui',
+  name: "ui",
   initialState,
   reducers: {
     loadingTable: (state, action) => {
@@ -26,19 +27,20 @@ export const uiSlice = createSlice({
       state.rows = action.payload;
     },
     setSelected: (state, action) => {
+      console.log(action.payload, " Action pyaload of setSelected");
       state.selected = action.payload;
     },
     setSelectedObj: (state, action) => {
       state.selectedObj = action.payload;
-    }
-}
+    },
+  },
 });
 
 export const {
-    loadingTable,
-    setPages,
-    setRows,
-    setLoading,
-    setSelected,
-    setSelectedObj,
+  loadingTable,
+  setPages,
+  setRows,
+  setLoading,
+  setSelected,
+  setSelectedObj,
 } = uiSlice.actions;

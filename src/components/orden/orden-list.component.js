@@ -288,7 +288,7 @@ const OrdenList = (props) => {
   const [searchParams] = useSearchParams();
 
   const [ordenes, setOrdenes] = useState([]);
-  const prevordenes = usePrevious(ordenes)
+  const prevordenes = usePrevious(ordenes);
 
   const { auth: currentUser } = useSelector((state) => state.auth);
   const { isLoadingTable } = useSelector((state) => state.ui);
@@ -296,13 +296,13 @@ const OrdenList = (props) => {
   const { filtros } = useSelector((state) => state.filtro);
   const { showFilters } = useSelector((state) => state.filtro);
   const { pages } = useSelector((state) => state.ui);
-  const prevPages = usePrevious(pages)
+  const prevPages = usePrevious(pages);
   const { rowsN } = useSelector((state) => state.ui);
-  const prevrowsN = usePrevious(rowsN)
+  const prevrowsN = usePrevious(rowsN);
   const { selected } = useSelector((state) => state.ui);
-  const prevselected = usePrevious(selected)
+  const prevselected = usePrevious(selected);
   const { selectedObj } = useSelector((state) => state.ui);
-  const prevselectedObj = usePrevious(selectedObj)
+  const prevselectedObj = usePrevious(selectedObj);
 
   const [ciudadSelect, setCiudadSelect] = useState([]);
   const [empresaSelect, setEmpresaSelect] = useState([]);
@@ -393,27 +393,39 @@ const OrdenList = (props) => {
       retrieveOrdenes(innerPage + 1, innerRowsPerPage);
       loadMotirizados();
       loadSelects();
-      }
+    }
     console.log("useEffect", pages, rowsN);
   }, loadDataOnlyOnce);
 
   useEffect(() => {
     console.log("useEffectGeneral, algo cambia");
 
-    if(pages!==prevPages || pages === undefined){
-      console.log("pages change","antes",prevPages,"despues",pages)
+    if (pages !== prevPages || pages === undefined) {
+      console.log("pages change", "antes", prevPages, "despues", pages);
     }
-    if(rowsN!==prevrowsN || rowsN === undefined){
-      console.log("rowsN change","antes",prevrowsN,"despues",rowsN)
+    if (rowsN !== prevrowsN || rowsN === undefined) {
+      console.log("rowsN change", "antes", prevrowsN, "despues", rowsN);
     }
-    if(selected!==prevselected || selected === undefined){
-      console.log("selected change","antes",prevselected,"despues",selected)
+    if (selected !== prevselected || selected === undefined) {
+      console.log(
+        "selected change",
+        "antes",
+        prevselected,
+        "despues",
+        selected
+      );
     }
-    if(selectedObj!==prevselectedObj || selectedObj === undefined){
-      console.log("selectedObj change","antes",prevselectedObj,"despues",selectedObj)
+    if (selectedObj !== prevselectedObj || selectedObj === undefined) {
+      console.log(
+        "selectedObj change",
+        "antes",
+        prevselectedObj,
+        "despues",
+        selectedObj
+      );
     }
-    if(ordenes!==prevordenes || ordenes === undefined){
-      console.log("ordenes change","antes",prevordenes,"despues",ordenes)
+    if (ordenes !== prevordenes || ordenes === undefined) {
+      console.log("ordenes change", "antes", prevordenes, "despues", ordenes);
     }
   });
 
@@ -1530,6 +1542,7 @@ const OrdenList = (props) => {
             </Button>
           </DialogActions>
         </Dialog>
+        <h1>Hello there</h1>
         <EnhancedTable
           table={{
             columns: columnsOrden,
