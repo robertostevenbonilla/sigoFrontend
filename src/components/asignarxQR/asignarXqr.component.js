@@ -30,6 +30,7 @@ const AsignarXqr = (props) => {
   const { 
     asignar,
     getByGuia,
+    getByGuiaPriv,
     getReporte, } = OrdenDataService();
 
   const { auth: currentUser } = useSelector((state) => state.auth);
@@ -59,12 +60,12 @@ const AsignarXqr = (props) => {
   }, [ordenes])
 
   const getOrdenByGuia = (guiaR) => {
-    getByGuia(guiaR)
+    getByGuiaPriv(guiaR)
       .then((response) => {
         if(Object.keys(response.data).length > 0) {
           let ordenGuia = [];
           ordenGuia[guiaR] = response.data;
-          setOrdenes({ ...ordenes, ...ordenGuia });
+          setOrdenes({ ...ordenGuia, ...ordenes });
         } else {
           const message = {
             title: "Orden",

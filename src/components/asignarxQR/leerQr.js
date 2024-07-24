@@ -30,7 +30,7 @@ const QrReader = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { asignar, getByGuia, byFase } = OrdenDataService();
+  const { asignar, getByGuia, byFase, getByGuiaPriv } = OrdenDataService();
 
   let scannerNR = null;
   let orders = [];
@@ -105,7 +105,7 @@ const QrReader = () => {
       Object.keys(ordenes).find((guia) => guia === guiaR)
     );
     if (Object.keys(ordenes).find((guia) => guia === guiaR) === undefined) {
-      await getByGuia(guiaR)
+      await getByGuiaPriv(guiaR)
         .then((response) => {
           if (Object.keys(response.data).length > 0) {
             let ordenGuia = [];
