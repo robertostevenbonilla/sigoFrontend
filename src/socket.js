@@ -2,7 +2,7 @@ import { io } from "socket.io-client";
 import { store } from "./reducers/index";
 
 // "undefined" means the URL will be computed from the `window.location` object
-const URL = process.env.REACT_APP_URL + "apiv1";
+const URL = process.env.REACT_SOCKET_URL;
 //process.env.NODE_ENV === "production" ? undefined : "http://localhost:3000";
 const token = store.getState().auth?.auth?.auth?.accessToken;
 const socketOptions = {
