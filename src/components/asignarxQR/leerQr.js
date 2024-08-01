@@ -1,4 +1,4 @@
-import React, { useState, /*  useRef, */ useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   useNavigate /* , useLocation, useSearchParams */,
 } from "react-router-dom";
@@ -32,7 +32,6 @@ const QrReader = () => {
 
   const { asignar, getByGuia, byFase } = OrdenDataService();
 
-  let scannerNR = null;
   let orders = [];
   const { auth: currentUser } = useSelector((state) => state.auth);
 
@@ -43,8 +42,8 @@ const QrReader = () => {
   const [motorizadoSelect, setMotorizadoSelect] = useState([]);
   const [morotizadoId, setMorotizadoId] = useState(-1);
   const [faseId, setFaseId] = useState(-1);
-  const [qrOn, setQrOn] = useState(true);
   const [selected, setSelected] = useState([]);
+  const scannerRef = useRef(null);
 
   useEffect(() => {
     console.log("length", ordenes);
@@ -57,7 +56,7 @@ const QrReader = () => {
     ) {
       const mensajero =
         currentUser?.auth?.roles.find((rol) => rol.name === "mensajero") !==
-        undefined
+          undefined
           ? true
           : false;
       FaseDataService.getSelect(mensajero)
@@ -280,24 +279,24 @@ const QrReader = () => {
             {currentUser?.auth?.roles.find(
               (rol) => rol.name === "mensajero"
             ) !== undefined && (
-              <Grid item xs={6} sx={{ textAlign: "right", margin: "auto 0" }}>
-                <IconButton
-                  id={row.guia}
-                  name={row.guia}
-                  value={row.guia}
-                  aria-label="Close"
-                  ariaGuia={row.guia}
-                  onClick={() => {
-                    handleCloseOrd([row.guia]);
-                  }}
-                  size="small"
-                  color="#3364FF"
-                  variant="contained"
-                >
-                  <CheckCircle color="success" />
-                </IconButton>
-              </Grid>
-            )}
+                <Grid item xs={6} sx={{ textAlign: "right", margin: "auto 0" }}>
+                  <IconButton
+                    id={row.guia}
+                    name={row.guia}
+                    value={row.guia}
+                    aria-label="Close"
+                    ariaGuia={row.guia}
+                    onClick={() => {
+                      handleCloseOrd([row.guia]);
+                    }}
+                    size="small"
+                    color="#3364FF"
+                    variant="contained"
+                  >
+                    <CheckCircle color="success" />
+                  </IconButton>
+                </Grid>
+              )}
           </Grid>
         </CardHeader>
         <CardContent sx={{ overflow: "overlay", padding: 0, height: "150px" }}>
@@ -371,10 +370,7 @@ const QrReader = () => {
     } else {
       loadMotirizados();
       loadFase();
-      if (
-        currentUser?.auth?.roles.find((rol) => rol.name === "mensajero") !==
-        undefined
-      ) {
+      if (currentUser?.auth?.roles.find((rol) => rol.name === "mensajero") !== undefined) {
         byFase().then((response) => {
           console.log(response.data);
           const ordenesList = response.data;
@@ -386,49 +382,42 @@ const QrReader = () => {
           setOrdenes(ordenesTmp);
         });
       }
-      //if (document.getElementById("video") && !scanner.current) {
-      if (true) {
-        // 👉 Instantiate the QR Scanner
-        //scanner.current
-        scannerNR = new QrScanner(
-          document.getElementById("video"),
-          onScanSuccess,
-          {
-            onDecodeError: onScanFail,
-            // 📷 This is the camera facing mode. In mobile devices, "environment" means back camera and "user" means front camera.
-            preferredCamera: "environment",
-            // 🖼 This will help us position our "QrFrame.svg" so that user can only scan when qr code is put in between our QrFrame.svg.
-            highlightScanRegion: true,
-            // 🔥 This will produce a yellow (default color) outline around the qr code that we scan, showing a proof that our qr-scanner is scanning that qr code.
-            highlightCodeOutline: true,
-            // 📦 A custom div which will pair with "highlightScanRegion" option above 👆. This gives us full control over our scan region.
-            overlay: document.getElementById("qrBox") || undefined,
-          }
-        );
 
-        // 🚀 Start QR Scanner
-        scannerNR
-          ?.start()
-          .then(() => setQrOn(true))
-          .catch((err) => {
-            if (err) setQrOn(false);
-          });
-      }
+      const checkPermissionsAndInitializeScanner = async () => {
+        const { state } = await navigator.permissions.query({ name: 'camera' });
+
+        if (state !== 'granted') {
+          return alert('La cámara está bloqueada o no es accesible. Por favor, permite el acceso a la cámara en los permisos de tu navegador y recarga.');
+        }
+
+        if (!scannerRef.current) {
+          scannerRef.current = new QrScanner(
+            document.getElementById("video"),
+            onScanSuccess,
+            {
+              onDecodeError: onScanFail,
+              preferredCamera: "environment",
+              highlightScanRegion: true,
+              highlightCodeOutline: true,
+              overlay: document.getElementById("qrBox") || undefined,
+            }
+          );
+
+          await scannerRef.current.start().catch((err) => console.log('Error al iniciar scanner', err));
+        }
+      };
+
+      checkPermissionsAndInitializeScanner();
     }
 
-    /* return () => {
-      if (!videoEl?.current) {
-        scanner?.current?.stop();
-      }
-    }; */
-  }, []);
 
-  useEffect(() => {
-    if (!qrOn)
-      alert(
-        "Camera is blocked or not accessible. Please allow camera in your browser permissions and Reload."
-      );
-  }, [qrOn]);
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.stop();
+      }
+    };
+
+  }, []);
 
   return (
     <>
@@ -482,52 +471,52 @@ const QrReader = () => {
             {currentUser?.auth?.roles.find(
               (rol) => rol.name === "admin" || rol.name === "supervisor"
             ) !== undefined && (
-              <>
-                <Grid item xs={12} sm={6} md={6}>
-                  <SearchInput
-                    options={[
-                      { id: -1, fullname: "Seleccione un motorizado" },
-                      ...motorizadoSelect,
-                    ]}
-                    value={morotizadoId}
-                    placeholder={"Seleccione un motorizado"}
-                    id={"morotizadoId"}
-                    name={"motorizadoId"}
-                    label={"Motorizado"}
-                    getOptionLabel={"fullname"}
-                    getIndexLabel={"id"}
-                    onChange={handleInputChangeM}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={6}>
-                  <SearchInput
-                    options={[
-                      { id: -1, nombre: "Seleccione un estado" },
-                      ...faseSelect,
-                    ]}
-                    value={faseId}
-                    placeholder={"Seleccione un estado"}
-                    id={"faseId"}
-                    name={"faseId"}
-                    label={"Estado"}
-                    getOptionLabel={"nombre"}
-                    getIndexLabel={"id"}
-                    onChange={handleInputChangeF}
-                  />
-                </Grid>
-                <Grid item md={3} sm={3} xs={12} sx={{ margin: "auto 0" }}>
-                  <Button
-                    onClick={saveAsignar}
-                    endIcon={<Save />}
-                    variant="contained"
-                    color="success"
-                    sx={{ margin: "auto 0" }}
-                  >
-                    Asignar
-                  </Button>
-                </Grid>
-              </>
-            )}
+                <>
+                  <Grid item xs={12} sm={6} md={6}>
+                    <SearchInput
+                      options={[
+                        { id: -1, fullname: "Seleccione un motorizado" },
+                        ...motorizadoSelect,
+                      ]}
+                      value={morotizadoId}
+                      placeholder={"Seleccione un motorizado"}
+                      id={"morotizadoId"}
+                      name={"motorizadoId"}
+                      label={"Motorizado"}
+                      getOptionLabel={"fullname"}
+                      getIndexLabel={"id"}
+                      onChange={handleInputChangeM}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={6}>
+                    <SearchInput
+                      options={[
+                        { id: -1, nombre: "Seleccione un estado" },
+                        ...faseSelect,
+                      ]}
+                      value={faseId}
+                      placeholder={"Seleccione un estado"}
+                      id={"faseId"}
+                      name={"faseId"}
+                      label={"Estado"}
+                      getOptionLabel={"nombre"}
+                      getIndexLabel={"id"}
+                      onChange={handleInputChangeF}
+                    />
+                  </Grid>
+                  <Grid item md={3} sm={3} xs={12} sx={{ margin: "auto 0" }}>
+                    <Button
+                      onClick={saveAsignar}
+                      endIcon={<Save />}
+                      variant="contained"
+                      color="success"
+                      sx={{ margin: "auto 0" }}
+                    >
+                      Asignar
+                    </Button>
+                  </Grid>
+                </>
+              )}
 
             <Grid item xs={12} sm={12}>
               {selected.length > 0 && (
