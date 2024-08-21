@@ -37,8 +37,7 @@ const QrReader = () => {
   const { auth: currentUser } = useSelector((state) => state.auth);
 
   const [ordenes, setOrdenes] = useState([]);
-  const [redding, setRedding] = useState(false);
-  const [QRvalue, setQRvalue] = useState('');
+  const [QRvalue, setQRvalue] = useState("");
   const [faseSelect, setFaseSelect] = useState([]);
   const [motorizadoSelect, setMotorizadoSelect] = useState([]);
   const [morotizadoId, setMorotizadoId] = useState(-1);
@@ -81,16 +80,16 @@ const QrReader = () => {
         .then((response) => {
           setMotorizadoSelect(response.data);
           if (currentUser.auth?.roles[0].name === "mensajero") {
-            setMorotizadoId(() => (currentUser.auth.id));
-            console.log("if",currentUser.auth.id);
+            setMorotizadoId(() => currentUser.auth.id);
+            console.log("if", currentUser.auth.id);
           }
         })
         .catch((err) => {
           console.log(err);
         });
     } else {
-      console.log("else",currentUser.auth.id);
-      setMorotizadoId(() => (currentUser.auth.id));
+      console.log("else", currentUser.auth.id);
+      setMorotizadoId(() => currentUser.auth.id);
     }
   };
 
@@ -141,11 +140,9 @@ const QrReader = () => {
             dispatch(setMessage({ ...message }));
             dispatch(setOpenModal(true));
           }
-          //setRedding(false);
         })
         .catch((e) => {
           console.log(e);
-          //setRedding(false);
         });
     }
   };
@@ -350,11 +347,12 @@ const QrReader = () => {
     let guiaR = guia.replace("httpÑ--sigo.goyaexpressdelivery.com-recibo-", "");
     guiaR = guiaR.replace("http://sigo.goyaexpressdelivery.com/recibo/", "");
     console.log("QRvalue", QRvalue, guiaR);
-    if (!redding) {
-      setRedding(() => true);
-      setQRvalue(() => guiaR);
-      await getOrdenByGuia(guiaR);
+    setQRvalue(() => guiaR);
+    if (scannerNR) {
+      scannerNR.destroy();
+      scannerNR = null;
     }
+    await getOrdenByGuia(guiaR);
   };
 
   // Fail
@@ -418,7 +416,7 @@ const QrReader = () => {
 
     /* return () => {
       if (!videoEl?.current) {
-        scanner?.current?.stop();
+        scannerNR?.current?.stop();
       }
     }; */
   }, []);

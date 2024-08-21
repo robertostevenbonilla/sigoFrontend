@@ -75,13 +75,13 @@ import {
 var doc = new jsPDF();
 
 const columnsOrden = [
-  /* {
-    field: "id",
-    headerName: "Id",
-  }, */
   {
     field: "guia",
     headerName: "Guia",
+    type: "render",
+    renderFunction: (row) => {
+      return <strong style={{ fontSize: "18px" }}>{row.guia}</strong>
+    },
   },
   {
     field: "origen",
@@ -143,7 +143,7 @@ const columnsOrden = [
             </ListItemIcon>
             <ListItemText
               style={{ width: "max-content" }}
-              primary={row.fechaRecepcion}
+              primary={row.createdAt}
             />
           </ListItem>
           <ListItem style={{ padding: "3px 0px" }}>
@@ -221,10 +221,8 @@ const columnsOrden = [
     },
   },
   {
-    field: "createdAt",
-    headerName: "Creada",
-    flex: 1,
-    format: "datetime",
+    field: "codigo",
+    headerName: "Codigo",
   },
   {
     field: "novedad",
