@@ -6,6 +6,7 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   overflow: hidden;
+  flex-wrap: wrap; /* Asegura que el contenido se ajuste en pantallas pequeñas */
 }
 
 .login-left {
@@ -75,4 +76,48 @@ p {
 
 .btn:hover {
   background: #0277bd;
+}
+
+/* Responsive adjustments */
+
+/* For screens 768px and below */
+@media screen and (max-width: 768px) {
+  .login-left,
+  .login-right {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+
+  .logo,
+  .logo-right {
+    width: 120px;
+  }
+
+  .illustration {
+    max-width: 400px;
+  }
+}
+
+/* For screens 480px and below */
+@media screen and (max-width: 480px) {
+  .login-container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .login-left,
+  .login-right {
+    width: 100%;
+    padding: 20px;
+  }
+
+  .logo,
+  .logo-right {
+    width: 100px;
+  }
+
+  .illustration {
+    max-width: 300px;
+  }
 }

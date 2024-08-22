@@ -71,7 +71,7 @@ import {
   setSelected,
   setSelectedObj,
 } from "../../reducers/ui";
-
+import Iframe from 'react-iframe';
 var doc = new jsPDF();
 
 const columnsOrden = [
@@ -271,6 +271,14 @@ const OrdenList = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalUrl, setModalUrl] = useState('');
+
+  const handleViewFunction = (id) => {
+    setModalUrl(`/orden/${id}`);
+    setIsModalOpen(true);
+  };
+
   const {
     getAll,
     update,
@@ -398,24 +406,30 @@ const OrdenList = (props) => {
   }, loadDataOnlyOnce);
 
   useEffect(() => {
-    console.log("useEffectGeneral, algo cambia");
-
-    if(pages!==prevPages || pages === undefined){
-      console.log("pages change","antes",prevPages,"despues",pages)
+    if (pages !== prevPages || pages === undefined) {
+      console.log("pages change", "antes", prevPages, "después", pages);
     }
-    if(rowsN!==prevrowsN || rowsN === undefined){
-      console.log("rowsN change","antes",prevrowsN,"despues",rowsN)
+    if (rowsN !== prevrowsN || rowsN === undefined) {
+      console.log("rowsN change", "antes", prevrowsN, "después", rowsN);
     }
-    if(selected!==prevselected || selected === undefined){
-      console.log("selected change","antes",prevselected,"despues",selected)
+    if (selected !== prevselected || selected === undefined) {
+      console.log("selected change", "antes", prevselected, "después", selected);
     }
-    if(selectedObj!==prevselectedObj || selectedObj === undefined){
-      console.log("selectedObj change","antes",prevselectedObj,"despues",selectedObj)
+    if (selectedObj !== prevselectedObj || selectedObj === undefined) {
+      console.log("selectedObj change", "antes", prevselectedObj, "después", selectedObj);
     }
-    if(ordenes!==prevordenes || ordenes === undefined){
-      console.log("ordenes change","antes",prevordenes,"despues",ordenes)
+    if (ordenes !== prevordenes || ordenes === undefined) {
+      console.log("ordenes change", "antes", prevordenes, "después", ordenes);
     }
-  });
+  
+    // Actualiza los valores previos después de los cambios
+    // Por ejemplo, si estás usando un estado para prevPages, actualízalo aquí
+    // setPrevPages(pages);
+    // setPrevRowsN(rowsN);
+    // setPrevSelected(selected);
+    // setPrevSelectedObj(selectedObj);
+    // setPrevOrdenes(ordenes);
+  }, [pages, rowsN, selected, selectedObj, ordenes]); 
 
   useEffect(() => {
     if (downloadObj.length > 0) {
@@ -1540,9 +1554,7 @@ const OrdenList = (props) => {
           }}
           noDataMessage={"Por el momento no existen registros."}
           view={true}
-          onViewFunction={(id, row) => {
-            navigate(`/orden/${id}`);
-          }}
+          onViewFunction={handleViewFunction}
           download={true}
           onDownloadFunction={async (id, row) => {
             dispatch(setLoading(true));
@@ -1979,6 +1991,54 @@ const OrdenList = (props) => {
           audit={true}
           showNumber={true}
         />
+{isModalOpen && (
+  <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(211, 211, 211, 0.5)', zIndex: 50 }}>
+    <div style={{ position: 'relative', backgroundColor: '#d3d3d3', padding: 0, borderRadius: '8px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', width: '90vw', height: '90vh', maxWidth: '90vw', maxHeight: '90vh' }}>
+      <button
+        style={{ position: 'absolute', top: '8px', right: '8px', fontSize: '24px', color: '#007BFF', background: 'none', border: 'none', cursor: 'pointer', zIndex: 110 }}
+        onClick={() => setIsModalOpen(false)}
+      >
+        ✕
+      </button>
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <iframe
+          src={modalUrl}
+          title="Orden Details"
+          style={{ width: '100%', height: '100%', border: 'none', borderRadius: '8px' }}
+          loading="lazy"
+        ></iframe>
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100px', // Ajusta la altura para cubrir el dashboard superior
+          backgroundColor: '#d3d3d3', // Gris claro
+          zIndex: 100,
+        }}></div>
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '540px', // Ajusta el ancho para cubrir el menú a la izquierda
+          height: '100%',
+          backgroundColor: '#d3d3d3', // Gris claro
+          zIndex: 100,
+        }}></div>
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          width: '340px', // Ajusta el ancho para cubrir el menú a la derecha
+          height: '100%',
+          backgroundColor: '#d3d3d3', // Gris claro
+          zIndex: 100,
+        }}></div>
+      </div>
+    </div>
+  </div>
+)}
+
       </Card>
     </div>
   );

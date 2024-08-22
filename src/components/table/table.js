@@ -794,7 +794,7 @@ export default function EnhancedTable(props) {
   const [innerSelectedObj, setInnerSelectedObj] = React.useState([]);
 
   const [page, setPage] = React.useState(pagesHandle);
-  const [rowsPerPage, setRowsPerPage] = React.useState(rowsHandle);
+  const [rowsPerPage, setRowsPerPage] = React.useState([]);
 
   const [openDialog, setOpenDialog] = React.useState(false);
   const [item, setItem] = React.useState(0);
@@ -992,17 +992,20 @@ export default function EnhancedTable(props) {
 
   const handleClick = (event, name, row) => {
     console.log("handleClick", name, row);
-    /* handleSelected("");
-    return; */
+  
+    // Determina el índice de la selección actual
     const selectedIndex = (selected ? selected : innerSelected).indexOf(name);
     let newSelected = [];
-
+  
+    // Maneja la selección o deselección del elemento
     if (selectedIndex === -1) {
+      // Elemento no seleccionado, agrégalo
       newSelected = newSelected.concat(
         selected ? selected : innerSelected,
         name
       );
     } else if (selectedIndex === 0) {
+      // Elemento seleccionado en la primera posición, elimina el primer elemento
       newSelected = newSelected.concat(
         (selected ? selected : innerSelected).slice(1)
       );
@@ -1010,34 +1013,42 @@ export default function EnhancedTable(props) {
       selectedIndex ===
       (selected ? selected : innerSelected).length - 1
     ) {
+      // Elemento seleccionado en la última posición, elimina el último elemento
       newSelected = newSelected.concat(
         (selected ? selected : innerSelected).slice(0, -1)
       );
     } else if (selectedIndex > 0) {
+      // Elemento seleccionado en una posición intermedia, elimina el elemento
       newSelected = newSelected.concat(
         (selected ? selected : innerSelected).slice(0, selectedIndex),
         (selected ? selected : innerSelected).slice(selectedIndex + 1)
       );
     }
-
+  
+    // Controla el estado de los checkboxes si hay un límite máximo de selección
     if (maxSelected !== null && newSelected.length >= maxSelected) {
       setDisableCheckboxes(true);
     } else {
       setDisableCheckboxes(false);
     }
-
-    const selectedIndexObj = (
-      selectedObj ? selectedObj : innerSelectedObj
-    ).findIndex((obj) => obj.id === name);
+  
+    // Maneja la selección de objetos, si se está usando `selectedObj`
+    const selectedIndexObj = (selectedObj ? selectedObj : innerSelectedObj).findIndex(
+      (obj) => obj.id === name
+    );
     let newSelectedObj = [];
-
-    const newObjSelected = table.rows
+  
+    // Filtra y mapea los objetos seleccionados en la nueva selección
+    newSelectedObj = table.rows
       .filter((obj) => newSelected.includes(obj.id))
       .map((obj) => obj);
-
+  
+    // Actualiza el estado de la selección
     handleSelected(newSelected);
-    handleSelectedObj(newObjSelected);
+    handleSelectedObj(newSelectedObj);
   };
+  
+
 
   const handleChangePage = (event, newPage) => {
     if (!disablePathParameters)
@@ -1050,12 +1061,28 @@ export default function EnhancedTable(props) {
 
   const handleChangeRowsPerPage = (event) => {
     const perPage = parseInt(event.target.value, 10);
-    if (paginationServer) handlePagination(0, perPage);
-    if (!disablePathParameters)
+  
+    // Guardar los elementos seleccionados antes de cambiar la cantidad de filas
+    const currentSelection = [...(selected ? selected : innerSelected)];
+    const currentSelectionObj = [...(selectedObj ? selectedObj : innerSelectedObj)];
+  
+    if (paginationServer) {
+      handlePagination(0, perPage);
+    }
+    if (!disablePathParameters) {
       navigate(location.pathname + `?page=${1}&rowsPerPage=${perPage}`);
+    }
+  
     setRowsPerPage(perPage);
     setPage(0);
+  
+    // Restaurar la selección después de cambiar el número de filas por página
+    setTimeout(() => {
+      handleSelected(currentSelection);
+      handleSelectedObj(currentSelectionObj);
+    }, 0);
   };
+  
 
   const isSelected = (name) => {
     if (selected?.length === 0 && selectedObj !== null) {
@@ -1163,8 +1190,10 @@ export default function EnhancedTable(props) {
     }
     /* const row = dataTable?.rows[0];
     const index = 0; */
+    const index = 0;
     return rows.map((row, index) => {
       const isItemSelected = isSelected(row[rowId]);
+      console.log("index"+index);
       const labelId = `enhanced-table-checkbox-${index}`;
       const isExpandable =
         row[rowId] ===

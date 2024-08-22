@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { 
-  OrdenDataService, } from "../../services/orden.service";
+  OrdenDataService, 
+} from "../../services/orden.service";
 import EmpresaDataService from "../../services/empresa.service";
 import CiudadDataService from "../../services/ciudad.service";
 import ServicioDataService from "../../services/servicio.service";
@@ -43,7 +44,8 @@ const AddOrden = () => {
 
   const { 
     get,
-    create, } = OrdenDataService();
+    create,
+  } = OrdenDataService();
 
   const [form, setForm] = useState({
     ...ordenForm,
@@ -116,29 +118,27 @@ const AddOrden = () => {
   };
 
   useEffect(() => {
-    console.log(currentUser.isLoggedIn, currentUser);
     if (!currentUser.isLoggedIn) {
       navigate("/login");
     } else if (currentUser.user?.reset_password === 1) {
       navigate("/changepassword");
     } else {
       loadSelects();
-      console.log(form);
+      if (id) {
+        getOrden(id);
+      }
     }
-  }, []);
+  }, [id]);
 
   const handleInputChange = async (event) => {
     const { id, value } = event.target;
-    console.log(form, event.target, id, value);
     if (id === "empresaId" && value > 0) {
-      console.log("gui", value);
       var response = await EmpresaDataService.findGuia(value)
         .catch((error) => {
           console.error(error);
         });
       response = response.data;
       var guia = response.codigo + (response.Guias * 1 + 1);
-      console.log("guia", response, guia);
       setForm({
         ...form,
         [id]: value,
@@ -181,7 +181,6 @@ const AddOrden = () => {
   const saveOrden = (e) => {
     e.preventDefault();
     setLoading(true);
-    console.log(form);
     const data = {
       fechaRecepcion: form.fechaRecepcion,
       fechaEntrega: form.fechaEntrega,
@@ -211,14 +210,12 @@ const AddOrden = () => {
     };
     create(data)
       .then((response) => {
-        console.log(response);
         if (response.status === 201) {
           const message = {
             title: "Creación Orden",
             msg: "",
             error: true,
           };
-          console.log(response.data.message);
           dispatch(setMessage({ ...message, msg: response.data.message }));
           dispatch(setOpenModal(true));
           setLoading(false);
@@ -231,7 +228,6 @@ const AddOrden = () => {
   };
 
   const newUsuario = () => {
-    console.log(form);
     setForm({ ...ordenForm, fechaRecepcion: moment(), fechaEntrega: moment() });
     setSubmitted(false);
   };
@@ -266,370 +262,292 @@ const AddOrden = () => {
       >
         {submitted ? (
           <div>
-            <h4>Se ha enviado correctamente!</h4>
-            <button className="btn btn-success" onClick={newUsuario}>
-              Agregar otra
-            </button>
+            <h4>Se ha creado correctamente.</h4>
+            <Button
+              color="primary"
+              variant="contained"
+              onClick={newUsuario}
+              startIcon={<Edit />}
+            >
+              Agregar Otra Orden
+            </Button>
+            <Button
+              color="primary"
+              variant="contained"
+              onClick={() => navigate("/orden")}
+              startIcon={<ListAlt />}
+            >
+              Ver Todas las Ordenes
+            </Button>
           </div>
         ) : (
-          <Grid container spacing={1}>
-            <Grid item md={6} sm={6} xs={12}>
-              <LocalizationProvider
-                dateAdapter={AdapterDayjs}
-                adapterLocale={"es"}
-              >
-                <DesktopDatePicker
-                  sx={{ width: "100% " }}
-                  name="fechaRecepcion"
-                  id="fechaRecepcion"
-                  label="Recepción"
-                  inputFormat="YYYY-MM-DD"
-                  renderInput={(params) => (
-                    <TextField {...params} sx={{ width: "100%" }} />
-                  )}
-                  value={dayjs(form.fechaRecepcion)}
-                  onChange={(e) =>
-                    onChange(
-                      null,
-                      "fechaRecepcion",
-                      moment(e["$d"]).format("YYYY-MM-DD")
-                    )
-                  }
-                  disablePast={true}
-                  disabled={true}
+          <form onSubmit={saveOrden}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} md={4}>
+                <TextField
+                  id="guia"
+                  name="guia"
+                  label="Guía"
+                  variant="outlined"
+                  fullWidth
+                  value={form.guia}
+                  onChange={handleInputChange}
                 />
-              </LocalizationProvider>
-            </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <LocalizationProvider
-                dateAdapter={AdapterDayjs}
-                adapterLocale={"es"}
-              >
-                <DesktopDatePicker
-                  sx={{ width: "100% " }}
-                  name="fechaEntrega"
-                  id="fechaEntrega"
-                  label="Entrega"
-                  inputFormat="YYYY-MM-DD"
-                  renderInput={(params) => (
-                    <TextField {...params} sx={{ width: "100%" }} />
-                  )}
-                  value={dayjs(form.fechaEntrega)}
-                  onChange={(e) =>
-                    onChange(
-                      null,
-                      "fechaEntrega",
-                      moment(e["$d"]).format("YYYY-MM-DD")
-                    )
-                  }
-                  disablePast={true}
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <SelectInput
+                  id="empresaId"
+                  label="Empresa"
+                  value={form.empresaId}
+                  options={empresaSelect}
+                  onChange={handleInputChange}
                 />
-              </LocalizationProvider>
-            </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="guia"
-                name="guia"
-                label="Guía"
-                value={form.guia}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-                disabled={true}
-              />
-            </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <SearchInput
-                options={[
-                  { id: -1, nombre: "Seleccione una empresa" },
-                  ...empresaSelect,
-                ]}
-                value={form.empresaId}
-                placeholder={"Seleccione una empresa"}
-                id={"empresaId"}
-                name={"empresaId"}
-                label={"Empresa"}
-                getOptionLabel={"nombre"}
-                getIndexLabel={"id"}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid container className="subGrid">
-              <h2 className="card__title">Origen</h2>
-              <Grid item className="sGitem">
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <SelectInput
+                  id="servicioId"
+                  label="Servicio"
+                  value={form.servicioId}
+                  options={servicioSelect}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <SelectInput
+                  id="faseId"
+                  label="Fase"
+                  value={form.faseId}
+                  options={faseSelect}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <SelectInput
+                  id="ciudadOrigenId"
+                  label="Ciudad Origen"
+                  value={form.ciudadOrigenId}
+                  options={ciudadSelect}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <SelectInput
+                  id="ciudadDestinoId"
+                  label="Ciudad Destino"
+                  value={form.ciudadDestinoId}
+                  options={ciudadSelect}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <SelectInput
+                  id="motorizadoId"
+                  label="Motorizado"
+                  value={form.motorizadoId}
+                  options={motorizadoSelect}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+                  <DesktopDatePicker
+                    id="fechaRecepcion"
+                    label="Fecha Recepción"
+                    value={dayjs(form.fechaRecepcion)}
+                    onChange={(date) => setForm({ ...form, fechaRecepcion: date.format("YYYY-MM-DD") })}
+                    renderInput={(params) => <TextField {...params} fullWidth />}
+                  />
+                </LocalizationProvider>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+                  <DesktopDatePicker
+                    id="fechaEntrega"
+                    label="Fecha Entrega"
+                    value={dayjs(form.fechaEntrega)}
+                    onChange={(date) => setForm({ ...form, fechaEntrega: date.format("YYYY-MM-DD") })}
+                    renderInput={(params) => <TextField {...params} fullWidth />}
+                  />
+                </LocalizationProvider>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
                 <TextField
                   id="origen"
                   name="origen"
                   label="Origen"
+                  variant="outlined"
+                  fullWidth
                   value={form.origen}
                   onChange={handleInputChange}
-                  variant="outlined"
-                  fullWidth
                 />
               </Grid>
-              <Grid item className="sGitem">
-                <TextField
-                  id="direccionOrigen"
-                  name="direccionOrigen"
-                  label="Dirección Remitente"
-                  value={form.direccionOrigen}
-                  onChange={handleInputChange}
-                  variant="outlined"
-                  fullWidth
-                />
-              </Grid>
-              <Grid item className="sGitem">
-                <TextField
-                  id="remitente"
-                  name="remitente"
-                  label="Envia"
-                  value={form.remitente}
-                  onChange={handleInputChange}
-                  variant="outlined"
-                  fullWidth
-                />
-              </Grid>
-              <Grid item className="sGitem">
-                <TextField
-                  id="telefonoRemitente"
-                  name="telefonoRemitente"
-                  label="Telefono Remitente"
-                  value={form.telefonoRemitente}
-                  onChange={handleInputChange}
-                  variant="outlined"
-                  fullWidth
-                />
-              </Grid>
-              <Grid item className="sGitem">
-                <SearchInput
-                  options={[
-                    { id: -1, nombre: "Seleccione una ciudad" },
-                    ...ciudadSelect,
-                  ]}
-                  value={form.ciudadOrigenId}
-                  placeholder={"Seleccione una ciudad"}
-                  id={"ciudadOrigenId"}
-                  name={"ciudadOrigenId"}
-                  label={"Ciudad Origen"}
-                  getOptionLabel={"nombre"}
-                  getIndexLabel={"id"}
-                  onChange={handleInputChange}
-                />
-              </Grid>
-            </Grid>
-            <Grid container className="subGrid">
-              <h2 className="card__title">Destino</h2>
-              <Grid item className="sGitem">
+              <Grid item xs={12} sm={6} md={4}>
                 <TextField
                   id="destino"
                   name="destino"
                   label="Destino"
-                  value={form.destino}
-                  onChange={handleInputChange}
                   variant="outlined"
                   fullWidth
+                  value={form.destino}
+                  onChange={handleInputChange}
                 />
               </Grid>
-              <Grid item className="sGitem">
+              <Grid item xs={12} sm={6} md={4}>
+                <TextField
+                  id="direccionOrigen"
+                  name="direccionOrigen"
+                  label="Dirección Origen"
+                  variant="outlined"
+                  fullWidth
+                  value={form.direccionOrigen}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
                 <TextField
                   id="direccionDestino"
                   name="direccionDestino"
-                  label="Dirección Destinario"
-                  value={form.direccionDestino}
-                  onChange={handleInputChange}
+                  label="Dirección Destino"
                   variant="outlined"
                   fullWidth
+                  value={form.direccionDestino}
+                  onChange={handleInputChange}
                 />
               </Grid>
-              <Grid item className="sGitem">
+              <Grid item xs={12} sm={6} md={4}>
+                <TextField
+                  id="remitente"
+                  name="remitente"
+                  label="Remitente"
+                  variant="outlined"
+                  fullWidth
+                  value={form.remitente}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
                 <TextField
                   id="destinatario"
                   name="destinatario"
-                  label="Recibe"
-                  value={form.destinatario}
-                  onChange={handleInputChange}
+                  label="Destinatario"
                   variant="outlined"
                   fullWidth
+                  value={form.destinatario}
+                  onChange={handleInputChange}
                 />
               </Grid>
-              <Grid item className="sGitem">
+              <Grid item xs={12} sm={6} md={4}>
+                <TextField
+                  id="telefonoRemitente"
+                  name="telefonoRemitente"
+                  label="Teléfono Remitente"
+                  variant="outlined"
+                  fullWidth
+                  value={form.telefonoRemitente}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
                 <TextField
                   id="telefonoDestinatario"
                   name="telefonoDestinatario"
-                  label="Telefono Destinatario"
-                  value={form.telefonoDestinatario}
-                  onChange={handleInputChange}
+                  label="Teléfono Destinatario"
                   variant="outlined"
                   fullWidth
-                />
-              </Grid>
-              <Grid item className="sGitem">
-                <SearchInput
-                  options={[
-                    { id: -1, nombre: "Seleccione una ciudad" },
-                    ...ciudadSelect,
-                  ]}
-                  value={form.ciudadDestinoId}
-                  placeholder={"Seleccione una ciudad"}
-                  id={"ciudadDestinoId"}
-                  name={"ciudadDestinoId"}
-                  label={"Ciudad Destino"}
-                  getOptionLabel={"nombre"}
-                  getIndexLabel={"id"}
+                  value={form.telefonoDestinatario}
                   onChange={handleInputChange}
                 />
               </Grid>
-            </Grid>
-            {currentUser.auth?.roles.find((rol) => rol.name == "admin") !==
-            undefined ? (
-              <>
-                <Grid item md={6} sm={6} xs={12}>
-                  <TextField
-                    id="email"
-                    name="email"
-                    label="Email"
-                    value={form.email}
-                    onChange={handleInputChange}
-                    variant="outlined"
-                    fullWidth
-                  />
-                </Grid>
-                <Grid item md={6} sm={6} xs={12}>
-                  <TextField
-                    id="costo"
-                    name="costo"
-                    label="Costo envio"
-                    value={form.costo}
-                    onChange={handleInputChange}
-                    variant="outlined"
-                    fullWidth
-                  />
-                </Grid>
-              </>
-            ) : (
-              <Grid item md={12} sm={12} xs={12}>
+              <Grid item xs={12} sm={6} md={4}>
                 <TextField
                   id="email"
                   name="email"
                   label="Email"
-                  value={form.email}
-                  onChange={handleInputChange}
                   variant="outlined"
                   fullWidth
+                  value={form.email}
+                  onChange={handleInputChange}
                 />
               </Grid>
-            )}
-            <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="producto"
-                name="producto"
-                label="Producto"
-                value={form.producto}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-              />
+              <Grid item xs={12} sm={6} md={4}>
+                <TextField
+                  id="descripcion"
+                  name="descripcion"
+                  label="Descripción"
+                  variant="outlined"
+                  fullWidth
+                  value={form.descripcion}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <TextField
+                  id="novedades"
+                  name="novedades"
+                  label="Novedades"
+                  variant="outlined"
+                  fullWidth
+                  value={form.novedades}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <TextField
+                  id="costo"
+                  name="costo"
+                  label="Costo"
+                  variant="outlined"
+                  fullWidth
+                  value={form.costo}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <TextField
+                  id="precio"
+                  name="precio"
+                  label="Precio"
+                  variant="outlined"
+                  fullWidth
+                  value={form.precio}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <TextField
+                  id="producto"
+                  name="producto"
+                  label="Producto"
+                  variant="outlined"
+                  fullWidth
+                  value={form.producto}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <TextField
+                  id="codigo"
+                  name="codigo"
+                  label="Código"
+                  variant="outlined"
+                  fullWidth
+                  value={form.codigo}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <Button
+                  color="primary"
+                  variant="contained"
+                  type="submit"
+                  startIcon={<Save />}
+                  disabled={loading}
+                >
+                  Guardar
+                </Button>
+              </Grid>
             </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="precio"
-                name="precio"
-                label="Precio producto"
-                value={form.precio}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <TextField
-                id="codigo"
-                name="codigo"
-                label="Codigo"
-                value={form.codigo}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-
-            <Grid item md={6} sm={6} xs={12}>
-              <SearchInput
-                options={[
-                  { id: -1, nombre: "Seleccione un servicio" },
-                  ...servicioSelect,
-                ]}
-                value={form.servicioId}
-                placeholder={"Seleccione un servicio"}
-                id={"servicioId"}
-                name={"servicioId"}
-                label={"Servicio"}
-                getOptionLabel={"nombre"}
-                getIndexLabel={"id"}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            {currentUser.auth?.roles.find((rol) => rol.name == "admin") !==
-              undefined && (
-              <>
-                <Grid item md={6} sm={6} xs={12}>
-                  <SearchInput
-                    options={[
-                      { id: -1, nombre: "Seleccione un estado" },
-                      ...faseSelect,
-                    ]}
-                    value={form.faseId}
-                    placeholder={"Seleccione un estado"}
-                    id={"faseId"}
-                    name={"faseId"}
-                    label={"Estado"}
-                    getOptionLabel={"nombre"}
-                    getIndexLabel={"id"}
-                    onChange={handleInputChange}
-                  />
-                </Grid>
-                <Grid item md={6} sm={6} xs={12}>
-                  <SearchInput
-                    options={[
-                      { id: -1, fullname: "Seleccione un mensajero" },
-                      ...motorizadoSelect,
-                    ]}
-                    value={form.mensajeroId}
-                    placeholder={"Seleccione un mensajero"}
-                    id={"mensajeroId"}
-                    name={"mensajeroId"}
-                    label={"Mensajero"}
-                    getOptionLabel={"fullname"}
-                    getIndexLabel={"id"}
-                    onChange={handleInputChange}
-                  />
-                </Grid>
-              </>
-            )}
-            <Grid item md={12} sm={12} xs={12}>
-              <TextField
-                id="descripcion"
-                name="descripcion"
-                label="Descripción"
-                value={form.descripcion}
-                onChange={handleInputChange}
-                variant="outlined"
-                fullWidth
-                multiline
-                rows={3}
-              />
-            </Grid>
-            <Grid item md={12} sm={12} xs={12} className="text-start">
-              <Button
-                onClick={saveOrden}
-                endIcon={<Save />}
-                variant="contained"
-                color="success"
-              >
-                Guardar
-              </Button>
-            </Grid>
-          </Grid>
+          </form>
         )}
       </Card>
     </div>

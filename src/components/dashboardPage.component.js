@@ -338,27 +338,6 @@ const DashboardPage = () => {
         <Grid container spacing={2}>
           <Grid item xs={12} md={8} sd={8}>
             <ReactECharts option={options} style={{height: deviceType === 'mobile' ? '400px' : '600px'}}/>
-            {/* <PieChart
-              series={[
-                {
-                  data: [...ordenesEstatus],
-                  arcLabel: (item) =>
-                    item.value === 0 ? "" : `${item.label} (${item.value})`,
-                  ...(deviceType === 'mobile' ? pieOptions.mobile : pieOptions.tablet),
-                },
-              ]}
-              sx={{
-                [`& .${pieArcLabelClasses.root}`]: {
-                  fontWeight: "bold",
-                  fill: 'white',
-                },
-              }}
-              slotProps={{ legend: { hidden: true } }}
-              {...size}
-            >
-              <PieArcLabel>Ordenes</PieArcLabel>
-              {/* <PieCenterLabel>Ordenes</PieCenterLabel> *}
-            </PieChart> */}
           </Grid>
           <Grid item xs={12} md={4} sd={4} sx={{ margin: "auto 0" }}>
             {ordenesEstatus.map((estado, index) => {
