@@ -788,13 +788,14 @@ export default function EnhancedTable(props) {
     onsearchFunction = null,
     searchableText = "",
   } = props;
+
   const [order, setOrder] = React.useState(orderASC);
   const [orderBy, setOrderBy] = React.useState("");
   const [innerSelected, setInnerSelected] = React.useState(selected);
   const [innerSelectedObj, setInnerSelectedObj] = React.useState([]);
 
   const [page, setPage] = React.useState(pagesHandle);
-  const [rowsPerPage, setRowsPerPage] = React.useState([]);
+  const [rowsPerPage, setRowsPerPage] = React.useState(rowsHandle); // Asignando el valor inicial de filas por página.
 
   const [openDialog, setOpenDialog] = React.useState(false);
   const [item, setItem] = React.useState(0);
@@ -807,7 +808,8 @@ export default function EnhancedTable(props) {
     rows: [],
     total: 0,
   });
-  const [refresh, setRefresh] = React.useState(refreshData);
+  const [refresh, setRefresh] = React.useState(refreshData); // Asegúrate de que 'refreshData' sea adecuado para inicializar este estado.
+
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -922,7 +924,6 @@ export default function EnhancedTable(props) {
   React.useEffect(() => {
     if (rowsPerPage !== rowsHandle) setRowsPerPage(rowsHandle);
   }, [rowsHandle]);
-
   const handleSelected = (newSelected) => {
     if (setSelected !== null) {
       setSelected(newSelected);
@@ -930,7 +931,7 @@ export default function EnhancedTable(props) {
       setInnerSelected(newSelected);
     }
   };
-
+  
   const handleSelectedObj = (newSelectedObj) => {
     if (setSelectedObj) {
       setSelectedObj(newSelectedObj);
@@ -938,17 +939,17 @@ export default function EnhancedTable(props) {
       setInnerSelectedObj(newSelectedObj);
     }
   };
-
+  
   const triggerDeleteDialog = (value, obj) => {
     setItem(value);
     setOpenDialog(true);
   };
-
+  
   const handleCloseDialog = () => {
     setItem(0);
     setOpenDialog(false);
   };
-
+  
   const deleteItem = (innerItem, row) => {
     props.onDeleteFunction(item).then(() => {
       if (!disablePathParameters)
@@ -960,105 +961,97 @@ export default function EnhancedTable(props) {
     });
     handleCloseDialog();
   };
-
+  
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
-
+  
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelected = table.rows
-        .filter((row) => !row.disableCheckbox)
-        .map((row) => row[rowId]);
-      const newObjSelected = table.rows
-        .filter((row) => !row.disableCheckbox)
-        .map((row) => row);
+      const newSelected = [
+        ...selected,
+        ...table.rows
+          .filter((row) => !row.disableCheckbox)
+          .map((row) => row[rowId])
+          .filter((id) => !selected.includes(id)),
+      ];
+  
+      const newObjSelected = [
+        ...selectedObj,
+        ...table.rows
+          .filter((row) => !row.disableCheckbox)
+          .filter((row) => !selectedObj.some((selectedRow) => selectedRow[rowId] === row[rowId])),
+      ];
+  
       handleSelected(newSelected);
       handleSelectedObj(newObjSelected);
-      return;
+    } else {
+      const deselectedIds = table.rows
+        .filter((row) => !row.disableCheckbox)
+        .map((row) => row[rowId]);
+  
+      const remainingSelected = selected.filter(
+        (id) => !deselectedIds.includes(id)
+      );
+      const remainingObjSelected = selectedObj.filter(
+        (row) => !deselectedIds.includes(row[rowId])
+      );
+  
+      handleSelected(remainingSelected);
+      handleSelectedObj(remainingObjSelected);
     }
-    handleSelected([]);
-    handleSelectedObj([]);
   };
-
+  
+  
   const resetPagination = () => {
     if (!disablePathParameters)
       navigate(location.pathname + `?page=${1}&rowsPerPage=${10}`);
     setPage(0);
     setRowsPerPage(10);
   };
-
-  const handleClick = (event, name, row) => {
-    console.log("handleClick", name, row);
   
-    // Determina el índice de la selección actual
-    const selectedIndex = (selected ? selected : innerSelected).indexOf(name);
+  const handleClick = (event, name, row) => {
+    const currentSelected = selected ? selected : innerSelected;
+    const selectedIndex = currentSelected.indexOf(name);
     let newSelected = [];
   
-    // Maneja la selección o deselección del elemento
     if (selectedIndex === -1) {
-      // Elemento no seleccionado, agrégalo
-      newSelected = newSelected.concat(
-        selected ? selected : innerSelected,
-        name
-      );
+      newSelected = newSelected.concat(currentSelected, name);
     } else if (selectedIndex === 0) {
-      // Elemento seleccionado en la primera posición, elimina el primer elemento
+      newSelected = newSelected.concat(currentSelected.slice(1));
+    } else if (selectedIndex === currentSelected.length - 1) {
+      newSelected = newSelected.concat(currentSelected.slice(0, -1));
+    } else {
       newSelected = newSelected.concat(
-        (selected ? selected : innerSelected).slice(1)
-      );
-    } else if (
-      selectedIndex ===
-      (selected ? selected : innerSelected).length - 1
-    ) {
-      // Elemento seleccionado en la última posición, elimina el último elemento
-      newSelected = newSelected.concat(
-        (selected ? selected : innerSelected).slice(0, -1)
-      );
-    } else if (selectedIndex > 0) {
-      // Elemento seleccionado en una posición intermedia, elimina el elemento
-      newSelected = newSelected.concat(
-        (selected ? selected : innerSelected).slice(0, selectedIndex),
-        (selected ? selected : innerSelected).slice(selectedIndex + 1)
+        currentSelected.slice(0, selectedIndex),
+        currentSelected.slice(selectedIndex + 1)
       );
     }
   
-    // Controla el estado de los checkboxes si hay un límite máximo de selección
     if (maxSelected !== null && newSelected.length >= maxSelected) {
       setDisableCheckboxes(true);
     } else {
       setDisableCheckboxes(false);
     }
   
-    // Maneja la selección de objetos, si se está usando `selectedObj`
     const selectedIndexObj = (selectedObj ? selectedObj : innerSelectedObj).findIndex(
       (obj) => obj.id === name
     );
-    let newSelectedObj = [];
+    let newSelectedObj = table.rows.filter((obj) => newSelected.includes(obj.id));
   
-    // Filtra y mapea los objetos seleccionados en la nueva selección
-    newSelectedObj = table.rows
-      .filter((obj) => newSelected.includes(obj.id))
-      .map((obj) => obj);
-  
-    // Actualiza el estado de la selección
     handleSelected(newSelected);
     handleSelectedObj(newSelectedObj);
   };
   
-
-
   const handleChangePage = (event, newPage) => {
     if (!disablePathParameters)
-      navigate(
-        location.pathname + `?page=${newPage}&rowsPerPage=${rowsPerPage}`
-      );
+      navigate(location.pathname + `?page=${newPage}&rowsPerPage=${rowsPerPage}`);
     if (paginationServer) handlePagination(newPage, rowsPerPage);
     setPage(newPage - 1);
   };
-
+  
   const handleChangeRowsPerPage = (event) => {
     const perPage = parseInt(event.target.value, 10);
   
@@ -1082,6 +1075,7 @@ export default function EnhancedTable(props) {
       handleSelectedObj(currentSelectionObj);
     }, 0);
   };
+  
   
 
   const isSelected = (name) => {
@@ -1184,26 +1178,29 @@ export default function EnhancedTable(props) {
 
   const getRows = () => {
     console.log("getRows");
+  
+    // Ordena las filas usando el comparador
     let rows = stableSort(dataTable?.rows, getComparator(order, orderBy));
+  
+    // Si no se usa paginación en el servidor, se aplica paginación localmente
     if (!paginationServer) {
       rows = rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     }
-    /* const row = dataTable?.rows[0];
-    const index = 0; */
-    const index = 0;
+  
+    // Mapea las filas ordenadas y paginadas a componentes de tabla
     return rows.map((row, index) => {
       const isItemSelected = isSelected(row[rowId]);
-      console.log("index"+index);
+      console.log("index" + index);
       const labelId = `enhanced-table-checkbox-${index}`;
       const isExpandable =
-        row[rowId] ===
-        (expandableItem !== null ? expandableItem : innerExpandableTable);
+        row[rowId] === (expandableItem !== null ? expandableItem : innerExpandableTable);
+  
       return (
         <EnhancedTableRow
+          key={`key-${row?.id}`}
           isItemSelected={isItemSelected}
           row={row}
           rowId={rowId}
-          key={"key" + row?.id}
           handleClick1={handleClick}
           labelId={labelId}
           columns={dataTable.columns}
@@ -1226,9 +1223,11 @@ export default function EnhancedTable(props) {
       );
     });
   };
+  
 
   return (
     <Grid container sx={{ width: "100%" }}>
+      {/* Diálogo de confirmación para eliminar un registro */}
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}
@@ -1236,7 +1235,7 @@ export default function EnhancedTable(props) {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {"¿Estas seguro/a de eliminar este registro? "}
+          {"¿Estás seguro/a de eliminar este registro?"}
         </DialogTitle>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancelar</Button>
@@ -1245,10 +1244,12 @@ export default function EnhancedTable(props) {
           </Button>
         </DialogActions>
       </Dialog>
+  
+      {/* Barra de herramientas de la tabla */}
       <EnhancedTableToolbar
-        numSelected={(selected ? selected : innerSelected).length}
+        numSelected={(selected || innerSelected).length}
         setSearch={setSearch}
-        search={search !== "" ? search : searchableText}
+        search={search || searchableText}
         extraFilters={extraFilters}
         resetPagination={resetPagination}
         getFilters={getFilters}
@@ -1264,57 +1265,49 @@ export default function EnhancedTable(props) {
         showFilters={showFilters}
         setShowFilters={setShowFilters}
       />
+  
+      {/* Controles de paginación y selección de filas por página */}
       <Grid
         container
-        justifyContent={"space-between"}
-        alignItems={"center"}
-        style={{ padding: "8px", margin: "10px 16px" }}
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ padding: "8px", margin: "10px 16px" }}
       >
         <Grid item>
-          <Grid container alignItems={"center"}>
-            <span style={{ fontSize: 14, marginRight: 10 }}>
-              Filas por página:
-            </span>
+          <Grid container alignItems="center">
+            <span style={{ fontSize: 14, marginRight: 10 }}>Filas por página:</span>
             <Select
               value={rowsPerPage}
               onChange={handleChangeRowsPerPage}
-              size={"small"}
+              size="small"
             >
-              <MenuItem value={5} sx={{ whiteSpace: "normal" }}>
-                5
-              </MenuItem>
-              <MenuItem value={10} sx={{ whiteSpace: "normal" }}>
-                10
-              </MenuItem>
-              <MenuItem value={25} sx={{ whiteSpace: "normal" }}>
-                25
-              </MenuItem>
-              <MenuItem value={50} sx={{ whiteSpace: "normal" }}>
-                50
-              </MenuItem>
-              <MenuItem value={100} sx={{ whiteSpace: "normal" }}>
-                100
-              </MenuItem>
+              {[5, 10, 25, 50, 100].map((value) => (
+                <MenuItem key={value} value={value} sx={{ whiteSpace: "normal" }}>
+                  {value}
+                </MenuItem>
+              ))}
             </Select>
           </Grid>
         </Grid>
         {!isNaN(
           dataTable?.pages
-            ? dataTable?.pages
+            ? dataTable.pages
             : Math.ceil(dataTable.rows?.length / rowsPerPage)
         ) && (
           <Pagination
             sx={{ color: "neutral" }}
             count={
               dataTable?.pages
-                ? dataTable?.pages * 1
-                : Math.ceil(dataTable.rows?.length / rowsPerPage) * 1
+                ? dataTable.pages
+                : Math.ceil(dataTable.rows?.length / rowsPerPage)
             }
             page={page + 1}
             onChange={handleChangePage}
           />
         )}
       </Grid>
+  
+      {/* Tabla principal */}
       <Paper
         elevation={isModalTable ? 0 : 3}
         sx={{
@@ -1322,22 +1315,24 @@ export default function EnhancedTable(props) {
           mb: isModalTable ? 0 : 2,
           padding: 1,
           margin: "10px 16px",
-          ...(isModalTable
-            ? { border: "2px solid #f0f0f0", maxHeight: 450, overflowY: "auto" }
-            : {}),
+          ...(isModalTable && {
+            border: "2px solid #f0f0f0",
+            maxHeight: 450,
+            overflowY: "auto",
+          }),
         }}
       >
-        <TableContainer /* style={{ maxHeight: "calc(100vh - 300px)" }} */>
+        <TableContainer>
           <Table
             stickyHeader={stickyHeader}
             sx={{ minWidth: 750 }}
             aria-labelledby="tableTitle"
-            size={"medium"}
-            className={"enhance-table"}
+            size="medium"
+            className="enhance-table"
           >
             <EnhancedTableHead
               columns={dataTable.columns}
-              numSelected={(selected ? selected : innerSelected).length}
+              numSelected={(selected || innerSelected).length}
               order={order}
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
@@ -1358,27 +1353,22 @@ export default function EnhancedTable(props) {
             />
             <TableBody>
               {loading ? (
-                [1, 2, 3, 4, 5].map(() => {
-                  return (
-                    <TableRow>
-                      <TableCell>
-                        <Skeleton
-                          variant="text"
-                          sx={{ fontSize: "1rem", width: "100%" }}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
+                [1, 2, 3, 4, 5].map((key) => (
+                  <TableRow key={key}>
+                    <TableCell>
+                      <Skeleton
+                        variant="text"
+                        sx={{ fontSize: "1rem", width: "100%" }}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))
               ) : dataTable.rows?.length > 0 ? (
                 getRows()
               ) : (
                 <TableRow>
                   <TableCell colSpan={dataTable.columns.length}>
-                    <Alert
-                      severity="info"
-                      style={{ width: "100%", color: "primary" }}
-                    >
+                    <Alert severity="info" sx={{ width: "100%", color: "primary" }}>
                       No se encontraron resultados
                     </Alert>
                   </TableCell>
@@ -1388,51 +1378,41 @@ export default function EnhancedTable(props) {
           </Table>
         </TableContainer>
       </Paper>
+  
+      {/* Controles de paginación y selección de filas por página (repetición) */}
       <Grid
         container
-        justifyContent={"space-between"}
-        alignItems={"center"}
-        style={{ padding: "8px", margin: "10px 16px" }}
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ padding: "8px", margin: "10px 16px" }}
       >
         <Grid item>
-          <Grid container alignItems={"center"}>
-            <span style={{ fontSize: 14, marginRight: 10 }}>
-              Filas por página:
-            </span>
+          <Grid container alignItems="center">
+            <span style={{ fontSize: 14, marginRight: 10 }}>Filas por página:</span>
             <Select
               value={rowsPerPage}
               onChange={handleChangeRowsPerPage}
-              size={"small"}
+              size="small"
             >
-              <MenuItem value={5} sx={{ whiteSpace: "normal" }}>
-                5
-              </MenuItem>
-              <MenuItem value={10} sx={{ whiteSpace: "normal" }}>
-                10
-              </MenuItem>
-              <MenuItem value={25} sx={{ whiteSpace: "normal" }}>
-                25
-              </MenuItem>
-              <MenuItem value={50} sx={{ whiteSpace: "normal" }}>
-                50
-              </MenuItem>
-              <MenuItem value={100} sx={{ whiteSpace: "normal" }}>
-                100
-              </MenuItem>
+              {[5, 10, 25, 50, 100].map((value) => (
+                <MenuItem key={value} value={value} sx={{ whiteSpace: "normal" }}>
+                  {value}
+                </MenuItem>
+              ))}
             </Select>
           </Grid>
         </Grid>
         {!isNaN(
           dataTable?.pages
-            ? dataTable?.pages
+            ? dataTable.pages
             : Math.ceil(dataTable.rows?.length / rowsPerPage)
         ) && (
           <Pagination
             sx={{ color: "neutral" }}
             count={
               dataTable?.pages
-                ? dataTable?.pages * 1
-                : Math.ceil(dataTable.rows?.length / rowsPerPage) * 1
+                ? dataTable.pages
+                : Math.ceil(dataTable.rows?.length / rowsPerPage)
             }
             page={page + 1}
             onChange={handleChangePage}
@@ -1441,4 +1421,4 @@ export default function EnhancedTable(props) {
       </Grid>
     </Grid>
   );
-}
+}  
