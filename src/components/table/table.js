@@ -1013,37 +1013,38 @@ export default function EnhancedTable(props) {
   };
   
   const handleClick = (event, name, row) => {
-    const currentSelected = selected ? selected : innerSelected;
-    const selectedIndex = currentSelected.indexOf(name);
-    let newSelected = [];
+    const currentSelected = selected || innerSelected;
+    const isSelected = currentSelected.includes(name);
   
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(currentSelected, name);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(currentSelected.slice(1));
-    } else if (selectedIndex === currentSelected.length - 1) {
-      newSelected = newSelected.concat(currentSelected.slice(0, -1));
+    let newSelected;
+    let newObjSelected;
+  
+    if (isSelected) {
+      // Si el elemento ya está seleccionado, lo deseleccionamos
+      newSelected = currentSelected.filter((id) => id !== name);
+      newObjSelected = selectedObj
+        ? selectedObj.filter((selectedRow) => selectedRow[rowId] !== name)
+        : innerSelectedObj.filter((selectedRow) => selectedRow[rowId] !== name);
     } else {
-      newSelected = newSelected.concat(
-        currentSelected.slice(0, selectedIndex),
-        currentSelected.slice(selectedIndex + 1)
-      );
+      // Si el elemento no está seleccionado, lo agregamos
+      newSelected = [...currentSelected, name];
+      newObjSelected = selectedObj
+        ? [...selectedObj, row]
+        : [...innerSelectedObj, row];
     }
   
+    // Verificación del límite máximo de selección
     if (maxSelected !== null && newSelected.length >= maxSelected) {
       setDisableCheckboxes(true);
     } else {
       setDisableCheckboxes(false);
     }
   
-    const selectedIndexObj = (selectedObj ? selectedObj : innerSelectedObj).findIndex(
-      (obj) => obj.id === name
-    );
-    let newSelectedObj = table.rows.filter((obj) => newSelected.includes(obj.id));
-  
+    // Actualizamos los estados con las nuevas listas
     handleSelected(newSelected);
-    handleSelectedObj(newSelectedObj);
+    handleSelectedObj(newObjSelected);
   };
+  
   
   const handleChangePage = (event, newPage) => {
     if (!disablePathParameters)
