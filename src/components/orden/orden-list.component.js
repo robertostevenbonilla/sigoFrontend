@@ -75,113 +75,57 @@ import Iframe from 'react-iframe';
 var doc = new jsPDF();
 
 const columnsOrden = [
-  /* {
-    field: "id",
-    headerName: "Id",
-  }, */
-  {
-    field: "guia",
-    headerName: "Guia",
-  },
+  { field: "guia", headerName: "Guia" },
   {
     field: "origen",
     headerName: "Origen",
     type: "render",
-    renderFunction: (row) => {
-      return (
-        <List dense={true}>
-          <ListItem style={{ padding: "3px 0px" }}>
-            <ListItemIcon style={{ minWidth: 30 }}>
-              <AccountBox />
-            </ListItemIcon>
-            <ListItemText primary={row.origen} />
-          </ListItem>
-          <ListItem style={{ padding: "3px 0px" }}>
-            <ListItemIcon style={{ minWidth: 30 }}>
-              <Room />
-            </ListItemIcon>
-            <ListItemText primary={row.ciudadOrigen?.nombre} />
-          </ListItem>
-        </List>
-      );
-    },
+    renderFunction: (row) => (
+      <span>
+        <AccountBox style={{ marginRight: 5 }} />
+        {row.origen} - {row.ciudadOrigen?.nombre}
+      </span>
+    ),
   },
   {
     field: "destino",
     headerName: "Destino",
     type: "render",
-    renderFunction: (row) => {
-      return (
-        <List dense={true}>
-          <ListItem style={{ padding: "3px 0px" }}>
-            <ListItemIcon style={{ minWidth: 30 }}>
-              <AccountBox />
-            </ListItemIcon>
-            <ListItemText primary={row.destino} />
-          </ListItem>
-          <ListItem style={{ padding: "3px 0px" }}>
-            <ListItemIcon style={{ minWidth: 30 }}>
-              <Room />
-            </ListItemIcon>
-            <ListItemText primary={row.ciudadDestino?.nombre} />
-          </ListItem>
-        </List>
-      );
-    },
+    renderFunction: (row) => (
+      <span>
+        <AccountBox style={{ marginRight: 5 }} />
+        {row.destino} - {row.ciudadDestino?.nombre}
+      </span>
+    ),
   },
   {
     field: "fechaRecepcion",
     headerName: "Fecha",
-    //format: "date",
     type: "render",
-    renderFunction: (row) => {
-      return (
-        <List style={{ padding: "3px 0px" }} dense={true}>
-          <ListItem style={{ padding: "3px 0px" }}>
-            <ListItemIcon style={{ minWidth: 30 }}>
-              <Today />
-            </ListItemIcon>
-            <ListItemText
-              style={{ width: "max-content" }}
-              primary={row.fechaRecepcion}
-            />
-          </ListItem>
-          <ListItem style={{ padding: "3px 0px" }}>
-            <ListItemIcon style={{ minWidth: 30 }}>
-              <ScheduleSend />
-            </ListItemIcon>
-            <ListItemText
-              style={{ width: "max-content" }}
-              primary={row.fechaEntrega}
-            />
-          </ListItem>
-        </List>
-      );
-    },
+    renderFunction: (row) => (
+      <span>
+        <Today style={{ marginRight: 5 }} />
+        {row.fechaRecepcion} - {row.fechaEntrega}
+      </span>
+    ),
   },
   {
     field: "empresa",
     headerName: "Empresa",
     type: "render",
-    renderFunction: (row) => {
-      return row.Empresa?.nombre;
-    },
+    renderFunction: (row) => row.Empresa?.nombre || "",
   },
   {
     field: "servicio",
     headerName: "Servicio",
     type: "render",
-    renderFunction: (row) => {
-      return row.Servicio?.nombre;
-    },
+    renderFunction: (row) => row.Servicio?.nombre || "",
   },
   {
     field: "fase",
     headerName: "Estado",
     type: "render",
-    renderFunction: (row) => {
-      return row.Fase?.nombre;
-    },
+    renderFunction: (row) => row.Fase?.nombre || "",
   },
   {
     field: "costo",
@@ -201,24 +145,7 @@ const columnsOrden = [
     field: "mensajero",
     headerName: "Mensajero",
     type: "render",
-    renderFunction: (row) => {
-      return (
-        <>
-          {row.mensajero ? (
-            <List>
-              <ListItem>
-                <ListItemIcon style={{ minWidth: 30 }}>
-                  <DeliveryDining />
-                </ListItemIcon>
-                {row.mensajero?.persona.fullName}
-              </ListItem>
-            </List>
-          ) : (
-            <></>
-          )}
-        </>
-      );
-    },
+    renderFunction: (row) => row.mensajero?.persona.fullName || "",
   },
   {
     field: "createdAt",
@@ -230,27 +157,15 @@ const columnsOrden = [
     field: "novedad",
     headerName: "Novedad",
     type: "render",
-    renderFunction: (row) => {
-      return row.Incidencias.length > 0 ? (
-        <List>
-          <ListItem>
-            <ListItemIcon style={{ minWidth: 30 }}>
-              <ErrorOutline sx={{ color: "#ffdd29" }} />
-            </ListItemIcon>
-          </ListItem>
-        </List>
+    renderFunction: (row) =>
+      row.Incidencias.length > 0 ? (
+        <ErrorOutline sx={{ color: "#ffdd29" }} />
       ) : (
-        <List>
-          <ListItem>
-            <ListItemIcon style={{ minWidth: 30 }}>
-              <TaskAlt color="success" />
-            </ListItemIcon>
-          </ListItem>
-        </List>
-      );
-    },
+        <TaskAlt color="success" />
+      ),
   },
 ];
+
 
 const flexContainer = {
   display: "flex",
@@ -375,7 +290,7 @@ const OrdenList = (props) => {
       });
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (currentUser.auth?.reset_password === 1) {
       navigate("/changepassword");
     } else if (!currentUser.isLoggedIn) {
@@ -405,7 +320,7 @@ const OrdenList = (props) => {
     console.log("useEffect", pages, rowsN);
   }, loadDataOnlyOnce);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (pages !== prevPages || pages === undefined) {
       console.log("pages change", "antes", prevPages, "después", pages);
     }
@@ -431,13 +346,13 @@ const OrdenList = (props) => {
     // setPrevOrdenes(ordenes);
   }, [pages, rowsN, selected, selectedObj, ordenes]); 
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (downloadObj.length > 0) {
       downloadPdf();
     }
   }, [downloadObj]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (filtros !== "") {
       console.log("filtros", filtros, pages, rowsN, selected, selectedObj);
       retrieveOrdenes(pages + 1, rowsN);
@@ -449,7 +364,7 @@ const OrdenList = (props) => {
     }
   }, [filtros]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (searchableText !== "") {
       console.log(
         "searchableText",
