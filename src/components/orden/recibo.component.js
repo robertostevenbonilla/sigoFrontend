@@ -55,7 +55,7 @@ const Recibo = (props) => {
   const [faseSelect, setFaseSelect] = useState([]);
   const [faseId, setFaseId] = useState(-1);
 
-  useEffect(() => {
+  React.useEffect(() => {
     console.log(currentUser, process.env.REACT_APP_IMG_URL);
     if (currentUser.auth?.reset_password === 1) {
       navigate("/changepassword");
@@ -67,7 +67,7 @@ const Recibo = (props) => {
     }
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (guia !== "") {
       getOrdenByGuia(guia);
     }

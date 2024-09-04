@@ -125,7 +125,7 @@ const Orden = () => {
       });
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     console.log(currentUser.isLoggedIn, currentUser);
     if (!currentUser.isLoggedIn) {
       navigate("/login");
@@ -136,7 +136,7 @@ const Orden = () => {
     }
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (id) {
       loadSelects();
       getOrden(id);

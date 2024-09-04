@@ -1,46 +1,47 @@
-.report-table{
-    width: 100%;
-    border-collapse: collapse;
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
 }
-.report-table  tr th, .report-table  tr td{
-    border: 1px solid #f1f1f1;
+
+.report-table tr th, .report-table tr td {
+  border: 1px solid #f1f1f1;
   text-align: left;
   padding: 8px;
   font-size: 13px;
 }
 
 .report-table tbody tr:nth-child(even) {
-    background-color: #f1f1f1;
-  }
+  background-color: #f1f1f1;
+}
 
-  .enhance-table tbody tr:last-child td, .enhance-table tbody tr:last-child th{
-    border: none
-  }
+.enhance-table tbody tr:last-child td, .enhance-table tbody tr:last-child th {
+  border: none;
+}
 
-  .enhance-table  tr {
-    display: flex;
-  }
-  
-  .enhance-table td, .enhance-table th {
-    
-    display: flex;
-    align-items: center;
-    flex: 1 0 auto;
-    width: 90px;
-  }
+.enhance-table tr {
+  display: flex;
+}
 
-  .enhance-table td p.red{
-    color: red;
-  }
+.enhance-table td, .enhance-table th {
+  display: flex;
+  align-items: center;
+  flex: 1 0 auto;
+  width: 90px;
+}
 
-  .conciliacion-table td, .conciliacion-table th {
-    white-space: nowrap;
-    padding: 10px;
-    border-bottom: 1px solid #00000040;
-  }
+.enhance-table td p.red {
+  color: red;
+}
 
-  .conciliacion-table th {
-    background: white;
-    text-align: left;
-    position: sticky; top: 0; 
-  }
+.conciliacion-table td, .conciliacion-table th {
+  white-space: nowrap;
+  padding: 10px;
+  border-bottom: 1px solid #00000040;
+}
+
+.conciliacion-table th {
+  background: white;
+  text-align: left;
+  position: sticky; 
+  top: 0;
+}
