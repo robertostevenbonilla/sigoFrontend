@@ -73,55 +73,68 @@ import {
 import Iframe from 'react-iframe';
 var doc = new jsPDF();
 
-// Reutilizar el estilo para los íconos para evitar repetición
+import { AccountBox, Today, ErrorOutline, TaskAlt } from "@mui/icons-material";
+import React, { useCallback } from "react";
+
+// Reutilizar el estilo para los íconos
 const iconStyle = { marginRight: 5 };
 
-const columnsOrden = [
-  { field: "guia", headerName: "Guia" },
+// Datos para los campos que usan íconos repetidos
+const iconData = [
   {
     field: "origen",
     headerName: "Origen",
-    renderFunction: ({ origen, ciudadOrigen }) => (
-      <span>
-        <AccountBox style={iconStyle} />
-        {origen} - {ciudadOrigen?.nombre || ""}
-      </span>
-    ),
+    icon: AccountBox,
+    primaryKey: "origen",
+    secondaryKey: "ciudadOrigen",
   },
   {
     field: "destino",
     headerName: "Destino",
-    renderFunction: ({ destino, ciudadDestino }) => (
-      <span>
-        <AccountBox style={iconStyle} />
-        {destino} - {ciudadDestino?.nombre || ""}
-      </span>
-    ),
+    icon: AccountBox,
+    primaryKey: "destino",
+    secondaryKey: "ciudadDestino",
   },
   {
     field: "fechaRecepcion",
     headerName: "Fecha",
-    renderFunction: ({ fechaRecepcion, fechaEntrega }) => (
+    icon: Today,
+    primaryKey: "fechaRecepcion",
+    secondaryKey: "fechaEntrega",
+  },
+];
+
+// Generar las columnas basadas en los datos
+const iconColumns = iconData.map(({ field, headerName, icon: Icon, primaryKey, secondaryKey }) => ({
+  field,
+  headerName,
+  renderFunction: useCallback(
+    (data) => (
       <span>
-        <Today style={iconStyle} />
-        {fechaRecepcion} - {fechaEntrega || ""}
+        <Icon style={iconStyle} />
+        {data[primaryKey]} - {data[secondaryKey]?.nombre || ""}
       </span>
     ),
-  },
+    []
+  ),
+}));
+
+// Otras columnas que no utilizan íconos
+const otherColumns = [
   {
     field: "empresa",
     headerName: "Empresa",
-    renderFunction: ({ Empresa }) => Empresa?.nombre || "",
+    renderFunction: useCallback(({ Empresa }) => Empresa?.nombre || "", []),
   },
   {
     field: "servicio",
     headerName: "Servicio",
-    renderFunction: ({ Servicio }) => Servicio?.nombre || "",
+    renderFunction: useCallback(({ Servicio }) => Servicio?.nombre || "", []),
   },
   {
     field: "fase",
     headerName: "Estado",
-    renderFunction: ({ Fase }) => Fase?.nombre || "",
+    renderFunction: useCallback(({ Fase }) => Fase?.nombre || "", []),
   },
   {
     field: "costo",
@@ -140,7 +153,7 @@ const columnsOrden = [
   {
     field: "mensajero",
     headerName: "Mensajero",
-    renderFunction: ({ mensajero }) => mensajero?.persona.fullName || "",
+    renderFunction: useCallback(({ mensajero }) => mensajero?.persona.fullName || "", []),
   },
   {
     field: "createdAt",
@@ -151,13 +164,23 @@ const columnsOrden = [
   {
     field: "novedad",
     headerName: "Novedad",
-    renderFunction: ({ Incidencias }) =>
-      Incidencias.length > 0 ? (
-        <ErrorOutline sx={{ color: "#ffdd29" }} />
-      ) : (
-        <TaskAlt color="success" />
-      ),
+    renderFunction: useCallback(
+      ({ Incidencias }) =>
+        Incidencias.length > 0 ? (
+          <ErrorOutline sx={{ color: "#ffdd29" }} />
+        ) : (
+          <TaskAlt color="success" />
+        ),
+      []
+    ),
   },
+];
+
+// Combinar todas las columnas
+const columnsOrden = [
+  { field: "guia", headerName: "Guia" },
+  ...iconColumns,
+  ...otherColumns,
 ];
 
 
@@ -286,7 +309,7 @@ const OrdenList = (props) => {
       });
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (currentUser.auth?.reset_password === 1) {
       navigate("/changepassword");
     } else if (!currentUser.isLoggedIn) {
@@ -316,7 +339,7 @@ const OrdenList = (props) => {
     console.log("useEffect", pages, rowsN);
   }, loadDataOnlyOnce);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (pages !== prevPages || pages === undefined) {
       console.log("pages change", "antes", prevPages, "después", pages);
     }
@@ -342,13 +365,13 @@ const OrdenList = (props) => {
     // setPrevOrdenes(ordenes);
   }, [pages, rowsN, selected, selectedObj, ordenes]); 
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (downloadObj.length > 0) {
       downloadPdf();
     }
   }, [downloadObj]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (filtros !== "") {
       console.log("filtros", filtros, pages, rowsN, selected, selectedObj);
       retrieveOrdenes(pages + 1, rowsN);
@@ -360,7 +383,7 @@ const OrdenList = (props) => {
     }
   }, [filtros]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (searchableText !== "") {
       console.log(
         "searchableText",
