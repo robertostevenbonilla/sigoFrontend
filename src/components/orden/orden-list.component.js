@@ -74,65 +74,68 @@ import {
 import Iframe from 'react-iframe';
 var doc = new jsPDF();
 
-const columnsOrden = [
-  {
-    field: "guia",
-    headerName: "Guia",
-    type: "render",
-    renderFunction: (row) => {
-      return <strong style={{ fontSize: "18px" }}>{row.guia}</strong>
-    },
-  },
+import { AccountBox, Today, ErrorOutline, TaskAlt } from "@mui/icons-material";
+import React, { useCallback } from "react";
+
+// Reutilizar el estilo para los íconos
+const iconStyle = { marginRight: 5 };
+
+// Datos para los campos que usan íconos repetidos
+const iconData = [
   {
     field: "origen",
     headerName: "Origen",
-    type: "render",
-    renderFunction: (row) => (
-      <span>
-        <AccountBox style={{ marginRight: 5 }} />
-        {row.origen} - {row.ciudadOrigen?.nombre}
-      </span>
-    ),
+    icon: AccountBox,
+    primaryKey: "origen",
+    secondaryKey: "ciudadOrigen",
   },
   {
     field: "destino",
     headerName: "Destino",
-    type: "render",
-    renderFunction: (row) => (
-      <span>
-        <AccountBox style={{ marginRight: 5 }} />
-        {row.destino} - {row.ciudadDestino?.nombre}
-      </span>
-    ),
+    icon: AccountBox,
+    primaryKey: "destino",
+    secondaryKey: "ciudadDestino",
   },
   {
     field: "fechaRecepcion",
     headerName: "Fecha",
-    type: "render",
-    renderFunction: (row) => (
+    icon: Today,
+    primaryKey: "fechaRecepcion",
+    secondaryKey: "fechaEntrega",
+  },
+];
+
+// Generar las columnas basadas en los datos
+const iconColumns = iconData.map(({ field, headerName, icon: Icon, primaryKey, secondaryKey }) => ({
+  field,
+  headerName,
+  renderFunction: useCallback(
+    (data) => (
       <span>
-        <Today style={{ marginRight: 5 }} />
-        {row.createdAt} - {row.fechaEntrega}
+        <Icon style={iconStyle} />
+        {data[primaryKey]} - {data[secondaryKey]?.nombre || ""}
       </span>
     ),
-  },
+    []
+  ),
+}));
+
+// Otras columnas que no utilizan íconos
+const otherColumns = [
   {
     field: "empresa",
     headerName: "Empresa",
-    type: "render",
-    renderFunction: (row) => row.Empresa?.nombre || "",
+    renderFunction: useCallback(({ Empresa }) => Empresa?.nombre || "", []),
   },
   {
     field: "servicio",
     headerName: "Servicio",
-    type: "render",
-    renderFunction: (row) => row.Servicio?.nombre || "",
+    renderFunction: useCallback(({ Servicio }) => Servicio?.nombre || "", []),
   },
   {
     field: "fase",
     headerName: "Estado",
-    type: "render",
-    renderFunction: (row) => row.Fase?.nombre || "",
+    renderFunction: useCallback(({ Fase }) => Fase?.nombre || "", []),
   },
   {
     field: "costo",
@@ -151,25 +154,37 @@ const columnsOrden = [
   {
     field: "mensajero",
     headerName: "Mensajero",
-    type: "render",
-    renderFunction: (row) => row.mensajero?.persona.fullName || "",
+    renderFunction: useCallback(({ mensajero }) => mensajero?.persona.fullName || "", []),
   },
   {
-    field: "codigo",
-    headerName: "Codigo",
+    field: "createdAt",
+    headerName: "Creada",
+    flex: 1,
+    format: "datetime",
   },
   {
     field: "novedad",
     headerName: "Novedad",
-    type: "render",
-    renderFunction: (row) =>
-      row.Incidencias.length > 0 ? (
-        <ErrorOutline sx={{ color: "#ffdd29" }} />
-      ) : (
-        <TaskAlt color="success" />
-      ),
+    renderFunction: useCallback(
+      ({ Incidencias }) =>
+        Incidencias.length > 0 ? (
+          <ErrorOutline sx={{ color: "#ffdd29" }} />
+        ) : (
+          <TaskAlt color="success" />
+        ),
+      []
+    ),
   },
 ];
+
+// Combinar todas las columnas
+const columnsOrden = [
+  { field: "guia", headerName: "Guia" },
+  ...iconColumns,
+  ...otherColumns,
+];
+
+
 
 
 const flexContainer = {

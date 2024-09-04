@@ -88,25 +88,6 @@ export const OrdenDataService = () => {
     return returnData;
   };
 
-  const getByGuiaPriv = async (guia) => {
-    let returnData = null;
-    let recall = false;
-    do {
-      try {
-        returnData = await http.get(`/orden/guiaPriv/${guia}`, { headers: { ...header() } });
-        recall = false;
-      } catch (error) {
-        console.error(error);
-        if (error.response.status === 403) {
-          recall = await refreshTokenProcess();
-        } else {
-          throw error;
-        }
-      }
-    } while (recall);
-    return returnData;
-  };
-
   const create = async (data) => {
     let returnData = null;
     let recall = false;
@@ -514,7 +495,6 @@ export const OrdenDataService = () => {
     faseCount,
     serviceCount,
     getByGuia,
-    getByGuiaPriv,
     evidencia,
     evidenciaInc,
     incidencia,
