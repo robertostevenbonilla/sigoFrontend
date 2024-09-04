@@ -8,7 +8,6 @@ import ServicioDataService from "../../services/servicio.service";
 import FaseDataService from "../../services/fase.service";
 import EnhancedTable from "../table/table";
 import {
-  AccountBox,
   Approval,
   ConfirmationNumber,
   ContentCopy,
