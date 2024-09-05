@@ -74,114 +74,55 @@ import {
 
 var doc = new jsPDF();
 
+// Reutilizar el estilo para los íconos para evitar repetición
+const iconStyle = { marginRight: 5 };
+
 const columnsOrden = [
-  {
-    field: "guia",
-    headerName: "Guia",
-    type: "render",
-    renderFunction: (row) => {
-      return <strong style={{ fontSize: "18px" }}>{row.guia}</strong>
-    },
-  },
+  { field: "guia", headerName: "Guia" },
   {
     field: "origen",
     headerName: "Origen",
-    type: "render",
-    renderFunction: (row) => {
-      return (
-        <List dense={true}>
-          <ListItem style={{ padding: "3px 0px" }}>
-            <ListItemIcon style={{ minWidth: 30 }}>
-              <AccountBox />
-            </ListItemIcon>
-            <ListItemText primary={row.origen} />
-          </ListItem>
-          <ListItem style={{ padding: "3px 0px" }}>
-            <ListItemIcon style={{ minWidth: 30 }}>
-              <Room />
-            </ListItemIcon>
-            <ListItemText primary={row.ciudadOrigen?.nombre} />
-          </ListItem>
-        </List>
-      );
-    },
+    renderFunction: ({ origen, ciudadOrigen }) => (
+      <span>
+        <AccountBox style={iconStyle} />
+        {origen} - {ciudadOrigen?.nombre || ""}
+      </span>
+    ),
   },
   {
     field: "destino",
     headerName: "Destino",
-    type: "render",
-    renderFunction: (row) => {
-      return (
-        <List dense={true}>
-          <ListItem style={{ padding: "3px 0px" }}>
-            <ListItemIcon style={{ minWidth: 30 }}>
-              <AccountBox />
-            </ListItemIcon>
-            <ListItemText primary={row.destino} />
-          </ListItem>
-          <ListItem style={{ padding: "3px 0px" }}>
-            <ListItemIcon style={{ minWidth: 30 }}>
-              <Room />
-            </ListItemIcon>
-            <ListItemText primary={row.ciudadDestino?.nombre} />
-          </ListItem>
-        </List>
-      );
-    },
+    renderFunction: ({ destino, ciudadDestino }) => (
+      <span>
+        <AccountBox style={iconStyle} />
+        {destino} - {ciudadDestino?.nombre || ""}
+      </span>
+    ),
   },
   {
     field: "fechaRecepcion",
     headerName: "Fecha",
-    //format: "date",
-    type: "render",
-    renderFunction: (row) => {
-      return (
-        <List style={{ padding: "3px 0px" }} dense={true}>
-          <ListItem style={{ padding: "3px 0px" }}>
-            <ListItemIcon style={{ minWidth: 30 }}>
-              <Today />
-            </ListItemIcon>
-            <ListItemText
-              style={{ width: "max-content" }}
-              primary={row.createdAt}
-            />
-          </ListItem>
-          <ListItem style={{ padding: "3px 0px" }}>
-            <ListItemIcon style={{ minWidth: 30 }}>
-              <ScheduleSend />
-            </ListItemIcon>
-            <ListItemText
-              style={{ width: "max-content" }}
-              primary={row.fechaEntrega}
-            />
-          </ListItem>
-        </List>
-      );
-    },
+    renderFunction: ({ fechaRecepcion, fechaEntrega }) => (
+      <span>
+        <Today style={iconStyle} />
+        {fechaRecepcion} - {fechaEntrega || ""}
+      </span>
+    ),
   },
   {
     field: "empresa",
     headerName: "Empresa",
-    type: "render",
-    renderFunction: (row) => {
-      return row.Empresa?.nombre;
-    },
+    renderFunction: ({ Empresa }) => Empresa?.nombre || "",
   },
   {
     field: "servicio",
     headerName: "Servicio",
-    type: "render",
-    renderFunction: (row) => {
-      return row.Servicio?.nombre;
-    },
+    renderFunction: ({ Servicio }) => Servicio?.nombre || "",
   },
   {
     field: "fase",
     headerName: "Estado",
-    type: "render",
-    renderFunction: (row) => {
-      return row.Fase?.nombre;
-    },
+    renderFunction: ({ Fase }) => Fase?.nombre || "",
   },
   {
     field: "costo",
@@ -200,56 +141,25 @@ const columnsOrden = [
   {
     field: "mensajero",
     headerName: "Mensajero",
-    type: "render",
-    renderFunction: (row) => {
-      return (
-        <>
-          {row.mensajero ? (
-            <List>
-              <ListItem>
-                <ListItemIcon style={{ minWidth: 30 }}>
-                  <DeliveryDining />
-                </ListItemIcon>
-                {row.mensajero?.persona.fullName}
-              </ListItem>
-            </List>
-          ) : (
-            <></>
-          )}
-        </>
-      );
-    },
+    renderFunction: ({ mensajero }) => mensajero?.persona.fullName || "",
   },
   {
-    field: "codigo",
-    headerName: "Codigo",
+    field: "createdAt",
+    headerName: "Creada",
+    flex: 1,
+    format: "datetime",
   },
   {
     field: "novedad",
     headerName: "Novedad",
-    type: "render",
-    renderFunction: (row) => {
-      return row.Incidencias.length > 0 ? (
-        <List>
-          <ListItem>
-            <ListItemIcon style={{ minWidth: 30 }}>
-              <ErrorOutline sx={{ color: "#ffdd29" }} />
-            </ListItemIcon>
-          </ListItem>
-        </List>
+    renderFunction: ({ Incidencias }) =>
+      Incidencias.length > 0 ? (
+        <ErrorOutline sx={{ color: "#ffdd29" }} />
       ) : (
-        <List>
-          <ListItem>
-            <ListItemIcon style={{ minWidth: 30 }}>
-              <TaskAlt color="success" />
-            </ListItemIcon>
-          </ListItem>
-        </List>
-      );
-    },
+        <TaskAlt color="success" />
+      ),
   },
 ];
-
 const flexContainer = {
   display: "flex",
   flexDirection: "row",
@@ -268,6 +178,15 @@ const OrdenList = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalUrl, setModalUrl] = useState('');
+
+  const handleViewFunction = (id) => {
+    setModalUrl(`/orden/${id}`);
+    setIsModalOpen(true);
+  };
+
 
   const {
     getAll,
@@ -1538,9 +1457,7 @@ const OrdenList = (props) => {
           }}
           noDataMessage={"Por el momento no existen registros."}
           view={true}
-          onViewFunction={(id, row) => {
-            navigate(`/orden/${id}`);
-          }}
+          onViewFunction={handleViewFunction}
           download={true}
           onDownloadFunction={async (id, row) => {
             dispatch(setLoading(true));
@@ -1977,6 +1894,53 @@ const OrdenList = (props) => {
           audit={true}
           showNumber={true}
         />
+        {isModalOpen && (
+  <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(211, 211, 211, 0.5)', zIndex: 50 }}>
+    <div style={{ position: 'relative', backgroundColor: '#d3d3d3', padding: 0, borderRadius: '8px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', width: '90vw', height: '90vh', maxWidth: '90vw', maxHeight: '90vh' }}>
+      <button
+        style={{ position: 'absolute', top: '8px', right: '8px', fontSize: '24px', color: '#007BFF', background: 'none', border: 'none', cursor: 'pointer', zIndex: 110 }}
+        onClick={() => setIsModalOpen(false)}
+      >
+        ✕
+      </button>
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <iframe
+          src={modalUrl}
+          title="Orden Details"
+          style={{ width: '100%', height: '100%', border: 'none', borderRadius: '8px' }}
+          loading="lazy"
+        ></iframe>
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100px', // Ajusta la altura para cubrir el dashboard superior
+          backgroundColor: '#d3d3d3', // Gris claro
+          zIndex: 100,
+        }}></div>
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '540px', // Ajusta el ancho para cubrir el menú a la izquierda
+          height: '100%',
+          backgroundColor: '#d3d3d3', // Gris claro
+          zIndex: 100,
+        }}></div>
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          width: '340px', // Ajusta el ancho para cubrir el menú a la derecha
+          height: '100%',
+          backgroundColor: '#d3d3d3', // Gris claro
+          zIndex: 100,
+        }}></div>
+      </div>
+    </div>
+  </div>
+)}
       </Card>
     </div>
   );

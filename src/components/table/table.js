@@ -969,20 +969,39 @@ export default function EnhancedTable(props) {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelected = table.rows
-        .filter((row) => !row.disableCheckbox)
-        .map((row) => row[rowId]);
-      const newObjSelected = table.rows
-        .filter((row) => !row.disableCheckbox)
-        .map((row) => row);
+      const newSelected = [
+        ...selected,
+        ...table.rows
+          .filter((row) => !row.disableCheckbox)
+          .map((row) => row[rowId])
+          .filter((id) => !selected.includes(id)),
+      ];
+  
+      const newObjSelected = [
+        ...selectedObj,
+        ...table.rows
+          .filter((row) => !row.disableCheckbox)
+          .filter((row) => !selectedObj.some((selectedRow) => selectedRow[rowId] === row[rowId])),
+      ];
+  
       handleSelected(newSelected);
       handleSelectedObj(newObjSelected);
-      return;
+    } else {
+      const deselectedIds = table.rows
+        .filter((row) => !row.disableCheckbox)
+        .map((row) => row[rowId]);
+  
+      const remainingSelected = selected.filter(
+        (id) => !deselectedIds.includes(id)
+      );
+      const remainingObjSelected = selectedObj.filter(
+        (row) => !deselectedIds.includes(row[rowId])
+      );
+  
+      handleSelected(remainingSelected);
+      handleSelectedObj(remainingObjSelected);
     }
-    handleSelected([]);
-    handleSelectedObj([]);
   };
-
   const resetPagination = () => {
     if (!disablePathParameters)
       navigate(location.pathname + `?page=${1}&rowsPerPage=${10}`);
@@ -991,53 +1010,38 @@ export default function EnhancedTable(props) {
   };
 
   const handleClick = (event, name, row) => {
-    console.log("handleClick", name, row);
-    /* handleSelected("");
-    return; */
-    const selectedIndex = (selected ? selected : innerSelected).indexOf(name);
-    let newSelected = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(
-        selected ? selected : innerSelected,
-        name
-      );
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(
-        (selected ? selected : innerSelected).slice(1)
-      );
-    } else if (
-      selectedIndex ===
-      (selected ? selected : innerSelected).length - 1
-    ) {
-      newSelected = newSelected.concat(
-        (selected ? selected : innerSelected).slice(0, -1)
-      );
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        (selected ? selected : innerSelected).slice(0, selectedIndex),
-        (selected ? selected : innerSelected).slice(selectedIndex + 1)
-      );
+    const currentSelected = selected || innerSelected;
+    const isSelected = currentSelected.includes(name);
+  
+    let newSelected;
+    let newObjSelected;
+  
+    if (isSelected) {
+      // Si el elemento ya está seleccionado, lo deseleccionamos
+      newSelected = currentSelected.filter((id) => id !== name);
+      newObjSelected = selectedObj
+        ? selectedObj.filter((selectedRow) => selectedRow[rowId] !== name)
+        : innerSelectedObj.filter((selectedRow) => selectedRow[rowId] !== name);
+    } else {
+      // Si el elemento no está seleccionado, lo agregamos
+      newSelected = [...currentSelected, name];
+      newObjSelected = selectedObj
+        ? [...selectedObj, row]
+        : [...innerSelectedObj, row];
     }
-
+  
+    // Verificación del límite máximo de selección
     if (maxSelected !== null && newSelected.length >= maxSelected) {
       setDisableCheckboxes(true);
     } else {
       setDisableCheckboxes(false);
     }
-
-    const selectedIndexObj = (
-      selectedObj ? selectedObj : innerSelectedObj
-    ).findIndex((obj) => obj.id === name);
-    let newSelectedObj = [];
-
-    const newObjSelected = table.rows
-      .filter((obj) => newSelected.includes(obj.id))
-      .map((obj) => obj);
-
+  
+    // Actualizamos los estados con las nuevas listas
     handleSelected(newSelected);
     handleSelectedObj(newObjSelected);
   };
+  
 
   const handleChangePage = (event, newPage) => {
     if (!disablePathParameters)
