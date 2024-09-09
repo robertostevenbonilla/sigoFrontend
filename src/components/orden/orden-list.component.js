@@ -102,10 +102,10 @@ const columnsOrden = [
   {
     field: "fechaRecepcion",
     headerName: "Fecha",
-    renderFunction: ({ fechaRecepcion, fechaEntrega }) => (
+    renderFunction: ({ createdAt, fechaEntrega }) => (
       <span>
         <Today style={iconStyle} />
-        {fechaRecepcion} - {fechaEntrega || ""}
+        {createdAt} - {fechaEntrega || ""}
       </span>
     ),
   },
@@ -144,10 +144,8 @@ const columnsOrden = [
     renderFunction: ({ mensajero }) => mensajero?.persona.fullName || "",
   },
   {
-    field: "createdAt",
-    headerName: "Creada",
-    flex: 1,
-    format: "datetime",
+    field: "codigo",
+    headerName: "Codigo",
   },
   {
     field: "novedad",
