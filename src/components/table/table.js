@@ -1051,14 +1051,29 @@ export default function EnhancedTable(props) {
     if (paginationServer) handlePagination(newPage, rowsPerPage);
     setPage(newPage - 1);
   };
-
+  
   const handleChangeRowsPerPage = (event) => {
     const perPage = parseInt(event.target.value, 10);
-    if (paginationServer) handlePagination(0, perPage);
-    if (!disablePathParameters)
+  
+    // Guardar los elementos seleccionados antes de cambiar la cantidad de filas
+    const currentSelection = [...(selected ? selected : innerSelected)];
+    const currentSelectionObj = [...(selectedObj ? selectedObj : innerSelectedObj)];
+  
+    if (paginationServer) {
+      handlePagination(0, perPage);
+    }
+    if (!disablePathParameters) {
       navigate(location.pathname + `?page=${1}&rowsPerPage=${perPage}`);
+    }
+  
     setRowsPerPage(perPage);
     setPage(0);
+  
+    // Restaurar la selección después de cambiar el número de filas por página
+    setTimeout(() => {
+      handleSelected(currentSelection);
+      handleSelectedObj(currentSelectionObj);
+    }, 0);
   };
 
   const isSelected = (name) => {
