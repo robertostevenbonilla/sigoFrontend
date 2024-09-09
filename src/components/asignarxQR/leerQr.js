@@ -30,12 +30,13 @@ const QrReader = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { asignar, getByGuia, byFase, getByGuiaPriv } = OrdenDataService();
+  const { asignar, getByGuia, byFase } = OrdenDataService();
 
   let orders = [];
   const { auth: currentUser } = useSelector((state) => state.auth);
 
   const [ordenes, setOrdenes] = useState([]);
+  const [redding, setRedding] = useState(false);
   const [QRvalue, setQRvalue] = useState("");
   const [faseSelect, setFaseSelect] = useState([]);
   const [motorizadoSelect, setMotorizadoSelect] = useState([]);
@@ -55,7 +56,7 @@ const QrReader = () => {
     ) {
       const mensajero =
         currentUser?.auth?.roles.find((rol) => rol.name === "mensajero") !==
-          undefined
+        undefined
           ? true
           : false;
       FaseDataService.getSelect(mensajero)
@@ -103,7 +104,7 @@ const QrReader = () => {
       Object.keys(ordenes).find((guia) => guia === guiaR)
     );
     if (Object.keys(ordenes).find((guia) => guia === guiaR) === undefined) {
-      await getByGuiaPriv(guiaR)
+      await getByGuia(guiaR)
         .then((response) => {
           if (Object.keys(response.data).length > 0) {
             let ordenGuia = [];
@@ -139,9 +140,11 @@ const QrReader = () => {
             dispatch(setMessage({ ...message }));
             dispatch(setOpenModal(true));
           }
+          //setRedding(false);
         })
         .catch((e) => {
           console.log(e);
+          //setRedding(false);
         });
     }
   };
@@ -276,24 +279,24 @@ const QrReader = () => {
             {currentUser?.auth?.roles.find(
               (rol) => rol.name === "mensajero"
             ) !== undefined && (
-                <Grid item xs={6} sx={{ textAlign: "right", margin: "auto 0" }}>
-                  <IconButton
-                    id={row.guia}
-                    name={row.guia}
-                    value={row.guia}
-                    aria-label="Close"
-                    ariaGuia={row.guia}
-                    onClick={() => {
-                      handleCloseOrd([row.guia]);
-                    }}
-                    size="small"
-                    color="#3364FF"
-                    variant="contained"
-                  >
-                    <CheckCircle color="success" />
-                  </IconButton>
-                </Grid>
-              )}
+              <Grid item xs={6} sx={{ textAlign: "right", margin: "auto 0" }}>
+                <IconButton
+                  id={row.guia}
+                  name={row.guia}
+                  value={row.guia}
+                  aria-label="Close"
+                  ariaGuia={row.guia}
+                  onClick={() => {
+                    handleCloseOrd([row.guia]);
+                  }}
+                  size="small"
+                  color="#3364FF"
+                  variant="contained"
+                >
+                  <CheckCircle color="success" />
+                </IconButton>
+              </Grid>
+            )}
           </Grid>
         </CardHeader>
         <CardContent sx={{ overflow: "overlay", padding: 0, height: "150px" }}>
@@ -346,12 +349,11 @@ const QrReader = () => {
     let guiaR = guia.replace("httpÑ--sigo.goyaexpressdelivery.com-recibo-", "");
     guiaR = guiaR.replace("http://sigo.goyaexpressdelivery.com/recibo/", "");
     console.log("QRvalue", QRvalue, guiaR);
-    setQRvalue(() => guiaR);
-    if (scannerNR) {
-      scannerNR.destroy();
-      scannerNR = null;
+    if (!redding) {
+      setRedding(() => true);
+      setQRvalue(() => guiaR);
+      await getOrdenByGuia(guiaR);
     }
-    await getOrdenByGuia(guiaR);
   };
 
   // Fail
@@ -368,7 +370,10 @@ const QrReader = () => {
     } else {
       loadMotirizados();
       loadFase();
-      if (currentUser?.auth?.roles.find((rol) => rol.name === "mensajero") !== undefined) {
+      if (
+        currentUser?.auth?.roles.find((rol) => rol.name === "mensajero") !==
+        undefined
+      ) {
         byFase().then((response) => {
           console.log(response.data);
           const ordenesList = response.data;
@@ -382,10 +387,12 @@ const QrReader = () => {
       }
 
       const checkPermissionsAndInitializeScanner = async () => {
-        const { state } = await navigator.permissions.query({ name: 'camera' });
+        const { state } = await navigator.permissions.query({ name: "camera" });
 
-        if (state !== 'granted') {
-          return alert('La cámara está bloqueada o no es accesible. Por favor, permite el acceso a la cámara en los permisos de tu navegador y recarga.');
+        if (state !== "granted") {
+          return alert(
+            "La cámara está bloqueada o no es accesible. Por favor, permite el acceso a la cámara en los permisos de tu navegador y recarga."
+          );
         }
 
         if (!scannerRef.current) {
@@ -401,20 +408,20 @@ const QrReader = () => {
             }
           );
 
-          await scannerRef.current.start().catch((err) => console.log('Error al iniciar scanner', err));
+          await scannerRef.current
+            .start()
+            .catch((err) => console.log("Error al iniciar scanner", err));
         }
       };
 
       checkPermissionsAndInitializeScanner();
     }
 
-
     return () => {
       if (scannerRef.current) {
         scannerRef.current.stop();
       }
     };
-
   }, []);
 
   return (
@@ -469,52 +476,52 @@ const QrReader = () => {
             {currentUser?.auth?.roles.find(
               (rol) => rol.name === "admin" || rol.name === "supervisor"
             ) !== undefined && (
-                <>
-                  <Grid item xs={12} sm={6} md={6}>
-                    <SearchInput
-                      options={[
-                        { id: -1, fullname: "Seleccione un motorizado" },
-                        ...motorizadoSelect,
-                      ]}
-                      value={morotizadoId}
-                      placeholder={"Seleccione un motorizado"}
-                      id={"morotizadoId"}
-                      name={"motorizadoId"}
-                      label={"Motorizado"}
-                      getOptionLabel={"fullname"}
-                      getIndexLabel={"id"}
-                      onChange={handleInputChangeM}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={6}>
-                    <SearchInput
-                      options={[
-                        { id: -1, nombre: "Seleccione un estado" },
-                        ...faseSelect,
-                      ]}
-                      value={faseId}
-                      placeholder={"Seleccione un estado"}
-                      id={"faseId"}
-                      name={"faseId"}
-                      label={"Estado"}
-                      getOptionLabel={"nombre"}
-                      getIndexLabel={"id"}
-                      onChange={handleInputChangeF}
-                    />
-                  </Grid>
-                  <Grid item md={3} sm={3} xs={12} sx={{ margin: "auto 0" }}>
-                    <Button
-                      onClick={saveAsignar}
-                      endIcon={<Save />}
-                      variant="contained"
-                      color="success"
-                      sx={{ margin: "auto 0" }}
-                    >
-                      Asignar
-                    </Button>
-                  </Grid>
-                </>
-              )}
+              <>
+                <Grid item xs={12} sm={6} md={6}>
+                  <SearchInput
+                    options={[
+                      { id: -1, fullname: "Seleccione un motorizado" },
+                      ...motorizadoSelect,
+                    ]}
+                    value={morotizadoId}
+                    placeholder={"Seleccione un motorizado"}
+                    id={"morotizadoId"}
+                    name={"motorizadoId"}
+                    label={"Motorizado"}
+                    getOptionLabel={"fullname"}
+                    getIndexLabel={"id"}
+                    onChange={handleInputChangeM}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={6}>
+                  <SearchInput
+                    options={[
+                      { id: -1, nombre: "Seleccione un estado" },
+                      ...faseSelect,
+                    ]}
+                    value={faseId}
+                    placeholder={"Seleccione un estado"}
+                    id={"faseId"}
+                    name={"faseId"}
+                    label={"Estado"}
+                    getOptionLabel={"nombre"}
+                    getIndexLabel={"id"}
+                    onChange={handleInputChangeF}
+                  />
+                </Grid>
+                <Grid item md={3} sm={3} xs={12} sx={{ margin: "auto 0" }}>
+                  <Button
+                    onClick={saveAsignar}
+                    endIcon={<Save />}
+                    variant="contained"
+                    color="success"
+                    sx={{ margin: "auto 0" }}
+                  >
+                    Asignar
+                  </Button>
+                </Grid>
+              </>
+            )}
 
             <Grid item xs={12} sm={12}>
               {selected.length > 0 && (
